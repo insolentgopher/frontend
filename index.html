@@ -5,14 +5,36 @@
         <meta charset="utf-8">
         <link rel="stylesheet" href="css/uikit.css">
         <link rel="stylesheet" href="css/theme.css">
+        <!--Map CSS------------------>
+        <link rel="stylesheet" href="lib/ol/ol.css" type="text/css">
 
         <script src="js/uikit.js" defer></script>
         <script src="js/uikit-icons.js" defer></script>
+        <!--Map JS------------------>
+        <script src="lib/ol/ol.js" defer></script>
     </head>
 <body>
 
 <h1 class="uk-heading-bullet">Харьков рулит!</h1>
 <h2>Проба Антона</h2>
+<div id="map" class="map"></div>
 
+<script src="js/map/Config_Map.js"></script>
+<script src="js/map/Map.js"></script>
+<script src="js/map/Start_Map.js"></script>  
+
+<script type="text/javascript">
+//проверка тестовых функций карты
+//старт
+    function ready() {
+      MAP_STARTER.start();
+    }
+    document.addEventListener("DOMContentLoaded", ready);
+//клик по карте
+    function app_alert(e) {
+      alert(e.detail.coordinates)
+    }
+    window.addEventListener("map_singleclick",  app_alert, null);        
+</script>
 </body>
 </html>
