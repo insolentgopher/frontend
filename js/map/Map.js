@@ -1,12 +1,20 @@
 /*METHODS*
-    startMap(token) - стартует карту, token - пока не известно
+    startMap(token) - стартует карту, token - пока не известно,
+    createAddress - создать адрес с нуля,
+    createStreet - создать улицу с нуля,
+    modifyAddress - отредактировать геометрию адреса,
+    modifyStreet - отредактировать геометрию улицы
 */
 /*EVENTS*
-    map_singleclick - кликнули по карте, (состояние, координаты)
+    map_singleclick - кликнули по карте, (состояние, координаты),
+    map_drawend     - закончили добавление/рисование фичи 
+                        (состояние, координаты, тип объекта в адресном реестре),
+    map_modifyend   - закончили редактирование объекта 
+                        (состояние, новые координаты, тип объекта в адресном реестре),
 */
 var APP_MAP = (function(){
     //DATA---------------------------------
-    var mapp,
+    var map,
     layerSwitcher,
     layers =[],
     view,
@@ -17,29 +25,15 @@ var APP_MAP = (function(){
         edit: false,
         delete: false,
     },
-    interactions = {
-        select:null,
-        modify:null,
-        draw:null
-    };
+    select,
+    modify,
+    draw,
+
+    drawSource,
+    drawLayer;
 
     //FUNCTIONS------------------------------
-    //стартуем карту
-    function startMap(token) {
-        token = token;
-        //обнуляем флаги
-        _dropFlags();
-        //устанавливаем на идентификацию
-        _setFlag('identity');
-        //создаем слои
-        _createLayers();
-        //создаем вью
-        _createView();
-        //создаем карту
-        _createMap();
-        //создаем layerSwitcher
-        _initLayerSwitcher();
-    }
+
     //FLAGS ------------------------------------------------------------------------
     //устанавливаем флаг
     function _setFlag(action){
@@ -56,6 +50,30 @@ var APP_MAP = (function(){
     //LAYERS -------------------------------------------------------------------
     //create all layers
     function _createLayers() {
+        //services
+        drawSource = _createSource();
+        drawLayer = new ol.layer.Vector({
+            source: drawSource,
+            style: new ol.style.Style({
+              fill: new ol.style.Fill({
+                color: 'rgba(255, 255, 255, 0.2)'
+              }),
+              stroke: new ol.style.Stroke({
+                color: '#ffcc33',
+                width: 2
+              }),
+              image: new ol.style.Circle({
+                radius: 7,
+                fill: new ol.style.Fill({
+                  color: '#ffcc33'
+                })
+              })
+            }),
+            visible: true,
+            name: 'drawlayer',
+            zIndex: 1000
+          });
+        layers.push(drawLayer);          
         //create basics   
         var inlayers = [], name    ;
         CONFIG_MAP.Map.Basics.forEach(element => {
@@ -64,9 +82,11 @@ var APP_MAP = (function(){
         name = CONFIG_MAP.Map.layerGroups.titles.Basics;
         layers.push(_createLayersGroup(inlayers, name));
         //create service layers        
-        CONFIG_MAP.Map.ServiceLayers.forEach(element => {
-            layers.push(_createServiceLayer(element));
-        });
+        // CONFIG_MAP.Map.ServiceLayers.forEach(element => {
+        //     layers.push(_createServiceLayer(element));
+        // });
+
+       
     }
     //
     function _createLayersGroup(layers, name){
@@ -75,7 +95,7 @@ var APP_MAP = (function(){
             layers: layers,            
           });
     }
-    //create service Tile Layer
+    //create service Tile Layer by url
     function _createTileLayer(params) {
 
         return new ol.layer.Tile({
@@ -100,14 +120,15 @@ var APP_MAP = (function(){
             source = _createSource(params);
         return new ol.layer.Vector({
                     source: source,
-                    visible: true,
-                    style: style
+                    zIndex: 1000
+                   // visible: true,
+                    // style: style
                 });
     }
 
-    function _createSource(params){
+    function _createSource(){
         return new ol.source.Vector({
-            features:[],
+            wrapX: false,
         });
     }
 
@@ -167,8 +188,149 @@ var APP_MAP = (function(){
     function _dispatchEvent(event){
         window.dispatchEvent(event);
     }
+    //- INTERACTIONS ------------------------------------------------------------
+    function _dropAllInteractions(){
+        if (select)
+            map.removeInteraction(select);
+        if (modify)
+            map.removeInteraction(modify);
+        if (draw)
+            map.removeInteraction(draw);
+        select = null;
+        modify = null;
+        draw = null;  
+    }
+
+    function _createInteractions(geometryType, arObjectType){
+        //select,modify,draw
+        if (flags.edit || flags.identity || flags.delete ){
+            select = new ol.interaction.Select({
+                layers: [drawLayer],
+                hitTolerance: 15,
+                condition: ol.events.condition.click    
+            });
+
+            select.on('select', function(e){
+                var selectedFeatures = select.getFeatures().getArray();
+                if (flags.delete){
+                    var ftr = e.selected[0];                    
+                    drawSource.removeFeature(ftr);  
+                    select.getFeatures().clear();                  
+                }
+                if (flags.edit && Array.isArray(selectedFeatures) && selectedFeatures.length > 0){
+                    modify = new ol.interaction.Modify({
+                        source: drawSource,     
+                        features:select.getFeatures()         
+                    });
+                    modify.on('modifyend', function(e){
+                        var arObjectType = select.getFeatures().getArray()[0].getGeometry().getType() == 'Point' ? 'address' : 'street';
+                        _dispatchEvent(_createEvent('map_modifyend', {                    
+                            flag:'edit',
+                            coordinates:select.getFeatures().getArray()[0].getGeometry().getCoordinates(),
+                            properties: select.getFeatures().getArray()[0].getProperties(),
+                            arObjectType: arObjectType,
+                        }));
+                        select.getFeatures().clear();
+                        map.removeInteraction(modify);
+                        modify = null;
+                    });
+                    map.addInteraction(modify);
+                } 
+            });
+
+            map.addInteraction(select);
+        }
+
+        if (flags.add){
+            draw = new ol.interaction.Draw({
+                source: drawSource,  
+                type:geometryType,             
+            });
+
+            draw.on('drawend', function(e){
+                var arObjectType = e.feature.getGeometry().getType() == 'Point' ? 'address' : 'street';
+                _dispatchEvent(_createEvent('map_drawend', {                    
+                    flag:'draw',
+                    coordinates:e.feature.getGeometry().getCoordinates(),
+                    arObjectType: arObjectType,
+                }));
+            });
+            map.addInteraction(draw);
+        }
+  
+        
+
+    }
+
+    
+    //-AR -----------------------------------------------------------------------
+    function createAddress(){
+        _dropFlags();
+        _setFlag('add');
+        _dropAllInteractions();
+        _createInteractions('Point', 'Address');
+    }
+
+    function createStreet(){
+        _dropFlags();
+        _setFlag('add');
+        _dropAllInteractions();
+        _createInteractions('LineString', 'Street');
+    }    
+
+    function modifyAddress(){
+        _dropFlags();
+        _setFlag('edit');
+        _dropAllInteractions();
+        _createInteractions('Address');
+    }
+
+    function modifyStreet(){
+        _dropFlags();
+        _setFlag('edit');
+        _dropAllInteractions();
+        _createInteractions('Street');
+    }
+    function removeAddress(){
+        _dropFlags();
+        _setFlag('delete');
+        _dropAllInteractions();
+        _createInteractions('Address');
+    }
+
+    function removeStreet(){
+        _dropFlags();
+        _setFlag('delete');
+        _dropAllInteractions();
+        _createInteractions('Street');
+    }
+    //стартуем карту
+    function startMap(token) {
+        token = token;
+        //обнуляем флаги
+        _dropFlags();
+        //устанавливаем на идентификацию
+        _setFlag('identity');
+        //создаем слои
+        _createLayers();
+        //создаем вью
+        _createView();
+        //создаем карту
+        _createMap();
+        //создаем layerSwitcher
+        _initLayerSwitcher();
+
+        //createAddress();
+        //createStreet();
+    }
 return{
-    startMap:startMap
+    startMap:startMap,
+    createAddress:createAddress,
+    createStreet:createStreet,
+    modifyAddress:modifyAddress,
+    modifyStreet:modifyStreet,
+    removeAddress:removeAddress,
+    removeStreet:removeStreet
 }
 
 })();

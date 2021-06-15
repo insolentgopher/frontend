@@ -30,23 +30,23 @@ var CONFIG_MAP = {
             },            
         ],
         Layers:[],
-        ServiceLayers:[
-            {
-                Id: 'sl0',
-                Name:'sl_point',
-                geometryType: 'Point',
-            },
-            {
-                Id: 'sl1',
-                Name:'sl_line',
-                geometryType: 'Line',
-            },
-            // {
-            //     Id: 'sl2',
-            //     Name:'sl_polygon',
-            //     geometryType: 'Polygon',
-            // },
-        ],
+        // ServiceLayers:[
+        //     // {
+        //     //     Id: 'sl0',
+        //     //     Name:'sl_point',
+        //     //     geometryType: 'Point',
+        //     // },
+        //     // {
+        //     //     Id: 'sl1',
+        //     //     Name:'sl_line',
+        //     //     geometryType: 'Line',
+        //     // },
+        //     // {
+        //     //     Id: 'sl2',
+        //     //     Name:'sl_polygon',
+        //     //     geometryType: 'Polygon',
+        //     // },
+        // ],
         layerGroups:{
             titles: {
                 Basics: 'Підоснови',

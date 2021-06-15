@@ -15,15 +15,42 @@
         <!-- <script src="lib/ol/ol.js" defer></script> -->
         <!-- <script src="lib/ol/ol.js"></script> -->
         
-        <script src="https://openlayers.org/en/v5.3.0/build/ol.js"></script>
+        <script src="https://openlayers.org/en/v4.6.5/build/ol.js"></script>
         <script src="lib/ol-layerswitcher/ol-layerswitcher.js"></script>
     </head>
 <body>
 
 <h1 class="uk-heading-bullet">Харьков рулит!</h1>
 <h2>Проба Антона</h2>
+<div id="mapEditPanel" class="uk-button-group" data-uk-button-radio>
+  <label class="uk-button">
+      <input type="radio" name="action" value="0"/>
+      Додати адресу
+  </label>
+  <label class="uk-button">
+      <input type="radio" name="action" value="1"/>
+      Редагувати адресу
+  </label>
+  <label class="uk-button">
+      <input type="radio" name="action" value="2"/>
+      Видалити адресу
+  </label>
+  <label class="uk-button">
+      <input type="radio" name="action" value="3"/>
+      Додати вулицю
+  </label>
+  <label class="uk-button">
+      <input type="radio" name="action" value="4"/>
+      Редагувати вулицю
+  </label>
+  <label class="uk-button">
+      <input type="radio" name="action" value="5"/>
+      Видалити вулицю
+  </label>                        
+</div>
 <div id="map" class="map"></div>
 
+<script src="js/map/editPanel_Map.js"></script>
 <script src="js/map/Config_Map.js"></script>
 <script src="js/map/Map.js"></script>
 <script src="js/map/Start_Map.js"></script>  
@@ -32,14 +59,51 @@
 //проверка тестовых функций карты
 //старт
     function ready() {
-      MAP_STARTER.start();
+      window.addEventListener("map_editpanel_changed",  function(e){
+      switch(e.detail.layer){
+        case 'address':{
+          if (e.detail.action == 'add')
+            APP_MAP.createAddress();
+          else if (e.detail.action == 'edit')
+            APP_MAP.modifyAddress();
+          else 
+            APP_MAP.removeAddress();
+        }
+          break;
+        case 'street' : {
+          if (e.detail.action == 'add')
+            APP_MAP.createStreet();
+          else if (e.detail.action == 'edit')
+            APP_MAP.modifyStreet();
+          else 
+            APP_MAP.removeStreet();
+          }
+            break;
+        }
+      }, null);
+      MAP_EDITPANEL.initPanel();   
+
+    function app_alert(e) {
+      //alert('кликнули по координатам ' + e.detail.coordinates)
+    }
+    window.addEventListener("map_singleclick",  app_alert, null);      
+    
+    //рисуем
+    function app_draw_alert(e) {
+      //alert("нарисовано " + e.detail.coordinates)
+    }
+    window.addEventListener("map_drawend",  app_draw_alert, null); 
+
+    //редактируем
+    function app_modify_alert(e) {
+     // alert("нарисовано " + e.detail.coordinates)
+    }
+    window.addEventListener("map_modifyend",  app_modify_alert, null);
+    MAP_STARTER.start();
     }
     document.addEventListener("DOMContentLoaded", ready);
 //клик по карте
-    function app_alert(e) {
-      alert(e.detail.coordinates)
-    }
-    window.addEventListener("map_singleclick",  app_alert, null);        
+ 
 </script>
 </body>
 </html>
