@@ -50,30 +50,6 @@ var APP_MAP = (function(){
     //LAYERS -------------------------------------------------------------------
     //create all layers
     function _createLayers() {
-        //services
-        drawSource = _createSource();
-        drawLayer = new ol.layer.Vector({
-            source: drawSource,
-            style: new ol.style.Style({
-              fill: new ol.style.Fill({
-                color: 'rgba(255, 255, 255, 0.2)'
-              }),
-              stroke: new ol.style.Stroke({
-                color: '#ffcc33',
-                width: 2
-              }),
-              image: new ol.style.Circle({
-                radius: 7,
-                fill: new ol.style.Fill({
-                  color: '#ffcc33'
-                })
-              })
-            }),
-            visible: true,
-            name: 'drawlayer',
-            zIndex: 1000
-          });
-        layers.push(drawLayer);          
         //create basics   
         var inlayers = [], name    ;
         CONFIG_MAP.Map.Basics.forEach(element => {
@@ -81,12 +57,44 @@ var APP_MAP = (function(){
         });
         name = CONFIG_MAP.Map.layerGroups.titles.Basics;
         layers.push(_createLayersGroup(inlayers, name));
-        //create service layers        
-        // CONFIG_MAP.Map.ServiceLayers.forEach(element => {
-        //     layers.push(_createServiceLayer(element));
-        // });
-
-       
+        //create layers   
+        inlayers = [];
+        name = '';     
+        CONFIG_MAP.Map.Layers.forEach(element => {
+            var layer;
+            if (element.type == 'wms'){
+                layer = _createWMSLayer(element);
+            }
+            if (layer)
+                inlayers.push(layer);
+        });
+        name = CONFIG_MAP.Map.layerGroups.titles.Layers;
+        var gr = _createLayersGroup(inlayers, name);
+        layers.push(gr);
+        //layer for editing
+        drawSource = _createSource();
+        drawLayer = new ol.layer.Vector({
+            source: drawSource,
+            style: new ol.style.Style({
+                fill: new ol.style.Fill({
+                color: 'rgba(255, 255, 255, 0.2)'
+                }),
+                stroke: new ol.style.Stroke({
+                color: '#ffcc33',
+                width: 2
+                }),
+                image: new ol.style.Circle({
+                radius: 7,
+                fill: new ol.style.Fill({
+                    color: '#ffcc33'
+                })
+                })
+            }),
+            visible: true,
+            name: 'drawlayer',
+            zIndex: 1000
+        });
+        layers.push(drawLayer); 
     }
     //
     function _createLayersGroup(layers, name){
@@ -101,7 +109,7 @@ var APP_MAP = (function(){
         return new ol.layer.Tile({
             source: new ol.source.XYZ({
                 attributions: params.attributions,
-                attributionsCollapsible: false,
+                attributionsCollapsible: true,
                         url: params.url,
                         zoom: params.zoom,
                         maxZoom: params.maxZoom,
@@ -112,6 +120,27 @@ var APP_MAP = (function(){
             type:params.class,
             visible: params.visible
           }); 
+    }
+
+    function _createWMSLayer(params){
+        return new ol.layer.Tile({
+           // extent: extent,
+            source: new ol.source.TileWMS({
+              url: params.url,
+              crossOrigin: 'anonymous',
+              attributions: params.attributions,
+              attributionsCollapsible: true,
+              params: {
+                'LAYERS': params.layers,
+                'FORMAT': params.format,
+                'VERSION': params.version
+              },
+              serverType: 'mapserver',
+              ratio: params.ratio ? params.ratio : '',             
+            }),
+            visible:params.visible,
+            title:params.alias,
+          });
     }
     //service Layers------------------------------------------------------------
     //create service Layer
@@ -173,7 +202,7 @@ var APP_MAP = (function(){
     
     function _initLayerSwitcher(){
         layerSwitcher =  new ol.control.LayerSwitcher({
-            tipLabel: 'Légende', // Optional label for button
+            tipLabel: 'Легенда', // Optional label for button
             groupSelectStyle: 'children' // Can be 'children' [default], 'group' or 'none'
           });
           map.addControl(layerSwitcher);

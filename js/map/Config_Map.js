@@ -27,9 +27,30 @@ var CONFIG_MAP = {
                 type: 'tile',
                class:'base',
                visible: false,
-            },            
+            }                   
         ],
-        Layers:[],
+        Layers:[
+            {
+                Id: 'l0',
+                Name:'Kadmap',
+                alias:'Кадастрова карта',
+                url:'https://m1.land.gov.ua/geowebcache/service/wms',
+                attributions: ['<a href="http://dzk.gov.ua/" target="_blank">© ЦДЗК Всі права захищені. </a>'],
+                layers:'kadastr',
+                format: 'image/png',
+                width: '256',
+                height: '256',
+                version: '1.1.1',
+                srs: 'EPSG:3857',
+                ratio: 1,
+                zoom: 12,
+                maxZoom: 23,
+                minZoom: 11,
+                type: 'wms',
+                class:'',
+                visible: false,
+            } 
+        ],
         // ServiceLayers:[
         //     // {
         //     //     Id: 'sl0',
@@ -50,7 +71,7 @@ var CONFIG_MAP = {
         layerGroups:{
             titles: {
                 Basics: 'Підоснови',
-                Layers: 'Шари реєстра'
+                Layers: 'Шари'
             }
         },
         center: [36.28, 49.99],
