@@ -1,18 +1,404 @@
 <!DOCTYPE html>
-<html>
-    <head>
-        <title>Автоматизована система управління геоданими - Модуль адресний реєстр</title>
-        <meta charset="utf-8">
-        <link rel="stylesheet" href="css/uikit.css">
-        <link rel="stylesheet" href="css/theme.css">
+<html lang="uk">
+	<head>
+		<meta charset="utf-8">
+		<meta name="viewport" content="width=device-width, initial-scale=1">
+		<title>Автоматизована система управління геоданими - Модуль адресний реєстр</title>
+		<link rel="icon" href="img/favicon/favicon.ico" type="image/x-icon">
+		<!-- CSS FILES -->
+		<link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/uikit@latest/dist/css/uikit.min.css">
+		<link rel="stylesheet" type="text/css" href="css/dashboard.css">
+		
+        <!--Map CSS------------------>
+        <link rel="stylesheet" href="lib/ol/ol.css" type="text/css">
+        <link rel="stylesheet" href="lib/ol-layerswitcher/ol-layerswitcher.css" type="text/css">
 
-        <script src="js/uikit.js" defer></script>
-        <script src="js/uikit-icons.js" defer></script>
-    </head>
-<body>
+		<!-- UIKIT JS FILES -->
+		<script src="https://cdn.jsdelivr.net/npm/uikit@latest/dist/js/uikit.min.js"></script>
+		<script src="https://cdn.jsdelivr.net/npm/uikit@latest/dist/js/uikit-icons.min.js"></script>
+        <!--Map JS------------------>
+        <!-- <script src="lib/ol/ol.js" defer></script> -->
+        <script src="lib/ol/ol.js"></script>
+        
+        <!-- <script src="https://openlayers.org/en/v5.3.0/build/ol.js"></script> -->
+        <script src="lib/ol-layerswitcher/ol-layerswitcher.js"></script>		
+		
+	</head>
+	<body>
 
-<h1 class="uk-heading-bullet">Харьков рулит!</h1>
-<h2>Проба Антона</h2>
+		<!--HEADER-->
+		<header id="top-head" class="uk-position-fixed">
+			<div class="uk-container uk-container-expand uk-background-default topbar">
+				<nav class="uk-navbar uk-dark" data-uk-navbar="mode:click; duration: 250">
+					<div class="uk-navbar-left">
+						<div class="uk-navbar-item uk-hidden@m">
+							<a class="uk-logo" href="#"><img class="custom-logo" src="img/logo.png" alt="">АСУ геоданими</a>
+						</div>
+						<!--
+						<ul class="uk-navbar-nav uk-visible@m">
+							<li><a href="#">Accounts</a></li>
+							<li>
+								<a href="#">Settings <span data-uk-icon="icon: triangle-down"></span></a>
+								<div class="uk-navbar-dropdown">
+									<ul class="uk-nav uk-navbar-dropdown-nav">
+										<li class="uk-nav-header">YOUR ACCOUNT</li>
+										<li><a href="#"><span data-uk-icon="icon: info"></span> Summary</a></li>
+										<li><a href="#"><span data-uk-icon="icon: refresh"></span> Edit</a></li>
+										<li><a href="#"><span data-uk-icon="icon: settings"></span> Configuration</a></li>
+										<li class="uk-nav-divider"></li>
+										<li><a href="#"><span data-uk-icon="icon: image"></span> Your Data</a></li>
+										<li class="uk-nav-divider"></li>
+										<li><a href="#"><span data-uk-icon="icon: sign-out"></span> Logout</a></li>
+									</ul>
+								</div>
+							</li>
+						</ul>
+						-->
+						<div class="uk-navbar-item uk-visible@s">
+							<form action="dashboard.html" class="uk-search uk-search-default">
+								<span data-uk-search-icon></span>
+								<input class="uk-search-input search-field" type="search" placeholder="Пошук">
+							</form>
+						</div>
+					</div>
+					<div class="uk-navbar-right">
+						<ul class="uk-navbar-nav">
+							<li><a href="#" data-uk-icon="icon:user" title="Ваш обліковий запис" data-uk-tooltip></a></li>
+							<li>
+								<a href="#" data-uk-icon="icon: settings" title="Налаштування" data-uk-tooltip></a>
+								<div class="uk-navbar-dropdown">
+									<ul class="uk-nav uk-navbar-dropdown-nav">
+										<li class="uk-nav-header">Обліковий запис</li>
+										<li><a href="#"><span data-uk-icon="icon: info"></span> Загальне</a></li>
+										<li><a href="#"><span data-uk-icon="icon: refresh"></span> Редагувати</a></li>
+										<li><a href="#"><span data-uk-icon="icon: settings"></span> Налаштування</a></li>
+										<li class="uk-nav-divider"></li>
+										<li><a href="#"><span data-uk-icon="icon: image"></span> Ваші данні</a></li>
+										<!--<li class="uk-nav-divider"></li>
+										<li><a href="#"><span data-uk-icon="icon: sign-out"></span> Вийти</a></li>-->
+									</ul>
+								</div>
+							</li>							
+							
+							<li><a href="login.html" data-uk-icon="icon:  sign-out" title="Вийти" data-uk-tooltip></a></li>
+							<li><a class="uk-navbar-toggle" data-uk-toggle data-uk-navbar-toggle-icon href="#offcanvas-nav" title="Додаткове меню" data-uk-tooltip></a></li>
+						</ul>
+					</div>
+				</nav>
+			</div>
+		</header>
+		<!--/HEADER-->
+		<!-- LEFT BAR -->
+		<aside id="left-col" class="uk-light uk-visible@m">
+			<div class="left-logo uk-flex uk-flex-middle content-box-dark">
+			<!--<a class="uk-logo" href="#"><img class="custom-logo" src="img/logo.png" alt="">АСУ геоданими</a>-->
+				<img class="custom-logo uk-margin-small-right" src="img/logo.png" alt=""><span class="uk-text-bold">АСУ ГЕОДАНИМИ</span>
+			</div>
+			
+			<!--
+			<div class="left-content-box  content-box-dark">
+				<img src="img/avatar.svg" alt="" class="uk-border-circle profile-img">
+				<h4 class="uk-text-center uk-margin-remove-vertical text-light">John Doe</h4>
+				
+				<div class="uk-position-relative uk-text-center uk-display-block">
+				    <a href="#" class="uk-text-small uk-text-muted uk-display-block uk-text-center" data-uk-icon="icon: triangle-down; ratio: 0.7">Admin</a>
+				    <div class="uk-dropdown user-drop" data-uk-dropdown="mode: click; pos: bottom-center; animation: uk-animation-slide-bottom-small; duration: 150">
+				    	<ul class="uk-nav uk-dropdown-nav uk-text-left">
+								<li><a href="#"><span data-uk-icon="icon: info"></span> Summary</a></li>
+								<li><a href="#"><span data-uk-icon="icon: refresh"></span> Edit</a></li>
+								<li><a href="#"><span data-uk-icon="icon: settings"></span> Configuration</a></li>
+								<li class="uk-nav-divider"></li>
+								<li><a href="#"><span data-uk-icon="icon: image"></span> Your Data</a></li>
+								<li class="uk-nav-divider"></li>
+								<li><a href="#"><span data-uk-icon="icon: sign-out"></span> Sign Out</a></li>
+					    </ul>
+				    </div>
+				</div>
+			</div>
+			-->
+			
+			<div class="left-nav-wrap">
+				<ul class="uk-nav uk-nav-default uk-nav-parent-icon" data-uk-nav>
+					<li class="uk-nav-header uk-heading-bullet">Адресний реєстр</li>
+					<li><a href="#"><span data-uk-icon="icon: search" class="uk-margin-small-right"></span>Пошук</a></li>
+					<li><a href="#"><span data-uk-icon="icon: users" class="uk-margin-small-right"></span>Аудит</a></li>
+					<li class="uk-parent"><a href="#"><span data-uk-icon="icon: thumbnails" class="uk-margin-small-right"></span>Довідники</a>
+						<ul class="uk-nav-sub">
+							<li><a title="Адреси" href="#">Адреси</a></li>
+							<li><a title="Користувачі" href="#">Користувачі</a></li>
+							<li><a title="Login" href="login.html">Увійти</a></li>
+						</ul>
+					</li>
+					<li><a href="#"><span data-uk-icon="icon: album" class="uk-margin-small-right"></span>Історія</a></li>
 
-</body>
+					<li class="uk-nav-header uk-heading-bullet">Модуль 2</li>
+					<li><a href="#"><span data-uk-icon="icon: search" class="uk-margin-small-right"></span>Розділ 1</a></li>
+					<li><a href="#"><span data-uk-icon="icon: users" class="uk-margin-small-right"></span>Розділ 2</a></li>
+				</ul>
+				
+				<div class="left-content-box uk-margin-top">
+					
+						<h5>Статистика</h5>
+						<div>
+							<span class="uk-text-small">Кількість адрес <small>(+50)</small></span>
+							<progress class="uk-progress" value="50" max="100"></progress>
+						</div>
+						<div>
+							<span class="uk-text-small">Додано нових за тиждень <small>(+78)</small></span>
+							<progress class="uk-progress success" value="78" max="100"></progress>
+						</div>
+						<!--<div>
+							<span class="uk-text-small">Feedback <small>(-12)</small></span>
+							<progress class="uk-progress warning" value="12" max="100"></progress>
+						</div>-->
+					
+				</div>
+				
+			</div>
+			<div class="bar-bottom">
+				<ul class="uk-subnav uk-flex uk-flex-center uk-child-width-1-5" data-uk-grid>
+					<li>
+						<a href="/index" class="uk-icon-link" data-uk-icon="icon: home" title="Головна" data-uk-tooltip></a>
+					</li>
+					<li>
+						<a href="#" class="uk-icon-link" data-uk-icon="icon: settings" title="Налаштування" data-uk-tooltip></a>
+					</li>
+					<li>
+						<a href="#" class="uk-icon-link" data-uk-icon="icon: social"  title="Соціальні мережі, поділитись" data-uk-tooltip></a>
+					</li>
+					
+					<li>
+						<a href="login.html" class="uk-icon-link" data-uk-tooltip="Вийти" data-uk-icon="icon: sign-out"></a>
+					</li>
+				</ul>
+			</div>
+		</aside>
+		<!-- /LEFT BAR -->
+		<!-- CONTENT -->
+		<div id="content" data-uk-height-viewport="expand: true">
+		
+		
+		<!--	
+<aside class="aside aside-expand-md">
+        <div class="aside-body ps-container ps-theme-default ps-active-y" data-ps-id="37e3f7ef-bdf1-79d4-f3c9-e8f7109e5ba7">
+
+          <div class="aside-block">
+            <h6 class="aside-title">Samples</h6>
+          </div>
+
+          <div class="media-list media-list-sm media-list-hover media-list-divided">
+            <a class="media flex-column px-20" href="aside-email.html">
+              <p>Email</p>
+              <small>Inbox, sent, spam, etc..</small>
+            </a>
+
+            <a class="media flex-column px-20" href="aside-form.html">
+              <p>Form</p>
+              <small>Form groups, inputs, buttons, ...</small>
+            </a>
+
+            <a class="media flex-column px-20" href="aside-messages.html">
+              <p>Messages</p>
+              <small>Media and media list</small>
+            </a>
+
+            <a class="media flex-column px-20" href="aside-settings.html">
+              <p>Settings</p>
+              <small>Combining media and form</small>
+            </a>
+
+            <a class="media flex-column px-20" href="aside-tabs.html">
+              <p>Tabs</p>
+              <small>Tabable content inside an aside</small>
+            </a>
+          </div>
+
+
+          <hr class="hr-sm">
+
+
+          <div class="media-list media-list-sm media-list-hover media-list-divided">
+            <a class="media flex-column px-20" href="aside-doc.html">
+              <p>Documentation</p>
+              <small>Avalable classes to modify your aside</small>
+            </a>
+          </div>
+
+        <div class="ps-scrollbar-x-rail" style="left: 0px; bottom: 0px;"><div class="ps-scrollbar-x" tabindex="0" style="left: 0px; width: 0px;"></div></div><div class="ps-scrollbar-y-rail" style="top: 0px; right: 2px; height: 391px;"><div class="ps-scrollbar-y" tabindex="0" style="top: 0px; height: 282px;"></div></div></div>
+
+        <button class="aside-toggler"></button>
+      </aside>			
+		-->
+		
+		
+			<div class="uk-container uk-container-expand">
+
+				<div id="mapEditPanel" class="uk-button-group" data-uk-button-radio>
+				  <label class="uk-button">
+					  <input type="radio" name="action" value="0"/>
+					  Додати адресу
+				  </label>
+				  <label class="uk-button">
+					  <input type="radio" name="action" value="1"/>
+					  Редагувати адресу
+				  </label>
+				  <label class="uk-button">
+					  <input type="radio" name="action" value="2"/>
+					  Видалити адресу
+				  </label>
+				  <label class="uk-button">
+					  <input type="radio" name="action" value="3"/>
+					  Додати вулицю
+				  </label>
+				  <label class="uk-button">
+					  <input type="radio" name="action" value="4"/>
+					  Редагувати вулицю
+				  </label>
+				  <label class="uk-button">
+					  <input type="radio" name="action" value="5"/>
+					  Видалити вулицю
+				  </label>                        
+				</div>
+				<div id="map" class="map"></div>
+
+				<script src="js/map/editPanel_Map.js"></script>
+				<script src="js/map/Config_Map.js"></script>
+				<script src="js/map/Map.js"></script>
+				<script src="js/map/Start_Map.js"></script>  
+
+				<script type="text/javascript">
+				//проверка тестовых функций карты
+				//старт
+					function ready() {
+					  window.addEventListener("map_editpanel_changed",  function(e){
+					  switch(e.detail.layer){
+						case 'address':{
+						  if (e.detail.action == 'add')
+							APP_MAP.createAddress();
+						  else if (e.detail.action == 'edit')
+							APP_MAP.modifyAddress();
+						  else 
+							APP_MAP.removeAddress();
+						}
+						  break;
+						case 'street' : {
+						  if (e.detail.action == 'add')
+							APP_MAP.createStreet();
+						  else if (e.detail.action == 'edit')
+							APP_MAP.modifyStreet();
+						  else 
+							APP_MAP.removeStreet();
+						  }
+							break;
+						}
+					  }, null);
+					  MAP_EDITPANEL.initPanel();   
+
+					function app_alert(e) {
+					  //alert('кликнули по координатам ' + e.detail.coordinates)
+					}
+					window.addEventListener("map_singleclick",  app_alert, null);      
+					
+					//рисуем
+					function app_draw_alert(e) {
+					  //alert("нарисовано " + e.detail.coordinates)
+					}
+					window.addEventListener("map_drawend",  app_draw_alert, null); 
+
+					//редактируем
+					function app_modify_alert(e) {
+					 // alert("нарисовано " + e.detail.coordinates)
+					}
+					window.addEventListener("map_modifyend",  app_modify_alert, null);
+					MAP_STARTER.start();
+					}
+					document.addEventListener("DOMContentLoaded", ready);
+				//клик по карте
+				 
+				</script>
+			
+			
+<!--
+				<div class="uk-grid uk-grid-divider uk-grid-medium uk-child-width-1-2 uk-child-width-1-4@l uk-child-width-1-5@xl" data-uk-grid>
+					<div>
+						<span class="uk-text-small"><span data-uk-icon="icon:users" class="uk-margin-small-right uk-text-primary"></span>New Users</span>
+						<h1 class="uk-heading-primary uk-margin-remove  uk-text-primary">2.134</h1>
+						<div class="uk-text-small">
+							<span class="uk-text-success" data-uk-icon="icon: triangle-up">15%</span> more than last week.
+						</div>
+					</div>
+					<div>
+						
+						<span class="uk-text-small"><span data-uk-icon="icon:social" class="uk-margin-small-right uk-text-primary"></span>Social Media</span>
+						<h1 class="uk-heading-primary uk-margin-remove uk-text-primary">8.490</h1>
+						<div class="uk-text-small">
+							<span class="uk-text-warning" data-uk-icon="icon: triangle-down">-15%</span> less than last week.
+						</div>
+						
+					</div>
+					<div>
+						
+						<span class="uk-text-small"><span data-uk-icon="icon:clock" class="uk-margin-small-right uk-text-primary"></span>Traffic hours</span>
+						<h1 class="uk-heading-primary uk-margin-remove uk-text-primary">12.00<small class="uk-text-small">PM</small></h1>
+						<div class="uk-text-small">
+							<span class="uk-text-success" data-uk-icon="icon: triangle-up"> 19%</span> more than last week.
+						</div>
+						
+					</div>
+					<div>
+						
+						<span class="uk-text-small"><span data-uk-icon="icon:search" class="uk-margin-small-right uk-text-primary"></span>Week Search</span>
+						<h1 class="uk-heading-primary uk-margin-remove uk-text-primary">9.543</h1>
+						<div class="uk-text-small">
+							<span class="uk-text-danger" data-uk-icon="icon: triangle-down"> -23%</span> less than last week.
+						</div>
+						
+					</div>
+					<div class="uk-visible@xl">
+						<span class="uk-text-small"><span data-uk-icon="icon:users" class="uk-margin-small-right uk-text-primary"></span>Lorem ipsum</span>
+						<h1 class="uk-heading-primary uk-margin-remove uk-text-primary">5.284</h1>
+						<div class="uk-text-small">
+							<span class="uk-text-success" data-uk-icon="icon: triangle-up"> 7%</span> more than last week.
+						</div>
+					</div>
+				</div>
+				<hr>
+-->
+				<footer class="uk-section uk-section-small uk-text-center">
+					<hr>
+					<p class="uk-text-small uk-text-center">Всі права захищені 2021</p>
+					<!--
+					- <a href="#">MC</a> | Створено за допомоги <a href="http://getuikit.com" title="Відвідати UIkit 3" target="_blank" data-uk-tooltip><span data-uk-icon="uikit"></span></a> </p>
+					-->
+				</footer>
+			</div>
+		</div>
+		<!-- /CONTENT -->
+		<!-- OFFCANVAS -->
+		<div id="offcanvas-nav" data-uk-offcanvas="flip: true; overlay: true">
+			<div class="uk-offcanvas-bar uk-offcanvas-bar-animation uk-offcanvas-slide">
+				<button class="uk-offcanvas-close uk-close uk-icon" type="button" data-uk-close></button>
+				<ul class="uk-nav uk-nav-default">
+					<li class="uk-active"><a href="#">Active</a></li>
+					<li class="uk-parent">
+						<a href="#">Parent</a>
+						<ul class="uk-nav-sub"> 
+							<li><a href="#">Sub item</a></li>
+							<li><a href="#">Sub item</a></li>
+						</ul>
+					</li>
+					<li class="uk-nav-header">Header</li>
+					<li><a href="#js-options"><span class="uk-margin-small-right uk-icon" data-uk-icon="icon: table"></span> Item</a></li>
+					<li><a href="#"><span class="uk-margin-small-right uk-icon" data-uk-icon="icon: thumbnails"></span> Item</a></li>
+					<li class="uk-nav-divider"></li>
+					<li><a href="#"><span class="uk-margin-small-right uk-icon" data-uk-icon="icon: trash"></span> Item</a></li>
+				</ul>
+				<h3>Title</h3>
+				<p>Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.</p>
+			</div>
+		</div>
+		<!-- /OFFCANVAS -->
+		
+
+	</body>
 </html>
