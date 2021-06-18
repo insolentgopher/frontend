@@ -38,9 +38,6 @@
 						<div class="uk-navbar-item uk-hidden@m">
 							<a class="uk-logo" href="index.html"><img class="custom-logo" src="img/logo.png" alt=""><span class="uk-margin-small-left">АСУ геоданими</span></a>
 						</div>
-						<ul class="uk-navbar-nav">
-							<li><a href="#offcanvas-usage" data-uk-icon="icon:settings" title="Налаштування" uk-toggle></a></li>
-						</ul>						
 						<!--
 						<ul class="uk-navbar-nav uk-visible@m">
 							<li><a href="#">Accounts</a></li>
@@ -72,8 +69,9 @@
 					</div>
 					<div class="uk-navbar-right">
 						<ul class="uk-navbar-nav">
+							<li><a href="#" data-uk-icon="icon:user" title="Ваш обліковий запис" data-uk-tooltip></a></li>
 							<li>
-								<a href="#" data-uk-icon="icon:user" title="Ваш обліковий запис" data-uk-tooltip></a>
+								<a href="#" data-uk-icon="icon: settings" title="Налаштування" data-uk-tooltip></a>
 								<div class="uk-navbar-dropdown">
 									<ul class="uk-nav uk-navbar-dropdown-nav">
 										<li class="uk-nav-header">Обліковий запис</li>
@@ -85,8 +83,9 @@
 										<!--<li class="uk-nav-divider"></li>
 										<li><a href="#"><span data-uk-icon="icon: sign-out"></span> Вийти</a></li>-->
 									</ul>
-								</div>								
-							</li>
+								</div>
+							</li>							
+							
 							<li><a href="login.html" data-uk-icon="icon:  sign-out" title="Вийти" data-uk-tooltip></a></li>
 							<li><a class="uk-navbar-toggle" data-uk-toggle data-uk-navbar-toggle-icon href="#offcanvas-nav" title="Додаткове меню" data-uk-tooltip></a></li>
 						</ul>
@@ -170,13 +169,21 @@
 		
 
 
-<div id="offcanvas-usage" class="uk-padding-small" uk-offcanvas="bg-close:false;">
+	
+		
+		
+			<div class="uk-container uk-container-expand">
 
-    <div class="aside-second uk-offcanvas-bar-light ">
 
-        <!--<button class="uk-offcanvas-close" type="button" uk-close></button>-->
+<div class="uk-grid-collapse " style="margin-left:-40px; margin-right:-40px; margin-top:-30px;" uk-grid>
 
-        <div class="uk-grid-collapse uk-flex uk-flex-middle " uk-grid>
+<div id="toggle-animation" class="uk-width-medium@s " >
+<aside   class="aside uk-width-medium uk-card-default  uk-card-small  " >
+
+
+
+        <div class="" >
+        <div class="uk-grid-collapse uk-flex uk-flex-middle uk-padding-small" uk-grid>
 		<div class="uk-width-expand">
             <input class="uk-input" type="text" placeholder="Пошук вулиці">
 		</div>
@@ -288,26 +295,14 @@
 </div>
 </div>
 
-    </div>
-</div>		
-		
+</div>
+</aside>	
+</div>
 
-
-	
-		
-		
-			<div class="uk-container uk-container-expand">
-
-
-<div class="" style="margin:-40px;" >
-
-
-
-
-
-
-
+<div class="uk-width-expand@s">
+				<button href="#container333" class="uk-icon-button" style="border-radius:0; background:#fff; position: fixed;top: 138px;z-index: 1;" uk-icon="chevron-double-left" type="button" uk-toggle="target: #toggle-animation; animation: uk-animation-fade"></button>
 	<div id="map" class="map"></div>
+</div>
 
 </div>
 				
@@ -369,12 +364,14 @@
 				</script>
 			
 			
-<!--
+
 				<footer class="uk-section uk-section-small uk-text-center">
 					<hr>
 					<p class="uk-text-small uk-text-center">Всі права захищені 2021</p>
+					<!--
+					- <a href="#">MC</a> | Створено за допомоги <a href="http://getuikit.com" title="Відвідати UIkit 3" target="_blank" data-uk-tooltip><span data-uk-icon="uikit"></span></a> </p>
+					-->
 				</footer>
-				-->
 			</div>
 		</div>
 		<!-- /CONTENT -->
