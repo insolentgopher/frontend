@@ -229,8 +229,12 @@
     margin-left: 240px;
 }
 }
-
-
+.aside-second-first {
+	height: calc(60% - 40px);
+}
+.aside-second-second {
+	height: calc(40% - 110px);
+}
 /*
 * offcanvas background-white
 */
