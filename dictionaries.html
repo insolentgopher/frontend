@@ -21,116 +21,262 @@
         <script src="lib/ol/ol.js"></script>
         
         <!-- <script src="https://openlayers.org/en/v5.3.0/build/ol.js"></script> -->
-        <script src="lib/ol-layerswitcher/ol-layerswitcher.js"></script>		
+        <script src="lib/ol-layerswitcher/ol-layerswitcher.js"></script>
+		 <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.1.1/jquery.min.js"></script>
 		
+		<script src="js/Custom.js"></script>
+		<script src="https://unpkg.com/axios/dist/axios.js"></script>
+		<link rel="stylesheet" href="css/Custom.css" type="text/css">		
+		<script src="https://cdn.jsdelivr.net/npm/sweetalert2@10"></script>
+		<script type="text/javascript">
+		$(function () {
+		location.href="#close";
+		MainURL = "http://10.0.16.13:2023/portal/api/v1/register/";
+		
+		TypeStreet = {
+		data: null,
+		CARD : {id: 0, shortTypeName:"", typeName:""},
+		CARDempty : {id: 0, shortTypeName:"", typeName:"" },
+		URLGET: "/streetype",
+		URLGETS: "/streetype",
+		URLPOST: "/streetypeext",
+		URLPUT: "/streetypeext",
+		URLDELETE: "/streetype"
+		};
+		District = {
+		data: null,
+		CARD : {id: 0, name:""},
+		CARDempty : {id: 0, name: ""},
+		URLGET: "/district",
+		URLGETS: "/district",
+		URLPOST: "/district",
+		URLPUT: "/district",
+		URLDELETE: "/district"
+		};
+		Authority = {
+		data: null,
+		CARD : {id: 0, Authorityname:"", code: "", comment: ""},
+		CARDempty : {id: 0, Authorityname:"", code: "", comment: ""},
+		URLGET: "/authority",
+		URLGETS: "/authority",
+		URLPOST: "/authority",
+		URLPUT: "/authority",
+		URLDELETE: "/authority"
+		};
+		
+		
+		getAdditionalyData();
+		});
+		async function getAdditionalyData() {
+            try {
+				location.href="#load";
+				
+				const main = await axios.get(MainURL + getCity());
+                if(main.data)
+				{
+					<!--forEachClassName("custom-logo", i => i.setAttribute("src", main.data.logoUrl));-->
+					forEachClassName("citytitle", i => i.textContent= main.data.cityName);
+					forEachClassName("maintitle", i => i.textContent= main.data.title);
+				}
+				forEachClassName("custom-logo", i => i.setAttribute('src', MainURL + getCity()+"/scan"));
+                const x = await axios.get(MainURL + getCity()+TypeStreet.URLGET);
+                TypeStreet.data = x.data;
+				paintTypesStreet();
+				const y = await axios.get(MainURL + getCity()+District.URLGET);
+                District.data = y.data;
+				paintDistrict();
+				const z = await axios.get(MainURL + getCity()+Authority.URLGET);
+                Authority.data = z.data;
+				paintAuthority();
+				
+            }
+            catch {
+                UIkit.notification({ message: 'Помилка! Дані не були завантажені', status: 'danger' });
+            }
+			location.href="#close";
+
+        }
+		
+		function paintAuthority(){
+		$("#tbodyAuthority").empty();
+		Authority.data.forEach(function (Item) {
+		$('#tbodyAuthority').append(`<tr><td>${Item.name}</td><td>${Item.code}</td><td>${Item.comment? Item.comment : ""}</td>
+										<td class="uk-text-nowrap"><a onclick='getAuthority(${Item.id})' class="uk-icon-button uk-margin-small-right" uk-icon="pencil"></a>
+											<a class="uk-icon-button uk-margin-small-right" onclick='deleteAuthority(${Item.id})' uk-icon="trash"></a>
+										</td></tr>`);
+            });
+		}
+		function paintDistrict(){
+		$("#tbodyDistrict").empty();
+		District.data.forEach(function (Item) {
+		$('#tbodyDistrict').append(`<tr><td>${Item.name}</td>
+										<td class="uk-text-nowrap"><a onclick='getDistrict(${Item.id})' class="uk-icon-button uk-margin-small-right" uk-icon="pencil"></a>
+											<a class="uk-icon-button uk-margin-small-right" onclick='deleteDistrict(${Item.id})' uk-icon="trash"></a>
+										</td></tr>`);
+            });
+		}
+        function paintTypesStreet(){
+		$("#tbodyTypeStreet").empty();
+		TypeStreet.data.forEach(function (Item) {
+		$('#tbodyTypeStreet').append(`<tr><td>${Item.typeName} (${Item.shortTypeName})</td>
+										<td class="uk-text-nowrap"><a onclick='getTypeStreet(${Item.id})' class="uk-icon-button uk-margin-small-right" uk-icon="pencil"></a>
+											<a class="uk-icon-button uk-margin-small-right" onclick='deleteTypeStreet(${Item.id})' uk-icon="trash"></a>
+										</td></tr>`);
+            });
+		}
+		
+		function getAuthority(id) {
+		location.href="#load";
+        emptyformbyclass("Authority");
+        Authority.CARD = Object.assign({}, Authority.CARDempty);
+        Authority.CARD.id = id;
+        if (Authority.CARD.id != 0) {
+            $('#h2modalCardAddAuthority').text('Редагувати');
+			Authority.CARD = Authority.data.find(a=> a.id == id);
+			Authority.CARD.Authorityname = Authority.CARD.name;
+            getobject_ByData(Authority.CARD, function before(){}, function after(){showModal('modalCardAddAuthority')});
+        }
+        else {
+            $('#h2modalCardAddAuthority').text('Додати');
+            showModal('modalCardAddAuthority');
+        }
+		location.href="#close";
+    }
+		function getDistrict(id) {
+		location.href="#load";
+        emptyformbyclass("District");
+        District.CARD = Object.assign({}, District.CARDempty);
+        District.CARD.id = id;
+        if (District.CARD.id != 0) {
+            $('#h2modalCardAddDistrict').text('Редагувати');
+			District.CARD = District.data.find(a=> a.id == id);
+            getobject_ByData(District.CARD, function before(){}, function after(){showModal('modalCardAddDistrict')});
+        }
+        else {
+            $('#h2modalCardAddDistrict').text('Додати');
+            showModal('modalCardAddDistrict');
+        }
+		location.href="#close";
+    }
+		function getTypeStreet(id) {
+		location.href="#load";
+        emptyformbyclass("TypeStreet");
+        TypeStreet.CARD = Object.assign({}, TypeStreet.CARDempty);
+        TypeStreet.CARD.id = id;
+        if (TypeStreet.CARD.id != 0) {
+            $('#h2modalCardAddTypeStreet').text('Редагувати');
+			TypeStreet.CARD = TypeStreet.data.find(a=> a.id == id);
+            getobject_ByData(TypeStreet.CARD, function before(){}, function after(){showModal('modalCardAddTypeStreet')});
+        }
+        else {
+            $('#h2modalCardAddTypeStreet').text('Додати');
+            showModal('modalCardAddTypeStreet');
+        }
+		location.href="#close";
+    }
+	
+	function deleteAuthority(id){
+	let token = localStorage.getItem('token');
+	deleteobject(MainURL + getCity()+Authority.URLDELETE + "/" + id, null, token, function func(){ getAdditionalyData();});
+	}
+	function deleteDistrict(id){
+	let token = localStorage.getItem('token');
+	deleteobject(MainURL + getCity()+District.URLDELETE + "/" + id, null, token, function func(){ getAdditionalyData();});
+	}
+	function deleteTypeStreet(id){
+	let token = localStorage.getItem('token');
+	deleteobject(MainURL + getCity()+TypeStreet.URLDELETE + "/" + id, null, token, function func(){ getAdditionalyData();});
+	}
+	
+	async function updateAuthority(){
+	var c = getCardData(Authority.CARD, "Authority");
+        if (c) {
+		c.name = c.Authorityname;
+		let id = Authority.CARD.id;
+		let token = localStorage.getItem('token');
+			if(id == 0)
+		{
+			await saveobject(MainURL + getCity()+Authority.URLPOST, c, token, "POST", function before(){
+			}, function after() {getAdditionalyData(); hideModal('modalCardAddAuthority')});
+		}
+		else{
+		
+			await saveobject(MainURL + getCity()+Authority.URLPUT + "/" + id, c, token, "PUT", function before(){},
+			 function after() {getAdditionalyData();hideModal('modalCardAddAuthority')});
+		}
+		
+            
+        }
+	}
+	async function updateDistrict(){
+	var c = getCardData(District.CARD, "District");
+        if (c) {
+		let id = District.CARD.id;
+		let token = localStorage.getItem('token');
+			if(id == 0)
+		{
+			await saveobject(MainURL + getCity()+District.URLPOST, c, token, "POST", function before(){
+			}, function after() {getAdditionalyData(); hideModal('modalCardAddDistrict')});
+		}
+		else{
+		
+			await saveobject(MainURL + getCity()+District.URLPUT + "/" + id, c, token, "PUT", function before(){},
+			 function after() {getAdditionalyData();hideModal('modalCardAddDistrict')});
+		}
+		
+            
+        }
+	}
+	async function updateTypeStreet(){
+	var c = getCardData(TypeStreet.CARD, "TypeStreet");
+        if (c) {
+		let id = TypeStreet.CARD.id;
+		let token = localStorage.getItem('token');
+			if(id == 0)
+		{
+			await saveobject(MainURL + getCity()+TypeStreet.URLPOST, c, token, "POST", function before(){
+			}, function after() {getAdditionalyData(); hideModal('modalCardAddTypeStreet')});
+		}
+		else{
+		
+			await saveobject(MainURL + getCity()+TypeStreet.URLPUT + "/" + id, c, token, "PUT", function before(){},
+			 function after() {getAdditionalyData();hideModal('modalCardAddTypeStreet')});
+		}
+		
+            
+        }
+	}
+		
+		</script>
 	</head>
 	<body>
+<div id="load" class="modalDialog" style="padding-left:calc(50% - 100px); padding-top:200px; overflow-y:auto; z-index:2000;position: fixed">
 
+        <span uk-spinner="ratio: 7"></span>
+		</div>
 		<!--HEADER-->
 		<header id="top-head" class="uk-position-fixed">
-			<div class="uk-container uk-container-expand uk-background-default topbar">
-				<nav class="uk-navbar uk-dark" data-uk-navbar="mode:click; duration: 250">
-					<div class="uk-navbar-left">
-						<div class="uk-navbar-item uk-hidden@m">
-							<a class="uk-logo" href="index.html"><img class="custom-logo" src="img/logo.png" alt=""><span class="uk-margin-small-left">АСУ геоданими</span></a>
-						</div>
-						<!--
-						<ul class="uk-navbar-nav uk-visible@m">
-							<li><a href="#">Accounts</a></li>
-							<li>
-								<a href="#">Settings <span data-uk-icon="icon: triangle-down"></span></a>
-								<div class="uk-navbar-dropdown">
-									<ul class="uk-nav uk-navbar-dropdown-nav">
-										<li class="uk-nav-header">YOUR ACCOUNT</li>
-										<li><a href="#"><span data-uk-icon="icon: info"></span> Summary</a></li>
-										<li><a href="#"><span data-uk-icon="icon: refresh"></span> Edit</a></li>
-										<li><a href="#"><span data-uk-icon="icon: settings"></span> Configuration</a></li>
-										<li class="uk-nav-divider"></li>
-										<li><a href="#"><span data-uk-icon="icon: image"></span> Your Data</a></li>
-										<li class="uk-nav-divider"></li>
-										<li><a href="#"><span data-uk-icon="icon: sign-out"></span> Logout</a></li>
-									</ul>
-								</div>
-							</li>
-						</ul>
-						-->
-						<div class="uk-navbar-item uk-visible@s">
-							<form action="dashboard.html" class="uk-search uk-search-default">
-								<span data-uk-search-icon></span>
-								<input class="uk-search-input search-field" type="search" placeholder="Пошук">
-							</form>
-						</div>
-					</div>
-					<div class="uk-navbar-right">
-						<ul class="uk-navbar-nav">
-							<li><a href="#" data-uk-icon="icon:user" title="Ваш обліковий запис" data-uk-tooltip></a></li>
-							<li>
-								<a href="#" data-uk-icon="icon: settings" title="Налаштування" data-uk-tooltip></a>
-								<div class="uk-navbar-dropdown">
-									<ul class="uk-nav uk-navbar-dropdown-nav">
-										<li class="uk-nav-header">Обліковий запис</li>
-										<li><a href="#"><span data-uk-icon="icon: info"></span> Загальне</a></li>
-										<li><a href="#"><span data-uk-icon="icon: refresh"></span> Редагувати</a></li>
-										<li><a href="#"><span data-uk-icon="icon: settings"></span> Налаштування</a></li>
-										<li class="uk-nav-divider"></li>
-										<li><a href="#"><span data-uk-icon="icon: image"></span> Ваші данні</a></li>
-										<!--<li class="uk-nav-divider"></li>
-										<li><a href="#"><span data-uk-icon="icon: sign-out"></span> Вийти</a></li>-->
-									</ul>
-								</div>
-							</li>							
-							
-							<li><a href="login.html" data-uk-icon="icon:  sign-out" title="Вийти" data-uk-tooltip></a></li>
-							<li><a class="uk-navbar-toggle" data-uk-toggle data-uk-navbar-toggle-icon href="#offcanvas-nav" title="Додаткове меню" data-uk-tooltip></a></li>
-						</ul>
-					</div>
-				</nav>
+			<div class="left-logo uk-flex uk-flex-middle content-box-dark">
+			<a class="uk-link-reset" href="index.html">
+				<img class="custom-logo uk-margin-small-right" src="" alt=""><span class="uk-text-bold maintitle "></span>
+			</a>
 			</div>
 		</header>
 		<!--/HEADER-->
 		<!-- LEFT BAR -->
 		<aside id="left-col" class="uk-light uk-visible@m">
 			<div class="left-logo uk-flex uk-flex-middle content-box-dark">
-			<!--<a class="uk-logo" href="#"><img class="custom-logo" src="img/logo.png" alt="">АСУ геоданими</a>-->
 			<a class="uk-link-reset" href="index.html">
-				<img class="custom-logo uk-margin-small-right" src="img/logo.png" alt=""><span class="uk-text-bold">АСУ ГЕОДАНИМИ</span>
+				<img class="custom-logo uk-margin-small-right" src="" alt=""><span class="uk-text-bold citytitle "></span>
 			</a>
 			</div>
-			
-			<!--
-			<div class="left-content-box  content-box-dark">
-				<img src="img/avatar.svg" alt="" class="uk-border-circle profile-img">
-				<h4 class="uk-text-center uk-margin-remove-vertical text-light">John Doe</h4>
-				
-				<div class="uk-position-relative uk-text-center uk-display-block">
-				    <a href="#" class="uk-text-small uk-text-muted uk-display-block uk-text-center" data-uk-icon="icon: triangle-down; ratio: 0.7">Admin</a>
-				    <div class="uk-dropdown user-drop" data-uk-dropdown="mode: click; pos: bottom-center; animation: uk-animation-slide-bottom-small; duration: 150">
-				    	<ul class="uk-nav uk-dropdown-nav uk-text-left">
-								<li><a href="#"><span data-uk-icon="icon: info"></span> Summary</a></li>
-								<li><a href="#"><span data-uk-icon="icon: refresh"></span> Edit</a></li>
-								<li><a href="#"><span data-uk-icon="icon: settings"></span> Configuration</a></li>
-								<li class="uk-nav-divider"></li>
-								<li><a href="#"><span data-uk-icon="icon: image"></span> Your Data</a></li>
-								<li class="uk-nav-divider"></li>
-								<li><a href="#"><span data-uk-icon="icon: sign-out"></span> Sign Out</a></li>
-					    </ul>
-				    </div>
-				</div>
-			</div>
-			-->
-			
 			<div class="left-nav-wrap">
 				<ul class="uk-nav uk-nav-default uk-nav-parent-icon" data-uk-nav>
 					<li class="uk-nav-header uk-heading-bullet">Адресний реєстр</li>
-					<li><a href="#"><span data-uk-icon="icon: search" class="uk-margin-small-right"></span>Пошук</a></li>
-					<li><a href="#"><span data-uk-icon="icon: users" class="uk-margin-small-right"></span>Аудит</a></li>
-					<li class="uk-parent"><a href="#"><span data-uk-icon="icon: thumbnails" class="uk-margin-small-right"></span>Довідники</a>
-						<ul class="uk-nav-sub">
-							<li><a title="Адреси" href="#">Адреси</a></li>
-							<li><a title="Користувачі" href="#">Користувачі</a></li>
-							<li><a title="Login" href="login.html">Увійти</a></li>
-						</ul>
-					</li>
+					<li><a href="index.html"><span data-uk-icon="icon: search" class="uk-margin-small-right"></span>Пошук</a></li>
+					<li><a href="#"><span data-uk-icon="icon: history" class="uk-margin-small-right"></span>Аудит</a></li>
+					<li class='uk-active'><a href="dictionaries.html"><span data-uk-icon="icon: thumbnails" class="uk-margin-small-right"></span>Довідники</a></li>
+					<li><a href="users.html"><span data-uk-icon="icon: users" class="uk-margin-small-right"></span>Користувачі</a></li>
 					<li><a href="#"><span data-uk-icon="icon: album" class="uk-margin-small-right"></span>Історія</a></li>
 					<li><a href="#"><span data-uk-icon="icon: cloud-upload" class="uk-margin-small-right"></span>Імпорт</a></li>
 					<li><a href="#"><span data-uk-icon="icon: cloud-download" class="uk-margin-small-right"></span>Еспорт</a></li>
@@ -177,153 +323,153 @@
 				</ul>
 			</div>
 		</aside>
-		<!-- /LEFT BAR -->
-		<!-- CONTENT -->
 		<div id="content" data-uk-height-viewport="expand: true">
-		
-		
-		<!--	
-<aside class="aside aside-expand-md">
-        <div class="aside-body ps-container ps-theme-default ps-active-y" data-ps-id="37e3f7ef-bdf1-79d4-f3c9-e8f7109e5ba7">
+    <div id="modalCardAddAuthority" bg-close="false" class="uk-modal-container uk-flex-top" uk-modal>
+    <div class="uk-modal-dialog m uk-modal-body uk-margin-auto-vertical">
+        <form class="uk-form-stacked">
+            <legend class="uk-legend" id="h2modalCardAddAuthority"></legend>
+            <div class="uk-grid uk-grid-small uk-grid-match uk-flex-top" uk-grid>
 
-          <div class="aside-block">
-            <h6 class="aside-title">Samples</h6>
-          </div>
+                <div class="uk-width-1-2@s">
+                    <label class="uk-form-label required_uk">Назва</label>
+                    <div class="uk-form-controls">
+                        <input class="uk-input necessarilytext Authority" type="text" id="Authorityname">
+                    </div>
+                </div>
+				<div class="uk-width-1-2@s">
+                    <label class="uk-form-label required_uk">Код ЄДРПОУ</label>
+                    <div class="uk-form-controls">
+                        <input class="uk-input necessarilytext Authority" type="text" id="code">
+                    </div>
+                </div>
+				<div class="uk-width-1-1">
+                    <label class="uk-form-label">Додаткова інформація</label>
+                    <div class="uk-form-controls">
+                        <textarea class="uk-textarea Authority" rows='3'  id="comment"></textarea>
+                    </div>
+                </div>
+            </div>
+        </form>
 
-          <div class="media-list media-list-sm media-list-hover media-list-divided">
-            <a class="media flex-column px-20" href="aside-email.html">
-              <p>Email</p>
-              <small>Inbox, sent, spam, etc..</small>
-            </a>
+        <p class="uk-text-right">
+            <button class="uk-button uk-button-default uk-modal-close" type="button">Відмінити</button>
+            <button class="uk-button uk-button-primary" onclick="updateAuthority()" type="button">Зберегти</button>
+        </p>
+    </div>
+</div>
+			<div id="modalCardAddDistrict" bg-close="false" class="uk-modal-container uk-flex-top" uk-modal>
+    <div class="uk-modal-dialog m uk-modal-body uk-margin-auto-vertical">
+        <form class="uk-form-stacked">
+            <legend class="uk-legend" id="h2modalCardAddDistrict"></legend>
+            <div class="uk-grid uk-grid-small uk-grid-match uk-flex-top" uk-grid>
 
-            <a class="media flex-column px-20" href="aside-form.html">
-              <p>Form</p>
-              <small>Form groups, inputs, buttons, ...</small>
-            </a>
+                <div class="uk-width-1-1">
+                    <label class="uk-form-label required_uk">Повна назва</label>
+                    <div class="uk-form-controls">
+                        <input class="uk-input necessarilytext District" type="text" id="name">
+                    </div>
+                </div>
+            </div>
+        </form>
 
-            <a class="media flex-column px-20" href="aside-messages.html">
-              <p>Messages</p>
-              <small>Media and media list</small>
-            </a>
+        <p class="uk-text-right">
+            <button class="uk-button uk-button-default uk-modal-close" type="button">Відмінити</button>
+            <button class="uk-button uk-button-primary" onclick="updateDistrict()" type="button">Зберегти</button>
+        </p>
+    </div>
+</div>
+		<div id="modalCardAddTypeStreet" bg-close="false" class="uk-modal-container uk-flex-top" uk-modal>
+    <div class="uk-modal-dialog m uk-modal-body uk-margin-auto-vertical">
+        <form class="uk-form-stacked">
+            <legend class="uk-legend" id="h2modalCardAddTypeStreet"></legend>
+            <div class="uk-grid uk-grid-small uk-grid-match uk-flex-top" uk-grid>
 
-            <a class="media flex-column px-20" href="aside-settings.html">
-              <p>Settings</p>
-              <small>Combining media and form</small>
-            </a>
+                <div class="uk-width-1-1">
+                    <label class="uk-form-label required_uk">Повна назва</label>
+                    <div class="uk-form-controls">
+                        <input class="uk-input necessarilytext TypeStreet" type="text" id="typeName">
+                    </div>
+                </div>
+                <div class="uk-width-1-1">
+                    <label class="uk-form-label required_uk">Скорочена назва</label>
+                    <div class="uk-form-controls">
+                        <input class="uk-input necessarilytext TypeStreet" type="text" id="shortTypeName">
+                    </div>
+                </div>
+            </div>
+        </form>
 
-            <a class="media flex-column px-20" href="aside-tabs.html">
-              <p>Tabs</p>
-              <small>Tabable content inside an aside</small>
-            </a>
-          </div>
-
-
-          <hr class="hr-sm">
-
-
-          <div class="media-list media-list-sm media-list-hover media-list-divided">
-            <a class="media flex-column px-20" href="aside-doc.html">
-              <p>Documentation</p>
-              <small>Avalable classes to modify your aside</small>
-            </a>
-          </div>
-
-        <div class="ps-scrollbar-x-rail" style="left: 0px; bottom: 0px;"><div class="ps-scrollbar-x" tabindex="0" style="left: 0px; width: 0px;"></div></div><div class="ps-scrollbar-y-rail" style="top: 0px; right: 2px; height: 391px;"><div class="ps-scrollbar-y" tabindex="0" style="top: 0px; height: 282px;"></div></div></div>
-
-        <button class="aside-toggler"></button>
-      </aside>			
-		-->
-		
-		
+        <p class="uk-text-right">
+            <button class="uk-button uk-button-default uk-modal-close" type="button">Відмінити</button>
+            <button class="uk-button uk-button-primary" onclick="updateTypeStreet()" type="button">Зберегти</button>
+        </p>
+    </div>
+</div>
 			<div class="uk-container uk-container-expand">
-			<h1 class="uk-heading-bullet uk-h3">Довідник адрес</h1>
-			
 								<ul uk-tab>
 									<li><a href="#">Типи вулиць</a></li>
-									<li><a href="#">Типи адрес</a></li>
-									<li><a href="#">Типи вторинних адрес</a></li>
-									<li><a href="#">Вулиці</a></li>
+									<li><a href="#">Райони</a></li>
+									<li><a href="#">Органи</a></li>
+									
 								</ul>
 
 								<ul class="uk-switcher uk-margin">
 									<li>
 									<div class="uk-card-body uk-card uk-card-default uk-card-small">
 										<p uk-margin>
-											<a class="uk-button uk-button-default" uk-tooltip="Додати нову вулицю" href="#">Додати</a>
+											<a class="uk-button uk-button-default" uk-tooltip="Додати новий тип вулиці" onclick='getTypeStreet(0)'>Додати</a>
 										</p>									
-										<table class="uk-table uk-table-middle uk-table-divider uk-table-small">
+										<table class="uk-table uk-table-middle uk-table-divider uk-table-small" >
 											<thead>
 												<tr>
 													<th class="uk-width-expand"></th>
 													<th></th>
 												</tr>
 											</thead>
-											<tbody>
-												<tr>
-													<td>бульвар (б-р)</td>
-													<td class="uk-text-nowrap"><a href="" class="uk-icon-button uk-margin-small-right" uk-icon="pencil"></a>
-														<a href="" class="uk-icon-button uk-margin-small-right" uk-icon="trash"></a>
-													</td>
-												</tr>
-												<tr>
-													<td>відсутній (відс.)</td>
-													<td class="uk-text-nowrap"><a href="" class="uk-icon-button uk-margin-small-right" uk-icon="pencil"></a>
-														<a href="" class="uk-icon-button uk-margin-small-right" uk-icon="trash"></a>
-													</td>												
-												</tr>
-												<tr>
-													<td>в'їзд (в-д)</td>
-													<td class="uk-text-nowrap"><a href="" class="uk-icon-button uk-margin-small-right" uk-icon="pencil"></a>
-														<a href="" class="uk-icon-button uk-margin-small-right" uk-icon="trash"></a>
-													</td>												
-												</tr>												
+											<tbody id="tbodyTypeStreet">
+																							
 											</tbody>
 										</table>	
 									</div>										
 									</li>
+									
 									<li>
 									<div class="uk-card-body uk-card uk-card-default uk-card-small">
 										<p uk-margin>
-											<a class="uk-button uk-button-default" uk-tooltip="Додати новий тип адреси" href="#">Додати</a>
+											<a class="uk-button uk-button-default" uk-tooltip="Додати новий район" onclick='getDistrict(0)'>Додати</a>
 										</p>									
-										<table class="uk-table uk-table-middle uk-table-divider uk-table-small">
+										<table class="uk-table uk-table-middle uk-table-divider uk-table-small" >
 											<thead>
 												<tr>
 													<th class="uk-width-expand"></th>
 													<th></th>
 												</tr>
 											</thead>
-											<tbody>
-												<tr>
-													<td>гараж</td>
-													<td class="uk-text-nowrap"><a href="" class="uk-icon-button uk-margin-small-right" uk-icon="pencil"></a>
-														<a href="" class="uk-icon-button uk-margin-small-right" uk-icon="trash"></a>
-													</td>
-												</tr>
-												<tr>
-													<td>гуртожиток</td>
-													<td class="uk-text-nowrap"><a href="" class="uk-icon-button uk-margin-small-right" uk-icon="pencil"></a>
-														<a href="" class="uk-icon-button uk-margin-small-right" uk-icon="trash"></a>
-													</td>												
-												</tr>
-												<tr>
-													<td>ділянка</td>
-													<td class="uk-text-nowrap"><a href="" class="uk-icon-button uk-margin-small-right" uk-icon="pencil"></a>
-														<a href="" class="uk-icon-button uk-margin-small-right" uk-icon="trash"></a>
-													</td>												
-												</tr>												
+											<tbody id="tbodyDistrict">
+																							
 											</tbody>
-										</table>
-									</div>
+										</table>	
+									</div>			
 									</li>
 									<li>
 									<div class="uk-card-body uk-card uk-card-default uk-card-small">
-									Bazinga!
-									</div>
-									</li>
-									<li>
-									<div class="uk-card-body uk-card uk-card-default uk-card-small">
-									Bazinga2!
+										<p uk-margin>
+											<a class="uk-button uk-button-default" uk-tooltip="Додати новий орган" onclick='getAuthority(0)'>Додати</a>
+										</p>									
+										<table class="uk-table uk-table-middle uk-table-divider uk-table-small" >
+											<thead>
+												<tr>
+												<th class="uk-width-auto">Назва</th>
+												<th class="uk-width-auto">Код ЄДРПОУ</th>
+													<th class="uk-width-expand">Додатково</th>
+													<th class="uk-width-auto"></th>
+												</tr>
+											</thead>
+											<tbody id="tbodyAuthority">
+																							
+											</tbody>
+										</table>	
+									</div>	
 									</li>
 								</ul>		
 			
@@ -339,32 +485,5 @@
 				</footer>
 			</div>
 		</div>
-		<!-- /CONTENT -->
-		<!-- OFFCANVAS -->
-		<div id="offcanvas-nav" data-uk-offcanvas="flip: true; overlay: true">
-			<div class="uk-offcanvas-bar uk-offcanvas-bar-animation uk-offcanvas-slide">
-				<button class="uk-offcanvas-close uk-close uk-icon" type="button" data-uk-close></button>
-				<ul class="uk-nav uk-nav-default">
-					<li class="uk-active"><a href="#">Active</a></li>
-					<li class="uk-parent">
-						<a href="#">Parent</a>
-						<ul class="uk-nav-sub"> 
-							<li><a href="#">Sub item</a></li>
-							<li><a href="#">Sub item</a></li>
-						</ul>
-					</li>
-					<li class="uk-nav-header">Header</li>
-					<li><a href="#js-options"><span class="uk-margin-small-right uk-icon" data-uk-icon="icon: table"></span> Item</a></li>
-					<li><a href="#"><span class="uk-margin-small-right uk-icon" data-uk-icon="icon: thumbnails"></span> Item</a></li>
-					<li class="uk-nav-divider"></li>
-					<li><a href="#"><span class="uk-margin-small-right uk-icon" data-uk-icon="icon: trash"></span> Item</a></li>
-				</ul>
-				<h3>Title</h3>
-				<p>Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.</p>
-			</div>
-		</div>
-		<!-- /OFFCANVAS -->
-		
-
 	</body>
 </html>
