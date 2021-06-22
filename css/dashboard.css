@@ -222,7 +222,12 @@
 
 .aside-second {
 	margin-top: 64px;
-	margin-left: 240px;
+	margin-left: 0px;
+}
+@media (min-width: 960px) {
+  .aside-second {
+    margin-left: 240px;
+}
 }
 
 
@@ -249,7 +254,7 @@
   .uk-offcanvas-bar-light {
     left: -350px;
     width: 350px;
-    padding: 40px 40px;
+   /* padding: 40px 40px;*/
 }
 }
 /* Flip modifier */
