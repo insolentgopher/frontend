@@ -57,3 +57,71 @@
     background-color: #faa05a;
 	color: black;
 }
+
+.js-example-basic-single, .select2-container--default .select2-selection--single, .select2-selection--multiple {
+    max-width: 100% !important;
+    border: 1px solid #e5e5e5 !important;
+    background: #fff !important;
+    color: #666 !important;
+    min-height: 40px !important;
+    border-radius: 0 !important;
+}
+.select2-search--dropdown, .select2-search--dropdown .select2-search__field {
+    width: 100% !important;
+    max-width:100%;
+}
+.select2-selection--multiple, .select2-container--default .select2-selection--single .select2-selection__rendered, .select2-selection__rendered, select2-selection__arrow, .select2-container--default .select2-selection--single .select2-selection__arrow {
+    /*height: 40px !important;*/
+    padding-top:7px;
+}
+    .select2-selection--multiple, .select2-selection--multiple .select2-selection__rendered {
+        /*min-height: 110px !important;*/
+        /*overflow: scroll*/
+    }
+        .select2-selection--multiple .select2-selection__rendered {
+            /*min-height: 100px !important;*/
+            
+        }
+		
+select.uk-width-1-1 + .select2, select.uk-width-1-1 + .select2-container, select.uk-width-1-1 + .select2-container--default, select.uk-width-1-1 + .select2-container--focus {
+    width: 100% !important;
+}
+.select2-results__group {
+    font-weight: 600;
+}
+.select2-container--disabled span span, tr.uk-disable .select2 span span {
+    color: lightgrey !important;
+    cursor: not-allowed;
+}
+.select2-results__options {
+    overflow-y: scroll;
+}
+.select2-container .select2-selection--multiple .select2-selection__rendered {
+    white-space: unset;
+}
+.uk-form-label{
+    min-height: 20px;
+}
+.select2-container--default .select2-selection--single .select2-selection__arrow b {
+    margin-top: 2px;
+}
+.uk-disabled .select2-hidden-accessible + span span {
+    color: var(--primary_color7) !important;
+}
+
+.uk-disabled .select2-container--default .select2-selection--multiple .select2-selection__choice {
+    background-color: transparent;
+    border-color: var(--primary_color7);
+}
+
+#tbodyAddress .uk-badge {
+    background-color: rgba(24,24,24, 0.1);
+    color: #666;
+	
+}
+#tbodyAddress .uk-badge:hover {
+	background-color: rgba(24,24,24, 0.2);
+	cursor: pointer;
+}
+#tbodyStreet tr td:first-child:hover{
+cursor: pointer;}

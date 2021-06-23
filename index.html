@@ -27,48 +27,248 @@
         <!-- <script src="https://openlayers.org/en/v5.3.0/build/ol.js"></script> -->
         <script src="lib/ol-layerswitcher/ol-layerswitcher.js"></script>		
 		
+		 <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.1.1/jquery.min.js"></script>
+		 <script src="js/Custom.js"></script>
+		 
+		 <link rel="stylesheet" href="css/select2.min.css" type="text/css">
+		<script src="js/select2.min.js"></script>
+		<script src="https://unpkg.com/axios/dist/axios.js"></script>
+		<link rel="stylesheet" href="css/Custom.css" type="text/css">		
+		<script src="https://cdn.jsdelivr.net/npm/sweetalert2@10"></script>
+		<script type="text/javascript">
+		$(function () {
+		UIkit.offcanvas(document.getElementById("offcanvas-usage")).show();
+		UIkit.tooltip(document.getElementById("addAdr")).show();
+		location.href="#close";
+		MainURL = "http://10.0.16.13:2023/portal/api/v1/register/";
+		StreetType =[];
+		Street = {
+		data: null,
+		CARD : {id: 0, aliasOne: "", aliasTwo: "", leftTopLatitude: 0, leftTopLongitude: 0, name: "", rightBottomLatitude: 0, rightBottomLongitude: 0, shortTypeName: "", typeId: 0, typeName: ""},
+		CARDempty : {id: 0, aliasOne: "", aliasTwo: "", leftTopLatitude: 0, leftTopLongitude: 0, name: "", rightBottomLatitude: 0, rightBottomLongitude: 0, shortTypeName: "", typeId: 0, typeName: ""},
+		URLGET: "/street",
+		URLGETS: "/street",
+		URLPOST: "/street",
+		URLPUT: "/street",
+		URLDELETE: "/street"
+		};
+		Address = {
+		data: null,
+		
+		CARD : {id: 0, addressNumber: "", block: "", cadastre: "", description: "", districtId: 0, latitude: 0, longitude: 0, postCode: 0, status: 0, streetId: 0},
+		CARDempty : {id: 0, addressNumber: "", block: "", cadastre: "", description: "", districtId: 0, latitude: 0, longitude: 0, postCode: 0, status: 0, streetId: 0},
+		URLGET: "/address",
+		URLGETS: "/address",
+		URLPOST: "/address",
+		URLPUT: "/address",
+		URLDELETE: "/address"
+		};
+		
+		getAdditionalyData();
+		
+		$('#modalCardAddStreet').on({
+
+    'show.uk.modal': function(){
+        
+    },
+
+    'hide.uk.modal': function(){
+	let content;
+        content = $('#map').detach();
+		content.appendTo('#divmap');
+    }
+});
+
+		});
+		async function getAdditionalyData() {
+            try {
+				location.href="#load";
+				const main = await axios.get(MainURL + getCity());
+                if(main.data)
+				{
+					<!--forEachClassName("custom-logo", i => i.setAttribute("src", main.data.logoUrl));-->
+					forEachClassName("citytitle", i => i.textContent= main.data.cityName);
+					forEachClassName("maintitle", i => i.textContent= main.data.title);
+					forEachClassName("custom-logo", i => i.setAttribute('src', main.data.logoUrl));
+				}
+				<!--forEachClassName("custom-logo", i => i.setAttribute('src', MainURL + getCity()+"/logo"));-->
+                
+				const x = await axios.get(MainURL + getCity()+Street.URLGET);
+                Street.data = x.data.sort((a, b) => a.name.localeCompare(b.name));
+				
+				const y = await axios.get(MainURL + getCity()+"/streetype");
+                StreetType = y.data;
+				fillSelect('typeId', StreetType, "id", "typeName");
+				
+				paintStreet(Street.data);
+            }
+            catch {
+                UIkit.notification({ message: 'Помилка! Дані не були завантажені', status: 'danger' });
+            }
+			location.href="#close";
+
+        }
+		
+		function searchStreet(search){
+		if(search != ""){
+		let arrayOfStrings = search.split(" ");
+		let obj = {...Street.data};
+		arrayOfStrings.forEach(function (Item) {
+			obj = Object.values(obj).filter(a => (a.name + " " + a.typeName+ " " + a.shortTypeName +" " + a.aliasOne+" " + a.aliasTwo).toUpperCase().indexOf(Item.toUpperCase())>-1);
+			});
+			paintStreet(obj);
+		}
+		else
+		{
+			paintStreet(Street.data);
+		}
+		}
+		function paintStreet(data){
+		$("#tbodyStreet").empty();
+		data.forEach(function (Item) {
+		$('#tbodyStreet').append(`<tr class="uk-visible-toggle"><td onclick='getAddress(${Item.id})'>${Item.name}, ${Item.shortTypeName}</td>
+										<td class="uk-text-nowrap"><a onclick='getStreet(${Item.id})' class="uk-icon-button uk-margin-small-right uk-invisible-hover" uk-icon="pencil"></a>
+										</td></tr>`);
+            });
+		}
+		async function getAddress(idstreet){
+		try {
+				const a = await axios.get(MainURL + getCity()+ "/street/" + idstreet + Address.URLGET);
+				paintAddress(a.data);
+            }
+            catch {
+                UIkit.notification({ message: 'Помилка! Дані не були завантажені', status: 'danger' });
+            }
+			location.href="#close";
+		
+		
+		
+		}
+		function paintAddress(data){
+		$("#tbodyAddress").empty();
+		data.forEach(function (Item) {
+		$('#tbodyAddress').append(`<span class="uk-badge">${Item.addressNumber}</span>`);
+            });
+		}
+		function getStreet(id) {
+		location.href="#load";
+        emptyformbyclass("Street");
+        Street.CARD = Object.assign({}, Street.CARDempty);
+        Street.CARD.id = id;
+        if (Street.CARD.id != 0) {
+			
+            $('#h2modalStreet').text('Редагувати вулицю');
+			Street.CARD = Street.data.find(a=> a.id == id);
+            getobject_ByData(Street.CARD, function before(){}, function after(){let content; content = $('#map').detach();
+		content.appendTo('#mapStreet'); showModal('modalCardAddStreet')});
+        }
+        else {
+            $('#h2modalStreet').text('Додати вулицю');
+			let content;
+            content = $('#map').detach();
+		content.appendTo('#mapStreet');
+		showModal('modalCardAddStreet');
+        }
+		
+		
+		
+		location.href="#close";
+    }
+		
+	function deleteStreet(){
+	let token = localStorage.getItem('token');
+	deleteobject(MainURL + getCity()+Street.URLDELETE + "/" + Street.CARD.id, null, token, function func(){ hideModal('modalCardAddStreet'); getAdditionalyData();});
+	}
+	
+	async function updateStreet(){
+	var c = getCardData(Street.CARD, "Street");
+        if (c) {
+		let id = Street.CARD.id;
+		let token = localStorage.getItem('token');
+			if(id == 0)
+		{
+			await saveobject(MainURL + getCity()+Street.URLPOST, c, token, "POST", function before(){
+			}, function after() {getAdditionalyData(); hideModal('modalCardAddStreet')});
+		}
+		else{
+		
+			await saveobject(MainURL + getCity()+User.URLPUT + "/" + id, c, token, "PUT", function before(){},
+			 function after() {getAdditionalyData();hideModal('modalCardAddStreet')});
+		}
+		
+            
+        }
+	}
+		</script>
 	</head>
 	<body>
+<div id="load" class="modalDialog " style="padding-left:calc(50% - 100px); padding-top:200px; overflow-y:auto; z-index:2000;position: fixed">
 
+<div id="modalCardAddStreet"  class="uk-modal-full" uk-modal>
+    <div class="uk-modal-dialog uk-height-1-1  uk-modal-body uk-margin-auto-vertical">
+	 <button class="uk-modal-close-full uk-close-large" type="button" uk-close></button>
+        <form class="uk-form-stacked">
+            <legend class="uk-legend uk-heading-bullet uk-padding-small uk-padding-remove-top uk-padding-remove-bottom" id="h2modalStreet"></legend>
+            <div class=" uk-grid uk-grid-small uk-grid-match uk-flex-top uk-margin" uk-grid>
+			<div class="uk-width-1-2@m uk-grid uk-grid-small uk-grid-match uk-flex-top" uk-grid>
+			<div class="uk-width-2-3@s">
+                    <label class="uk-form-label required_uk">Адреса</label>
+                    <div class="uk-form-controls">
+                        <input class="uk-input necessarilytext Street" type="text" id="name">
+                    </div>
+                </div>
+				<div class="uk-width-1-3@s">
+                    <label class="uk-form-label required_uk">Тип</label>
+                    <div class="uk-form-controls">
+					<select class="uk-select necessarilyselect uk-width-1-1 Street"  id="typeId"></select>                       
+                    </div>
+                </div>
+				<div class="uk-width-1-1">
+                    <label class="uk-form-label">Аліас 1</label>
+                    <div class="uk-form-controls">
+                        <textarea class="uk-textarea Street" rows='2'  id="aliasOne"></textarea>
+                    </div>
+                </div>
+				<div class="uk-width-1-1">
+                    <label class="uk-form-label">Аліас 2</label>
+                    <div class="uk-form-controls">
+                        <textarea class="uk-textarea Street" rows='2'  id="aliasTwo"></textarea>
+                    </div>
+                </div>
+				<div class="uk-width-1-1">
+				<p class="uk-text-right">
+            <button class="uk-button uk-button-default" onclick="deleteStreet()" type="button">Видалити</button>
+            <button class="uk-button uk-button-primary" onclick="updateStreet()" type="button">Зберегти</button>
+        </p>
+		</div>
+			</div>
+			<div class="uk-width-1-2@m uk-grid uk-grid-small uk-grid-match uk-flex-top" uk-grid>
+				<div class="uk-width-1-1" id="mapStreet"></div>
+			  
+			</div>
+                
+            </div>
+        </form>
+
+        
+    </div>
+</div>
+        <span uk-spinner="ratio: 7"></span>
+		</div>
 		<!--HEADER-->
 		<header id="top-head" class="uk-position-fixed">
 			<div class="uk-container uk-container-expand uk-background-default topbar">
 				<nav class="uk-navbar uk-dark" data-uk-navbar="mode:click; duration: 250">
 					<div class="uk-navbar-left">
 						<div class="uk-navbar-item uk-hidden@m">
-							<a class="uk-logo" href="index.html"><img class="custom-logo" src="img/logo.png" alt=""><span class="uk-margin-small-left">АСУ геоданими</span></a>
+							<a class="uk-link-reset" href="index.html">
+									<img class="custom-logo uk-margin-small-right" src="" alt=""><span class="uk-text-bold maintitle "></span>
+							</a>
 						</div>
 						<ul class="uk-navbar-nav">
 							<li><a href="#offcanvas-usage" data-uk-icon="icon:settings" title="Налаштування" uk-toggle></a></li>
 						</ul>						
-						<!--
-						<ul class="uk-navbar-nav uk-visible@m">
-							<li><a href="#">Accounts</a></li>
-							<li>
-								<a href="#">Settings <span data-uk-icon="icon: triangle-down"></span></a>
-								<div class="uk-navbar-dropdown">
-									<ul class="uk-nav uk-navbar-dropdown-nav">
-										<li class="uk-nav-header">YOUR ACCOUNT</li>
-										<li><a href="#"><span data-uk-icon="icon: info"></span> Summary</a></li>
-										<li><a href="#"><span data-uk-icon="icon: refresh"></span> Edit</a></li>
-										<li><a href="#"><span data-uk-icon="icon: settings"></span> Configuration</a></li>
-										<li class="uk-nav-divider"></li>
-										<li><a href="#"><span data-uk-icon="icon: image"></span> Your Data</a></li>
-										<li class="uk-nav-divider"></li>
-										<li><a href="#"><span data-uk-icon="icon: sign-out"></span> Logout</a></li>
-									</ul>
-								</div>
-							</li>
-						</ul>
-						-->
-						<!--
-						<div class="uk-navbar-item uk-visible@s">
-							<form action="dashboard.html" class="uk-search uk-search-default">
-								<span data-uk-search-icon></span>
-								<input class="uk-search-input search-field" type="search" placeholder="Пошук">
-							</form>
-						</div>
-						-->
+						
 					</div>
 					<div class="uk-navbar-right">
 						<ul class="uk-navbar-nav">
@@ -100,7 +300,7 @@
 			<div class="left-logo uk-flex uk-flex-middle content-box-dark">
 			<!--<a class="uk-logo" href="#"><img class="custom-logo" src="img/logo.png" alt="">АСУ геоданими</a>-->
 			<a class="uk-link-reset" href="index.html">
-				<img class="custom-logo uk-margin-small-right" src="img/logo.png" alt=""><span class="uk-text-bold">АСУ ГЕОДАНИМИ</span>
+				<img class="custom-logo uk-margin-small-right" src="" alt=""><span class="uk-text-bold citytitle "></span>
 			</a>
 			</div>
 			
@@ -108,15 +308,10 @@
 			<div class="left-nav-wrap">
 				<ul class="uk-nav uk-nav-default uk-nav-parent-icon" data-uk-nav>
 					<li class="uk-nav-header uk-heading-bullet">Адресний реєстр</li>
-					<li class="uk-active"><a href="#"><span data-uk-icon="icon: search" class="uk-margin-small-right"></span>Пошук</a></li>
-					<li><a href="#"><span data-uk-icon="icon: users" class="uk-margin-small-right"></span>Аудит</a></li>
-					<li class="uk-parent"><a href="#"><span data-uk-icon="icon: thumbnails" class="uk-margin-small-right"></span>Довідники</a>
-						<ul class="uk-nav-sub">
-							<li><a title="Адреси" href="dictionaries.html">Адреси</a></li>
-							<li><a title="Користувачі" href="#">Користувачі</a></li>
-							<li><a title="Login" href="login.html">Увійти</a></li>
-						</ul>
-					</li>
+					<li class='uk-active'><a href="index.html"><span data-uk-icon="icon: search" class="uk-margin-small-right"></span>Пошук</a></li>
+					<li><a href="#"><span data-uk-icon="icon: history" class="uk-margin-small-right"></span>Аудит</a></li>
+					<li><a href="dictionaries.html"><span data-uk-icon="icon: thumbnails" class="uk-margin-small-right"></span>Довідники</a></li>
+					<li ><a href="users.html"><span data-uk-icon="icon: users" class="uk-margin-small-right"></span>Користувачі</a></li>
 					<li><a href="#"><span data-uk-icon="icon: album" class="uk-margin-small-right"></span>Історія</a></li>
 					<li><a href="#"><span data-uk-icon="icon: cloud-upload" class="uk-margin-small-right"></span>Імпорт</a></li>
 					<li><a href="#"><span data-uk-icon="icon: cloud-download" class="uk-margin-small-right"></span>Еспорт</a></li>
@@ -178,16 +373,20 @@
 
         <div class="uk-grid-collapse uk-flex uk-flex-middle " uk-grid>
 		<div class="uk-width-expand">
-            <input class="uk-input" type="text" placeholder="Пошук вулиці">
+		<form class="uk-search uk-search-default uk-width-1-1">
+		<span uk-search-icon></span>
+		<input class="uk-search-input" type="search" oninput='searchStreet(this.value)' id='search' placeholder="Пошук вулиці">
+		</form>
 		</div>
-		<div >
+		<!--<div >
 			<a class="uk-margin-small-left" href="" uk-icon="search"></a>
-		</div>
+		</div>-->
 		<div>
-			<a class="uk-margin-small-left " href="" uk-icon="close"></a>
+			<a class="uk-margin-small-left " onclick="$('#search').val('').trigger('oninput')" uk-icon="close"></a>
+			<a class="uk-margin-small-left " id='addAdr' onclick="getStreet(0)" uk-tooltip="title: Додати вулицю; delay: 500" uk-icon="plus-circle"></a>
 		</div>
         </div>
-<div id="container333" class="uk-height-large uk-margin-small" style=" position:relative; top:0; bottom:0;">	
+<div id="container333" class="uk-height-large uk-margin-small aside-second-first" style=" position:relative; top:0; bottom:0;"> 
 	
 <table class="uk-table uk-table-small ">
     <!--<thead>
@@ -196,95 +395,15 @@
             <th>Статус</th>
         </tr>
     </thead>-->
-    <tbody>
-        <tr>
-            <td>Table Data</td>
-            <td>Table Data</td>
-        </tr>
-        <tr>
-            <td>Table Data</td>
-            <td>Table Data</td>
-        </tr>
-        <tr>
-            <td>Table Data</td>
-            <td>Table Data</td>
-        </tr>
-        <tr>
-            <td>Table Data</td>
-            <td>Table Data</td>
-        </tr>
-        <tr>
-            <td>Table Data</td>
-            <td>Table Data</td>
-        </tr>
-        <tr>
-            <td>Table Data</td>
-            <td>Table Data</td>
-        </tr>
-		        <tr>
-            <td>Table Data</td>
-            <td>Table Data</td>
-        </tr>
-        <tr>
-            <td>Table Data</td>
-            <td>Table Data</td>
-        </tr>
-        <tr>
-            <td>Table Data</td>
-            <td>Table Data</td>
-        </tr>
-        <tr>
-            <td>Table Data</td>
-            <td>Table Data</td>
-        </tr>
-        <tr>
-            <td>Table Data</td>
-            <td>Table Data</td>
-        </tr>
-        <tr>
-            <td>Table Data</td>
-            <td>Table Data</td>
-        </tr>
-		        <tr>
-            <td>Table Data</td>
-            <td>Table Data</td>
-        </tr>
-        <tr>
-            <td>Table Data</td>
-            <td>Table Data</td>
-        </tr>
-        <tr>
-            <td>Table Data</td>
-            <td>Table Data</td>
-        </tr>
-        <tr>
-            <td>Table Data</td>
-            <td>Table Data</td>
-        </tr>
-        <tr>
-            <td>Table Data</td>
-            <td>Table Data</td>
-        </tr>
-        <tr>
-            <td>Table Data</td>
-            <td>Table Data</td>
-        </tr>		
+    <tbody id='tbodyStreet'>
     </tbody>
 </table>
 </div>
 <hr class="uk-margin-small">
-<h4 class="uk-heading-bullet uk-padding-small uk-padding-remove-top uk-padding-remove-bottom">Будівлі</h4>
-<div id="container444" class="uk-height-small" style=" position:relative; top:0; bottom:0;">
-<div>
-34 345 546 4 5 56 84568 47956895689789 45 45 4545 4564 564 56 456 456 456 456 456 456 4563453453 5 
-34 345 546 4 5 56 84568 47956895689789 45 45 4545 4564 564 56 456 456 456 456 456 456 4563453453 5 
-34 345 546 4 5 56 84568 47956895689789 45 45 4545 4564 564 56 456 456 456 456 456 456 4563453453 5 
-34 345 546 4 5 56 84568 47956895689789 45 45 4545 4564 564 56 456 456 456 456 456 456 4563453453 5 
-34 345 546 4 5 56 84568 47956895689789 45 45 4545 4564 564 56 456 456 456 456 456 456 4563453453 5 
-34 345 546 4 5 56 84568 47956895689789 45 45 4545 4564 564 56 456 456 456 456 456 456 4563453453 5 
-34 345 546 4 5 56 84568 47956895689789 45 45 4545 4564 564 56 456 456 456 456 456 456 4563453453 5 
-34 345 546 4 5 56 84568 47956895689789 45 45 4545 4564 564 56 456 456 456 456 456 456 4563453453 5 
-34 345 546 4 5 56 84568 47956895689789 45 45 4545 4564 564 56 456 456 456 456 456 456 4563453453 5 
+<h4 class="uk-heading-bullet uk-padding-small uk-padding-remove-top uk-padding-remove-bottom">Адреси</h4>
+<div id="container444" class="uk-height-small aside-second-second" style=" position:relative; top:0; bottom:0;">
+<div id='tbodyAddress'>
+
 </div>
 </div>
 
@@ -307,7 +426,7 @@
 
 
 
-	<div id="map" class="map"></div>
+	<div id="divmap"><div id="map" class="map" uk-height-viewport="offset-top: true" ></div></div>
 
 </div>
 				
