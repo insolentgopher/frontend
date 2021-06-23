@@ -203,58 +203,55 @@
 	</head>
 	<body>
 <div id="load" class="modalDialog " style="padding-left:calc(50% - 100px); padding-top:200px; overflow-y:auto; z-index:2000;position: fixed">
-
-<div id="modalCardAddStreet"  class="uk-modal-full" uk-modal>
-    <div class="uk-modal-dialog uk-height-1-1  uk-modal-body uk-margin-auto-vertical">
-	 <button class="uk-modal-close-full uk-close-large" type="button" uk-close></button>
-        <form class="uk-form-stacked">
-            <legend class="uk-legend uk-heading-bullet uk-padding-small uk-padding-remove-top uk-padding-remove-bottom" id="h2modalStreet"></legend>
-            <div class=" uk-grid uk-grid-small uk-grid-match uk-flex-top uk-margin" uk-grid>
-			<div class="uk-width-1-2@m uk-grid uk-grid-small uk-grid-match uk-flex-top" uk-grid>
-			<div class="uk-width-2-3@s">
-                    <label class="uk-form-label required_uk">Адреса</label>
-                    <div class="uk-form-controls">
-                        <input class="uk-input necessarilytext Street" type="text" id="name">
-                    </div>
-                </div>
-				<div class="uk-width-1-3@s">
-                    <label class="uk-form-label required_uk">Тип</label>
-                    <div class="uk-form-controls">
-					<select class="uk-select necessarilyselect uk-width-1-1 Street"  id="typeId"></select>                       
-                    </div>
-                </div>
-				<div class="uk-width-1-1">
-                    <label class="uk-form-label">Аліас 1</label>
-                    <div class="uk-form-controls">
-                        <textarea class="uk-textarea Street" rows='2'  id="aliasOne"></textarea>
-                    </div>
-                </div>
-				<div class="uk-width-1-1">
-                    <label class="uk-form-label">Аліас 2</label>
-                    <div class="uk-form-controls">
-                        <textarea class="uk-textarea Street" rows='2'  id="aliasTwo"></textarea>
-                    </div>
-                </div>
-				<div class="uk-width-1-1">
-				<p class="uk-text-right">
-            <button class="uk-button uk-button-default" onclick="deleteStreet()" type="button">Видалити</button>
-            <button class="uk-button uk-button-primary" onclick="updateStreet()" type="button">Зберегти</button>
-        </p>
+ <span uk-spinner="ratio: 7"></span>
 		</div>
-			</div>
-			<div class="uk-width-1-2@m uk-grid uk-grid-small uk-grid-match uk-flex-top" uk-grid>
-				<div class="uk-width-1-1" id="mapStreet"></div>
-			  
-			</div>
-                
+		
+<div id="modalCardAddStreet" class="uk-modal-full" uk-modal>
+    <div class="uk-modal-dialog">
+        <button class="uk-modal-close-full uk-close-large" type="button" uk-close></button>
+  
+        <div class="uk-grid-collapse  uk-flex-middle" uk-grid>
+            <div class="uk-width-1-2@s" id="mapStreet"></div>
+            <div class="uk-width-1-2@s uk-padding-large">
+                <h1 class="uk-legend uk-heading-bullet" id="h2modalStreet"></h1>
+    <div class="uk-grid-small uk-grid-match uk-flex-top uk-margin" uk-grid>
+     <div class="uk-width-2-3@s">
+      <label class="uk-form-label required_uk">Адреса</label>
+      <div class="uk-form-controls">
+       <input class="uk-input necessarilytext Street" type="text" id="name">
+      </div>
+     </div>
+     <div class="uk-width-1-3@s">
+      <label class="uk-form-label required_uk">Тип</label>
+      <div class="uk-form-controls">
+      <select class="uk-select necessarilyselect uk-width-1-1 Street"  id="typeId"></select>                       
+      </div>
+     </div>
+     <div class="uk-width-1-1">
+      <label class="uk-form-label">Аліас 1</label>
+      <div class="uk-form-controls">
+       <textarea class="uk-textarea Street" rows='2'  id="aliasOne"></textarea>
+      </div>
+     </div>
+     <div class="uk-width-1-1">
+      <label class="uk-form-label">Аліас 2</label>
+      <div class="uk-form-controls">
+       <textarea class="uk-textarea Street" rows='2'  id="aliasTwo"></textarea>
+      </div>
+     </div>
+     <div class="uk-width-1-1">
+     <p class="uk-text-right">
+    <button class="uk-button uk-button-default" onclick="deleteStreet()" type="button">Видалити</button>
+    <button class="uk-button uk-button-primary" onclick="updateStreet()" type="button">Зберегти</button>
+   </p>
+   </div>
+     
+    </div>
             </div>
-        </form>
-
-        
+        </div>
     </div>
 </div>
-        <span uk-spinner="ratio: 7"></span>
-		</div>
+       
 		<!--HEADER-->
 		<header id="top-head" class="uk-position-fixed">
 			<div class="uk-container uk-container-expand uk-background-default topbar">
@@ -384,11 +381,8 @@
 			<a class="uk-margin-small-left " id='addAdr' onclick="getStreet(0)" uk-tooltip="title: Додати вулицю; delay: 500" uk-icon="plus-circle"></a>
 		</div>
         </div>
-<<<<<<< HEAD
 <div id="container333" class="uk-height-large uk-margin-small aside-second-first" style=" position:relative; top:0; bottom:0;"> 
-=======
-<div id="container333" class="uk-height-large uk-margin-small aside-second-first" style=" position:relative; top:0; bottom:0;">	
->>>>>>> 99a12f51885dfa998872799cdb3f19a0a9d01541
+
 	
 <table class="uk-table uk-table-small ">
     <!--<thead>
@@ -402,25 +396,12 @@
 </table>
 </div>
 <hr class="uk-margin-small">
-<<<<<<< HEAD
+
 <h4 class="uk-heading-bullet uk-padding-small uk-padding-remove-top uk-padding-remove-bottom">Адреси</h4>
 <div id="container444" class="uk-height-small aside-second-second" style=" position:relative; top:0; bottom:0;">
 <div id='tbodyAddress'>
 
-=======
-<h4 class="uk-heading-bullet uk-padding-small uk-padding-remove-top uk-padding-remove-bottom">Будівлі</h4>
-<div id="container444" class="uk-height-small aside-second-second" style=" position:relative; top:0; bottom:0;">
-<div>
-34 345 546 4 5 56 84568 47956895689789 45 45 4545 4564 564 56 456 456 456 456 456 456 4563453453 5 
-34 345 546 4 5 56 84568 47956895689789 45 45 4545 4564 564 56 456 456 456 456 456 456 4563453453 5 
-34 345 546 4 5 56 84568 47956895689789 45 45 4545 4564 564 56 456 456 456 456 456 456 4563453453 5 
-34 345 546 4 5 56 84568 47956895689789 45 45 4545 4564 564 56 456 456 456 456 456 456 4563453453 5 
-34 345 546 4 5 56 84568 47956895689789 45 45 4545 4564 564 56 456 456 456 456 456 456 4563453453 5 
-34 345 546 4 5 56 84568 47956895689789 45 45 4545 4564 564 56 456 456 456 456 456 456 4563453453 5 
-34 345 546 4 5 56 84568 47956895689789 45 45 4545 4564 564 56 456 456 456 456 456 456 4563453453 5 
-34 345 546 4 5 56 84568 47956895689789 45 45 4545 4564 564 56 456 456 456 456 456 456 4563453453 5 
-34 345 546 4 5 56 84568 47956895689789 45 45 4545 4564 564 56 456 456 456 456 456 456 4563453453 5 
->>>>>>> 99a12f51885dfa998872799cdb3f19a0a9d01541
+
 </div>
 </div>
 
