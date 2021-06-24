@@ -1,6 +1,7 @@
 /* -- Top navigation -- */
 #top-head {
-	z-index: 9;
+	z-index: 1001;
+	/*z-index: 9;*/
 	top: 0;
 	left:0;
 	right:0;
@@ -133,7 +134,7 @@
 #content {
 	/*margin-top: 52px;*/
 	margin-top: 64px;
-	padding: 30px 0 0 0;
+	padding: 0 0 0 0;
 	background-color: #f7f7f7;
 	margin-left: 0;
 	transition: margin 0.2s cubic-bezier(.4,0,.2,1);
@@ -248,10 +249,13 @@
   box-sizing: border-box;
   width: 270px;
   padding: 20px 20px;
-  background: #f8f8f8;
+  /*background: #f8f8f8;*/
+  background: #fff;
   /* 3 */
   overflow-y: auto;
   -webkit-overflow-scrolling: touch;
+  border-right: 1px solid #ebebed;
+	box-shadow: 0 2px 8px rgba(0,0,0,.04);
 }
 /* Tablet landscape and bigger */
 @media (min-width: 960px) {

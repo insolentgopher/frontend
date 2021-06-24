@@ -492,7 +492,7 @@ function dis(value, div) {
 					if(data.token){
 						localStorage.removeItem('token');
 						localStorage.setItem('token', data.token);
-						document.location.href = "index.html",true;
+						$(location).attr('href','index.html');
 					}
                 },
 				error: function (data) {

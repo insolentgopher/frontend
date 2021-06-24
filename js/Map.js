@@ -67,29 +67,35 @@ var APP_MAP = (function(){
     function _createLayers() {
         //create basics   
         var inlayers = [], name    ;
-        CONFIG_MAP.Map.Basics.forEach(element => {
-            if (element.type == 'wms' || element.type == 'wms_dyn')
-                inlayers.push(_createWMSLayer(element));
-            else
-                inlayers.push(_createTileLayer(element));
-        });
-        name = CONFIG_MAP.Map.layerGroups.titles.Basics;
-        layers.push(_createLayersGroup(inlayers, name));
+        if (CONFIG_MAP.Map.Basics && CONFIG_MAP.Map.Basics.length > 0 ){
+            CONFIG_MAP.Map.Basics.forEach(element => {
+                if (element.type == 'wms' || element.type == 'wms_dyn')
+                    inlayers.push(_createWMSLayer(element));
+                else
+                    inlayers.push(_createTileLayer(element));
+            });
+            name = CONFIG_MAP.Map.layerGroups.titles.Basics;
+            layers.push(_createLayersGroup(inlayers, name));
+        }
+
         //create layers   
         inlayers = [];
-        name = '';     
-        CONFIG_MAP.Map.Layers.forEach(element => {
-            var layer;
-            if (element.type == 'wms'){
-                layer = _createWMSLayer(element);
-            }
-            if (layer)
-                inlayers.push(layer);
-        });
-        name = CONFIG_MAP.Map.layerGroups.titles.Layers;
-        var gr = _createLayersGroup(inlayers, name);
-        layers.push(gr);
-        //layer for editing
+        name = ''; 
+        if (CONFIG_MAP.Map.Layers && CONFIG_MAP.Map.Layers.length > 0) {   
+            CONFIG_MAP.Map.Layers.forEach(element => {
+                var layer;
+                if (element.type == 'wms'){
+                    layer = _createWMSLayer(element);
+                }
+                if (layer)
+                    inlayers.push(layer);
+            });
+            name = CONFIG_MAP.Map.layerGroups.titles.Layers;
+            var gr = _createLayersGroup(inlayers, name);
+            layers.push(gr);
+        }
+
+        //create layer for editing
         drawSource = _createSource();
         drawLayer = new ol.layer.Vector({
             source: drawSource,
@@ -114,7 +120,8 @@ var APP_MAP = (function(){
         });
         layers.push(drawLayer); 
     }
-    //
+
+    //create layers group
     function _createLayersGroup(layers, name){
         return new ol.layer.Group({
             title: name,
@@ -207,6 +214,11 @@ var APP_MAP = (function(){
             maxZoom: 21,
             minZoom: 11,
         });  
+
+        //chek extent during change resolution
+        // view.on('change:resolution', function(e){
+        //     console.log(_getCurrentMapExtent());
+        // });
     }
 
     //init Map
@@ -228,10 +240,9 @@ var APP_MAP = (function(){
                 }));
             }
         });
-
-
     }
-    
+
+    //init layer switcher
     function _initLayerSwitcher(){
         layerSwitcher =  new ol.control.LayerSwitcher({
             tipLabel: 'Легенда', // Optional label for button
@@ -240,6 +251,7 @@ var APP_MAP = (function(){
           map.addControl(layerSwitcher);
     }
 
+    // - extent -------------------------------------------------------------------------
     function _zoomToExtent(extent){
         map.getView().fit(extent, map.getSize());
     }
@@ -248,6 +260,7 @@ var APP_MAP = (function(){
         return map.getView().calculateExtent(map.getSize());
         
     }
+
     // EVENTS-----------------------------------------------------------------------------------
     //createEvent
     function _createEvent(eventName, data){
@@ -257,6 +270,7 @@ var APP_MAP = (function(){
     function _dispatchEvent(event){
         window.dispatchEvent(event);
     }
+
     //- INTERACTIONS ------------------------------------------------------------
     function _dropAllInteractions(){
         if (select)
@@ -346,6 +360,7 @@ var APP_MAP = (function(){
         drawLayer.getSource().addFeature( feature );
         //drawLayer.setStyle(style);         
     }
+
     //- FEATURES ------------------------------------------------------------------
     function _createAddressFeatureByProperties(properties){
         var geometryFields = CONFIG_MAP.Map.feature.drawFields['Point'];
@@ -369,7 +384,7 @@ var APP_MAP = (function(){
             var geometryExtent = geometry.getExtent();
             extent = [geometryExtent[0]-delta, geometryExtent[1]-delta, geometryExtent[2]+delta, geometryExtent[3]+delta];
         }     
-        return extent;
+        return ol.proj.transformExtent(extent, "EPSG:4326", "EPSG:3857");
     }
 
     function _createExtentByProperties(properties){
@@ -393,7 +408,7 @@ var APP_MAP = (function(){
             delta = CONFIG_MAP.Map.feature.extentDelta[geometryType];
             fields = CONFIG_MAP.Map.feature.extentFields[geometryType];
             var geometryExtent = [properties[fields.leftX],properties[fields.topY],properties[fields.rightX],properties[fields.bottomY]];
-            extent = ol.proj.transformExtent([geometryExtent[0], geometryExtent[1], geometryExtent[2], geometryExtent[3]], ol.proj.get('EPSG:4326'), ol.proj.get('EPSG:3857'));;
+            extent = ol.proj.transformExtent([geometryExtent[0], geometryExtent[1], geometryExtent[2], geometryExtent[3]], ol.proj.get('EPSG:4326'), ol.proj.get('EPSG:3857'));
             outExtent = [extent[0]-delta, extent[1]-delta,extent[2]+delta,extent[3]+delta];
         }     
         return outExtent
@@ -510,6 +525,10 @@ var APP_MAP = (function(){
         return ol.proj.transformExtent(currentExtent,"EPSG:3857" , "EPSG:4326");
     }
 
+    function refreshMap(){
+        setTimeout(function(){map.updateSize();}, 1);        
+    }
+
     // !! start map !!
     function startMap(token) {
         token = token;
@@ -543,7 +562,8 @@ return{
     identity:identity,  
     selectAddress : selectAddress,
     selectStreet :  selectStreet,
-    getCurrentMapExtent: getCurrentMapExtent
+    getCurrentMapExtent: getCurrentMapExtent,
+    refreshMap:refreshMap
 }
 
 })();

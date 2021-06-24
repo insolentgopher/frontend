@@ -44,8 +44,8 @@
 		StreetType =[];
 		Street = {
 		data: null,
-		CARD : {id: 0, aliasOne: "", aliasTwo: "", rightTopLatitude: 0, righTopLongitude: 0, name: "", leftBottomLatitude: 0, leftBottomLongitude: 0, shortTypeName: "", typeId: 0, typeName: ""},
-		CARDempty : {id: 0, aliasOne: "", aliasTwo: "", rightTopLatitude: 0, rightTopLongitude: 0, name: "", leftBottomLatitude: 0, leftBottomLongitude: 0, shortTypeName: "", typeId: 0, typeName: ""},
+		CARD : {id: 0, aliasOne: "", aliasTwo: "", leftTopLatitude: 0, leftTopLongitude: 0, name: "", rightBottomLatitude: 0, rightBottomLongitude: 0, shortTypeName: "", typeId: 0, typeName: ""},
+		CARDempty : {id: 0, aliasOne: "", aliasTwo: "", leftTopLatitude: 0, leftTopLongitude: 0, name: "", rightBottomLatitude: 0, rightBottomLongitude: 0, shortTypeName: "", typeId: 0, typeName: ""},
 		URLGET: "/street",
 		URLGETS: "/street",
 		URLPOST: "/street",
@@ -63,66 +63,43 @@
 		URLPUT: "/address",
 		URLDELETE: "/address"
 		};
-		getAdditionalyDataStatic(function after(){getAdditionalyData();});
+		
+		getAdditionalyData();
 		
 		$('#modalCardAddStreet').on({
 
     'show.uk.modal': function(){
-	
-        let content; content = $('#map').detach();
-		content.appendTo('#mapStreet');
-		APP_MAP.refreshMap();
-
+        
     },
 
     'hide.uk.modal': function(){
-	location.href="#load";
-	<!--UIkit.offcanvas(document.getElementById("offcanvas-usage")).show();-->
 	let content;
         content = $('#map').detach();
 		content.appendTo('#divmap');
-		APP_MAP.refreshMap();
-		location.href="#close";
     }
 });
 
 		});
-		async function getAdditionalyDataStatic(after) {
+		async function getAdditionalyData() {
             try {
 				location.href="#load";
 				const main = await axios.get(MainURL + getCity());
                 if(main.data)
 				{
+					<!--forEachClassName("custom-logo", i => i.setAttribute("src", main.data.logoUrl));-->
 					forEachClassName("citytitle", i => i.textContent= main.data.cityName);
 					forEachClassName("maintitle", i => i.textContent= main.data.title);
 					forEachClassName("custom-logo", i => i.setAttribute('src', main.data.logoUrl));
 				}
-
-				APP_MAP.selectStreet({rightTopLatitude:  main.data.rtLattitude ,
-				rightTopLongitude:  main.data.rtLongitude ,
-				leftBottomLatitude:  main.data.lbLattitude ,
-				leftBottomLongitude:  main.data.lbLongitude });
-				
-				CONFIG_MAP.Map.maxExtent = [main.data.lbLattitude, main.data.lbLongitude, main.data.rtLattitude, main.data.rtLongitude];
-				
-				
+				<!--forEachClassName("custom-logo", i => i.setAttribute('src', MainURL + getCity()+"/logo"));-->
+                
+				const x = await axios.get(MainURL + getCity()+Street.URLGET);
+                Street.data = x.data.sort((a, b) => a.name.localeCompare(b.name));
 				
 				const y = await axios.get(MainURL + getCity()+"/streetype");
                 StreetType = y.data;
 				fillSelect('typeId', StreetType, "id", "typeName");
-				after();
-            }
-            catch {
-                UIkit.notification({ message: 'Помилка! Дані не були завантажені', status: 'danger' });
-            }
-
-        }
-		async function getAdditionalyData() {
-            try {
-				location.href="#load";
 				
-				const x = await axios.get(MainURL + getCity()+"/street");
-                Street.data = x.data;
 				paintStreet(Street.data);
             }
             catch {
@@ -140,7 +117,6 @@
 			obj = Object.values(obj).filter(a => (a.name + " " + a.typeName+ " " + a.shortTypeName +" " + a.aliasOne+" " + a.aliasTwo).toUpperCase().indexOf(Item.toUpperCase())>-1);
 			});
 			paintStreet(obj);
-			document.getElementById("search").focus();
 		}
 		else
 		{
@@ -148,45 +124,17 @@
 		}
 		}
 		function paintStreet(data){
-		location.href="#load";
 		$("#tbodyStreet").empty();
-		$("#container333").animate({ scrollTop: 0 }, "fast");
 		data.forEach(function (Item) {
 		$('#tbodyStreet').append(`<tr class="uk-visible-toggle"><td onclick='getAddress(${Item.id})'>${Item.name}, ${Item.shortTypeName}</td>
-										<td class="uk-text-nowrap"><a onclick=' getStreet(${Item.id})' class="uk-icon-button uk-margin-small-right uk-invisible-hover" uk-icon="pencil"></a>
+										<td class="uk-text-nowrap"><a onclick='getStreet(${Item.id})' class="uk-icon-button uk-margin-small-right uk-invisible-hover" uk-icon="pencil"></a>
 										</td></tr>`);
             });
-			if(data.length ==0){
-			$('#tbodyStreet').append(`<tr><td>Не знайдено</td>
-										<td></td></tr>`);
-			}
-			location.href="#close";
 		}
-		
-		
-		async function getPoint(id){
-		try {
-				location.href="#load";
-				APP_MAP.selectAddress(Address.data.find(a=> a.id == id));
-				
-            }
-            catch {
-                UIkit.notification({ message: 'Помилка! Дані не були завантажені', status: 'danger' });
-            }
-			location.href="#close";
-		
-		
-		
-		}
-		
 		async function getAddress(idstreet){
 		try {
-				location.href="#load";
-				APP_MAP.selectStreet(Street.data.find(a=> a.id == idstreet));
 				const a = await axios.get(MainURL + getCity()+ "/street/" + idstreet + Address.URLGET);
-				Address.data = a.data;
 				paintAddress(a.data);
-				
             }
             catch {
                 UIkit.notification({ message: 'Помилка! Дані не були завантажені', status: 'danger' });
@@ -196,15 +144,45 @@
 		
 		
 		}
-		async function updateStreet(){
-		var c = getCardData(Street.CARD, "Street");
-        if (c) {
-		let r = APP_MAP.getCurrentMapExtent();
-		c.rightTopLatitude = r[2];
-		c.rightTopLongitude = r[3];
-		c.leftBottomLatitude = r[0];
-		c.leftBottomLongitude = r[1];
+		function paintAddress(data){
+		$("#tbodyAddress").empty();
+		data.forEach(function (Item) {
+		$('#tbodyAddress').append(`<span class="uk-badge">${Item.addressNumber}</span>`);
+            });
+		}
+		function getStreet(id) {
+		location.href="#load";
+        emptyformbyclass("Street");
+        Street.CARD = Object.assign({}, Street.CARDempty);
+        Street.CARD.id = id;
+        if (Street.CARD.id != 0) {
+			
+            $('#h2modalStreet').text('Редагувати вулицю');
+			Street.CARD = Street.data.find(a=> a.id == id);
+            getobject_ByData(Street.CARD, function before(){}, function after(){let content; content = $('#map').detach();
+		content.appendTo('#mapStreet'); showModal('modalCardAddStreet')});
+        }
+        else {
+            $('#h2modalStreet').text('Додати вулицю');
+			let content;
+            content = $('#map').detach();
+		content.appendTo('#mapStreet');
+		showModal('modalCardAddStreet');
+        }
 		
+		
+		
+		location.href="#close";
+    }
+		
+	function deleteStreet(){
+	let token = localStorage.getItem('token');
+	deleteobject(MainURL + getCity()+Street.URLDELETE + "/" + Street.CARD.id, null, token, function func(){ hideModal('modalCardAddStreet'); getAdditionalyData();});
+	}
+	
+	async function updateStreet(){
+	var c = getCardData(Street.CARD, "Street");
+        if (c) {
 		let id = Street.CARD.id;
 		let token = localStorage.getItem('token');
 			if(id == 0)
@@ -214,51 +192,13 @@
 		}
 		else{
 		
-			await saveobject(MainURL + getCity()+Street.URLPUT + "/" + id, c, token, "PUT", function before(){},
-			 function after() {getAdditionalyData(); hideModal('modalCardAddStreet')});
+			await saveobject(MainURL + getCity()+User.URLPUT + "/" + id, c, token, "PUT", function before(){},
+			 function after() {getAdditionalyData();hideModal('modalCardAddStreet')});
 		}
 		
             
         }
 	}
-		
-		
-		
-		
-		function paintAddress(data){
-		$("#tbodyAddress").empty();
-		$("#container444").animate({ scrollTop: 0 }, "fast");
-		data.forEach(function (Item) {
-		$('#tbodyAddress').append(`<span class="uk-badge" onclick='getPoint(${Item.id})'>${Item.addressNumber}</span>`);
-            });
-			if(data.length ==0){
-			$('#tbodyAddress').append(`<span>Не знайдено</span>`);
-			}
-		}
-		function getStreet(id) {
-		
-        emptyformbyclass("Street");
-        Street.CARD = Object.assign({}, Street.CARDempty);
-        Street.CARD.id = id;
-        if (Street.CARD.id != 0) {
-			
-            $('#h2modalStreet').text('Редагувати вулицю');
-			Street.CARD = Street.data.find(a=> a.id == id);
-            getobject_ByData(Street.CARD, function before(){}, function after(){ APP_MAP.selectStreet( Street.data.find(a=> a.id == id)); showModal('modalCardAddStreet')});
-        }
-        else {
-            $('#h2modalStreet').text('Додати вулицю');
-		showModal('modalCardAddStreet');
-        }
-		
-    }
-		
-	function deleteStreet(){
-	let token = localStorage.getItem('token');
-	deleteobject(MainURL + getCity()+Street.URLDELETE + "/" + Street.CARD.id, null, token, function func(){ hideModal('modalCardAddStreet'); getAdditionalyData();});
-	}
-	
-	
 		</script>
 	</head>
 	<body>
@@ -421,7 +361,7 @@
 		
 
 
-<div id="offcanvas-usage" class="uk-padding-small uk-animation-slide-left" uk-offcanvas="bg-close:false;">
+<div id="offcanvas-usage" class="uk-padding-small" uk-offcanvas="bg-close:false;">
 
     <div class="aside-second uk-offcanvas-bar-light ">
 
@@ -446,12 +386,12 @@
 
 	
 <table class="uk-table uk-table-small ">
-    <thead>
+    <!--<thead>
         <tr>
-            <th class='uk-width-expend'></th>
-            <th class='uk-width-auto'></th>
+            <th>Назва</th>
+            <th>Статус</th>
         </tr>
-    </thead>
+    </thead>-->
     <tbody id='tbodyStreet'>
     </tbody>
 </table>
@@ -474,11 +414,20 @@
 	
 		
 		
-	<div class="uk-container uk-container-expand uk-padding-remove">
+			<div class="uk-container uk-container-expand">
 
-	<!--<div id="divmap" ><div id="map" class="map"></div></div> -->
-	<div id="divmap" style="height: calc(100vh - 64px);"><div id="map" class="map" style="height: 100%;"></div></div>
 
+<div class="" style="margin:-40px;" >
+
+
+
+
+
+
+
+	<div id="divmap" uk-height-viewport="offset-top: true"><div id="map" class="map"  ></div></div>
+
+</div>
 				
 
 				<script src="js/map/editPanel_Map.js"></script>

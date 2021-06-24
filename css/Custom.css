@@ -125,3 +125,7 @@ select.uk-width-1-1 + .select2, select.uk-width-1-1 + .select2-container, select
 }
 #tbodyStreet tr td:first-child:hover{
 cursor: pointer;}
+
+#mapStreet #map {
+    height: 100vh !important;
+}

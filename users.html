@@ -43,20 +43,29 @@
 		URLPUT: "/user",
 		URLDELETE: "/user"
 		};
+		getAdditionalyDataStatic();
 		getAdditionalyData();
 		});
-		async function getAdditionalyData() {
-            try {
-				location.href="#load";
-				
-				const main = await axios.get(MainURL + getCity());
+		async function getAdditionalyDataStatic() {
+		try {
+		location.href="#load";
+		const main = await axios.get(MainURL + getCity());
                 if(main.data)
 				{
-					<!--forEachClassName("custom-logo", i => i.setAttribute("src", main.data.logoUrl));-->
 					forEachClassName("citytitle", i => i.textContent= main.data.cityName);
 					forEachClassName("maintitle", i => i.textContent= main.data.title);
 					forEachClassName("custom-logo", i => i.setAttribute('src', main.data.logoUrl));
 				}
+				}
+				catch {
+                UIkit.notification({ message: 'Помилка! Дані не були завантажені', status: 'danger' });
+            }
+			location.href="#close";
+		}
+		async function getAdditionalyData() {
+            try {
+				location.href="#load";
+				
                 const x = await axios.get(MainURL + getCity()+User.URLGET);
                 User.data = x.data;
 				paintUser();

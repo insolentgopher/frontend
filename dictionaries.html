@@ -64,20 +64,28 @@
 		URLDELETE: "/authority"
 		};
 		
-		
+		getAdditionalyDataStatic();
 		getAdditionalyData();
 		});
-		async function getAdditionalyData() {
-            try {
-				location.href="#load";
-				
-				const main = await axios.get(MainURL + getCity());
+		async function getAdditionalyDataStatic() {
+		try {
+		location.href="#load";
+		const main = await axios.get(MainURL + getCity());
                 if(main.data)
 				{
 					forEachClassName("citytitle", i => i.textContent= main.data.cityName);
 					forEachClassName("maintitle", i => i.textContent= main.data.title);
 					forEachClassName("custom-logo", i => i.setAttribute('src', main.data.logoUrl));
 				}
+				}
+				catch {
+                UIkit.notification({ message: 'Помилка! Дані не були завантажені', status: 'danger' });
+            }
+			location.href="#close";
+		}
+		async function getAdditionalyData() {
+            try {
+				location.href="#load";
                 const x = await axios.get(MainURL + getCity()+TypeStreet.URLGET);
                 TypeStreet.data = x.data;
 				paintTypesStreet();
