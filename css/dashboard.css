@@ -250,12 +250,13 @@
   width: 270px;
   padding: 20px 20px;
   /*background: #f8f8f8;*/
-  background: #fff;
+  background: rgba(255,255,255,0.5);
   /* 3 */
   overflow-y: auto;
   -webkit-overflow-scrolling: touch;
   border-right: 1px solid #ebebed;
-	box-shadow: 0 2px 8px rgba(0,0,0,.04);
+ box-shadow: 0 2px 8px rgba(0,0,0,.04);
+ backdrop-filter: blur(7px);
 }
 /* Tablet landscape and bigger */
 @media (min-width: 960px) {

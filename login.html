@@ -17,11 +17,31 @@
 		$(function () {
 		location.href="#close";
 		});
-		function formSubmit()
+		function Login()
 		{
 		if($('#login').val()!="" && $('#password').val()!="")
 		{
-			Login($('#login').val(), $('#password').val());
+			location.href = "#load";
+            $.ajax({
+                url: `http://10.0.16.13:2023/portal/api/v1/register/${getCity()}/login`,
+                   type: "GET",
+                    data: {
+						"login": $('#login').val(),
+						"password": $('#password').val()
+					},
+                success: function (data) {
+					if(data.token){
+						localStorage.removeItem('token');
+						localStorage.setItem('token', data.token);
+						$(location).attr('href','index.html');
+					}
+                },
+				error: function (data) {
+					 GETERROR(data);
+					location.href = "#close";
+					
+				},
+            });
 		}
 		}
 		</script>
@@ -67,14 +87,14 @@
 						<label><input class="uk-checkbox" type="checkbox"> Запам’ятати мене</label>
 					</div>
 					<div class="uk-margin-bottom">
-						<button type="" class="uk-button uk-button-primary uk-border-pill uk-width-1-1" onclick='formSubmit()'>Увійти</button>
+						<button type="button" class="uk-button uk-button-primary uk-border-pill uk-width-1-1" onclick='Login()'>Увійти</button>
 					</div>
 				</fieldset>
 			</form>
 			<!-- /login -->
 
 			<!-- recover password -->
-			<form class="toggle-class" action="login.html" hidden>
+			<form class="toggle-class" hidden>
 				<div class="uk-margin-small">
 					<div class="uk-inline uk-width-1-1">
 						<span class="uk-form-icon uk-form-icon-flip" data-uk-icon="icon: mail"></span>
@@ -82,7 +102,7 @@
 					</div>
 				</div>
 				<div class="uk-margin-bottom">
-					<button type="submit" class="uk-button uk-button-primary uk-border-pill uk-width-1-1">Відправити пароль</button>
+					<button  class="uk-button uk-button-primary uk-border-pill uk-width-1-1">Відправити пароль</button>
 				</div>
 			</form>
 			<!-- /recover password -->

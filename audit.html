@@ -1,0 +1,197 @@
+<!DOCTYPE html>
+<html lang="uk">
+	<head>
+		<meta charset="utf-8">
+		<meta name="viewport" content="width=device-width, initial-scale=1">
+		<title>Автоматизована система управління геоданими - Модуль адресний реєстр</title>
+		<link rel="icon" href="img/favicon/favicon.ico" type="image/x-icon">
+		<!-- CSS FILES -->
+		<link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/uikit@latest/dist/css/uikit.min.css">
+		<link rel="stylesheet" type="text/css" href="css/dashboard.css">
+		
+        <!--Map CSS------------------>
+        <link rel="stylesheet" href="lib/ol/ol.css" type="text/css">
+        <link rel="stylesheet" href="lib/ol-layerswitcher/ol-layerswitcher.css" type="text/css">
+
+		<!-- UIKIT JS FILES -->
+		<script src="https://cdn.jsdelivr.net/npm/uikit@latest/dist/js/uikit.min.js"></script>
+		<script src="https://cdn.jsdelivr.net/npm/uikit@latest/dist/js/uikit-icons.min.js"></script>
+        <!--Map JS------------------>
+        <!-- <script src="lib/ol/ol.js" defer></script> -->
+        <script src="lib/ol/ol.js"></script>
+        
+        <!-- <script src="https://openlayers.org/en/v5.3.0/build/ol.js"></script> -->
+        <script src="lib/ol-layerswitcher/ol-layerswitcher.js"></script>
+		 <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.1.1/jquery.min.js"></script>
+		
+		<script src="js/Custom.js"></script>
+		<script src="https://unpkg.com/axios/dist/axios.js"></script>
+		<link rel="stylesheet" href="css/Custom.css" type="text/css">		
+		<script src="https://cdn.jsdelivr.net/npm/sweetalert2@10"></script>
+		
+		<link href="https://unpkg.com/tabulator-tables@4.0.5/dist/css/tabulator.min.css" rel="stylesheet">
+    <script type="text/javascript" src="https://unpkg.com/tabulator-tables@4.8/dist/js/tabulator.min.js"></script>
+	
+		<script type="text/javascript">
+		 var _table;
+		 var columns = [
+
+            {
+                    title: 'Користувач',
+                    field: 'user',
+                    sorter: "string",
+                    headerFilter:true,
+                    headerFilterPlaceholder: 'Пошук...'
+            },
+                ,
+            {
+                    title: 'Дата та час',
+                    field: 'datetime',
+                    sorter: "string",
+                    headerFilter:true,
+                    headerFilterPlaceholder: 'Пошук...'
+            },
+            {
+                    title: 'Дія',
+                    field: 'event',
+                    sorter: "string",
+                    headerFilter:true,
+                headerFilterPlaceholder: 'Пошук...',
+            }
+        ];
+		$(function () {
+		location.href="#close";
+		MainURL = "http://10.0.16.13:2023/portal/api/v1/register/";
+		
+		Audit = {
+		data: null,
+		URLGET: "/audit",
+		};
+		getAdditionalyDataStatic();
+		getAdditionalyData();
+		});
+		async function getAdditionalyDataStatic() {
+		try {
+		location.href="#load";
+		const main = await axios.get(MainURL + getCity());
+                if(main.data)
+				{
+					forEachClassName("citytitle", i => i.textContent= main.data.cityName);
+					forEachClassName("maintitle", i => i.textContent= main.data.title);
+					forEachClassName("custom-logo", i => i.setAttribute('src', main.data.logoUrl));
+				}
+				}
+				catch {
+                UIkit.notification({ message: 'Помилка! Дані не були завантажені', status: 'danger' });
+            }
+			location.href="#close";
+		}
+		async function getAdditionalyData() {
+            try {
+				location.href="#load";
+                const x = await axios.get(MainURL + getCity()+Audit.URLGET);
+                Audit.data = x.data;
+				_table = gettabulator('', columns);
+				_table.replaceData(Audit.data); 
+            }
+            catch {
+                UIkit.notification({ message: 'Помилка! Дані не були завантажені', status: 'danger' });
+            }
+			location.href="#close";
+
+        }
+		</script>
+	</head>
+	<body>
+<div id="load" class="modalDialog" style="padding-left:calc(50% - 100px); padding-top:200px; overflow-y:auto; z-index:2000;position: fixed">
+
+        <span uk-spinner="ratio: 7"></span>
+		</div>
+		<!--HEADER-->
+		<header id="top-head" class="uk-position-fixed">
+			<div class="left-logo uk-flex uk-flex-middle content-box-dark">
+			<a class="uk-link-reset" href="index.html">
+				<img class="custom-logo uk-margin-small-right" src="" alt=""><span class="uk-text-bold maintitle "></span>
+			</a>
+			</div>
+		</header>
+		<!--/HEADER-->
+		<!-- LEFT BAR -->
+		<aside id="left-col" class="uk-light uk-visible@m">
+			<div class="left-logo uk-flex uk-flex-middle content-box-dark">
+			<a class="uk-link-reset" href="index.html">
+				<img class="custom-logo uk-margin-small-right" src="" alt=""><span class="uk-text-bold citytitle "></span>
+			</a>
+			</div>
+			<div class="left-nav-wrap">
+				<ul class="uk-nav uk-nav-default uk-nav-parent-icon" data-uk-nav>
+					<li class="uk-nav-header uk-heading-bullet">Адресний реєстр</li>
+					<li><a href="index.html"><span data-uk-icon="icon: search" class="uk-margin-small-right"></span>Пошук</a></li>
+					<li class='uk-active'><a href="audit.html"><span data-uk-icon="icon: history" class="uk-margin-small-right"></span>Аудит</a></li>
+					<li><a href="dictionaries.html"><span data-uk-icon="icon: thumbnails" class="uk-margin-small-right"></span>Довідники</a></li>
+					<li><a href="users.html"><span data-uk-icon="icon: users" class="uk-margin-small-right"></span>Користувачі</a></li>
+					<li><a href="#"><span data-uk-icon="icon: album" class="uk-margin-small-right"></span>Історія</a></li>
+					<li><a href="#"><span data-uk-icon="icon: cloud-upload" class="uk-margin-small-right"></span>Імпорт</a></li>
+					<li><a href="#"><span data-uk-icon="icon: cloud-download" class="uk-margin-small-right"></span>Еспорт</a></li>
+
+					<li class="uk-nav-header uk-heading-bullet">Модуль 2</li>
+					<li><a href="#"><span data-uk-icon="icon: search" class="uk-margin-small-right"></span>Розділ 1</a></li>
+					<li><a href="#"><span data-uk-icon="icon: users" class="uk-margin-small-right"></span>Розділ 2</a></li>
+				</ul>
+				
+				<div class="left-content-box uk-margin-top">
+					
+						<!--<h5>Статистика</h5>
+						<div>
+							<span class="uk-text-small">Кількість адрес <small>(+50)</small></span>
+							<progress class="uk-progress" value="50" max="100"></progress>
+						</div>
+						<div>
+							<span class="uk-text-small">Додано нових за тиждень <small>(+78)</small></span>
+							<progress class="uk-progress success" value="78" max="100"></progress>
+						</div>
+						<div>
+							<span class="uk-text-small">Feedback <small>(-12)</small></span>
+							<progress class="uk-progress warning" value="12" max="100"></progress>
+						</div>-->
+					
+				</div>
+				
+			</div>
+			<div class="bar-bottom">
+				<ul class="uk-subnav uk-flex uk-flex-center uk-child-width-1-5" data-uk-grid>
+					<li>
+						<a href="index.html" class="uk-icon-link" data-uk-icon="icon: home" title="Головна" data-uk-tooltip></a>
+					</li>
+					<li>
+						<a href="#" class="uk-icon-link" data-uk-icon="icon: settings" title="Налаштування" data-uk-tooltip></a>
+					</li>
+					<li>
+						<a href="#" class="uk-icon-link" data-uk-icon="icon: social"  title="Соціальні мережі, поділитись" data-uk-tooltip></a>
+					</li>
+					
+					<li>
+						<a href="login.html" class="uk-icon-link" data-uk-tooltip="Вийти" data-uk-icon="icon: sign-out"></a>
+					</li>
+				</ul>
+			</div>
+		</aside>
+		<div id="content" data-uk-height-viewport="expand: true">
+
+			<div class="uk-container uk-container-expand">
+								
+<div class="uk-overflow-auto uk-margin-small-top" id="tableobj">
+    </div>
+								
+
+				<footer class="uk-section uk-section-small uk-text-center">
+					<hr>
+					<p class="uk-text-small uk-text-center">Всі права захищені 2021</p>
+					<!--
+					- <a href="#">MC</a> | Створено за допомоги <a href="http://getuikit.com" title="Відвідати UIkit 3" target="_blank" data-uk-tooltip><span data-uk-icon="uikit"></span></a> </p>
+					-->
+				</footer>
+			</div>
+		</div>
+	</body>
+</html>

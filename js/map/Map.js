@@ -43,9 +43,18 @@ var APP_MAP = (function(){
     select,
     modify,
     draw,
+    currentGeometry,
     //draw Layer
     drawSource,
-    drawLayer;
+    drawLayer,
+    //popup
+    popupContainer,
+    popupContent,
+    popupCloser,
+    overlay
+    //--
+
+    ;
 
     //FUNCTIONS==========================================================
 
@@ -130,6 +139,7 @@ var APP_MAP = (function(){
             layers: layers,            
           });
     }
+
     //create service Tile Layer by url
     function _createTileLayer(params) {
 
@@ -148,6 +158,7 @@ var APP_MAP = (function(){
             visible: params.visible
           }); 
     }
+
     //create wms Tile Layer by url
     function _createWMSLayer(params){
         if (params.type == 'wms')
@@ -191,7 +202,8 @@ var APP_MAP = (function(){
             });       
     }
 
-      function _createOSMLayer(params){       
+    //create osm layer
+    function _createOSMLayer(params){       
             return new ol.layer.Tile({
                 source: new ol.source.OSM({
                     attributions: params.attributions,
@@ -203,6 +215,7 @@ var APP_MAP = (function(){
               });
       
     }  
+
     //service Layers------------------------------------------------------------
 
     //create layer vector source
@@ -219,10 +232,52 @@ var APP_MAP = (function(){
         });
     }
     
-    function _createStyleForDrawLayer(geometryType){
-        
+    //-POPUP---------------------------------------------------------------------
+    function _createPopup(){
+        //элементы
+        popupContainer = document.getElementById('popup');
+        popupContent = document.getElementById('popup-content');
+        //popupCloser = document.getElementById('popup-closer'); 
+        //оверлей
+        overlay = new ol.Overlay({
+            element: popupContainer,
+            autoPanAnimation: {
+                duration: 400
+            },
+            stopEvent: false,
+            offset: [5, -25],
+            stopEvent:false
+          });
+
+        //закрытие
+        // popupCloser.onclick = function() {
+        //     _closePopup();
+        // };
     }
 
+    function _setContentToPopup(content){
+        popupContent.innerHTML = content;
+    }
+
+    function _setPopupPosition(coordinates){
+        overlay.setPosition(coordinates);
+    }   
+
+    function _closePopup(){
+        overlay.setPosition(undefined);
+        //popupCloser.blur();
+        return false;
+    }
+
+    function _checkClickOnPopup(e){
+        var res = false;
+        if (e.path)
+            e.path.forEach(function(epItem){
+                if (epItem.classList && epItem.classList.contains('ol-popup'))
+                    res = true;
+            });
+        return res;
+    }
     //View - MAP - layerSwitcher--------------------------------------------------------------------
     //init View
     function _createView() {
@@ -245,19 +300,51 @@ var APP_MAP = (function(){
         map = new ol.Map({
             target: CONFIG_MAP.Map.tagId,
             layers: layers,
-            view: view
+            view: view,
+            overlays: [overlay],
         });
 
         //клик по карте
         map.on('singleclick', function(e){
-            if (flags['identity']){    
-                drawLayer.getSource().clear();               
+
+            //identity======================================
+            if (flags['identity']){  
+                //if popup don't close  
+                if (!_checkClickOnPopup(e.originalEvent)){
+                    _closePopup();
+                    drawLayer.getSource().clear();               
+                }                
+                //event
                 _dispatchEvent(_createEvent('map_singleclick', 
                 {
                     flag:'identity',
                     coordinates:e.coordinate
                 }));
             }
+            
+            //draw address======================================
+            if (flags['add'] && !_checkClickOnPopup(e.originalEvent) && currentGeometry == 'Point'){   
+                //drawlayer
+                _clearDrawLayer();
+                var wgsCoordinate = ol.proj.transform(e.coordinate, "EPSG:3857", "EPSG:4326");
+                _addFeatureToDrawLayer(_createAddressFeatureByProperties({
+                    longitude: wgsCoordinate[0],
+                    latitude:  wgsCoordinate[1]
+                }));
+
+                //geometry for extent
+                var geometry = new ol.geom.Point(
+                    e.coordinate
+                );     
+
+                //event
+                _dispatchEvent(_createEvent('map_drawend', {                    
+                    flag:'draw',
+                    coordinates:wgsCoordinate,
+                    arObjectType: 'Address',
+                    extent: _createExtentByGeometry(geometry)
+                }));
+            }            
         });
     }
 
@@ -365,21 +452,66 @@ var APP_MAP = (function(){
                     flag:'draw',
                     coordinates:e.feature.getGeometry().getCoordinates(),
                     arObjectType: arObjectType,
-                    extent: _createExtent(e.feature.getGeometry())
+                    extent: _createExtentByGeometry(e.feature.getGeometry())
                 }));
+                // map.removeInteraction(draw);
+                // draw = null;
             });
             map.addInteraction(draw);
         }
     }    
     
+    //- Draw Layer --------------------------------------------------
+    function _createStyleForDrawLayer(geometryType){
+        if (geometryType == 'Point'){
+          return   new ol.style.Style({
+            image: new ol.style.Circle({
+                radius: 25,
+                fill: null,
+                stroke: new ol.style.Stroke({
+                    color: 'rgba(255,0,0,1)',
+                    width: 2
+                })
+            })
+        })
+        }
+        else  if (geometryType == 'LineString'){
+          return   new ol.style.Style({
+                stroke: new ol.style.Stroke({
+                    color: 'rgba(255,0,0,1)',
+                    width: 2
+                })
+            });
+        }
+        else
+        return   new ol.style.Style({
+            fill: new ol.style.Fill({
+                color: 'rgba(255, 255, 255, 0.2)'
+              }),
+            stroke: new ol.style.Stroke({
+                color: 'rgba(255,0,0,1)',
+                width: 2
+            })
+        });
+        
+        
+    }
+
+    function _updateStyleForDrawLayer(geometryType){
+        drawLayer.setStyle(_createStyleForDrawLayer(geometryType));
+    }
+
     function _addFeatureToDrawLayer(feature){
         var geometryType = (feature.longt && feature.lati) ? 'Point' : 'LineString';
             style = _createStyleForDrawLayer(geometryType);
-        drawLayer.getSource().clear();
+        _clearDrawLayer();
         drawLayer.getSource().addFeature( feature );
         //drawLayer.setStyle(style);         
     }
 
+    function _clearDrawLayer(){
+        drawLayer.getSource().clear();    
+    }
     //- FEATURES ------------------------------------------------------------------
     function _createAddressFeatureByProperties(properties){
         var geometryFields = CONFIG_MAP.Map.feature.drawFields['Point'];
@@ -397,13 +529,13 @@ var APP_MAP = (function(){
             delta = CONFIG_MAP.Map.feature.extentDelta[geometryType],
             extent = [];
         if (geometryType == 'Point'){
-            extent = [coordinates[0]-delta, coordinates[1]-delta, coordinates[2]+delta, coordinates[3]+delta]
+            extent = [coordinates[0]-delta, coordinates[1]-delta, coordinates[0]+delta, coordinates[1]+delta]
         }
         else  if (geometryType == 'LineString' || geometryType == 'Polygon'){
             var geometryExtent = geometry.getExtent();
             extent = [geometryExtent[0]-delta, geometryExtent[1]-delta, geometryExtent[2]+delta, geometryExtent[3]+delta];
         }     
-        return ol.proj.transformExtent(extent, "EPSG:4326", "EPSG:3857");
+        return ol.proj.transformExtent(extent, "EPSG:3857", "EPSG:4326");
     }
 
     function _createExtentByProperties(properties){
@@ -459,8 +591,15 @@ var APP_MAP = (function(){
             "ukrStreetType": "string",
             "ukrStreetTypeShort": "string"
           };
+        _closePopup();
+        _updateStyleForDrawLayer('Point');
         _addFeatureToDrawLayer(_createAddressFeatureByProperties(address));
         _zoomToExtent(_createExtentByProperties(address));
+        _setContentToPopup(address.html); 
+        var prop = CONFIG_MAP.Map.feature.drawFields.Point,
+            coordinates = ol.proj.transform([address[prop.x], address[prop.y]], "EPSG:4326", "EPSG:3857")
+        ;
+        _setPopupPosition(coordinates);
     }
 
     function selectStreet(street){
@@ -487,21 +626,33 @@ var APP_MAP = (function(){
             "typeNameShortRus": "ул.",
             "valid": false
           };
-        _zoomToExtent(_createExtentByProperties(street));        
+        _closePopup()
+        _clearDrawLayer();
+        _updateStyleForDrawLayer('Point');
+        _zoomToExtent(_createExtentByProperties(street));               
     }
 
     function createAddress(){
+        //popup
+        _closePopup();
+        _setContentToPopup('');        
+        //draw layer
+        _clearDrawLayer();
+        _updateStyleForDrawLayer('Point');
+        //flags and interactions
         _dropFlags();
         _setFlag('add');
         _dropAllInteractions();
-        _createInteractions('Point', 'Address');
+        currentGeometry = 'Point';
+        //_createInteractions('Point', 'Address');
     }
 
     function createStreet(){
         _dropFlags();
         _setFlag('add');
         _dropAllInteractions();
-        _createInteractions('LineString', 'Street');
+        currentGeometry = 'LineString';
+        //_createInteractions('LineString', 'Street');
     }    
 
     function modifyAddress(){
@@ -548,6 +699,15 @@ var APP_MAP = (function(){
         setTimeout(function(){map.updateSize();}, 100);        
     }
 
+    function stopEditor(){
+        //draw layer
+        _clearDrawLayer();
+        //flags and interactions
+        _dropFlags();
+        _setFlag('identity');
+        _dropAllInteractions();
+        currentGeometry = '';        
+    }
     
 
     // !! start map !!
@@ -561,6 +721,8 @@ var APP_MAP = (function(){
         _createLayers();
         //создаем вью
         _createView();
+        //создаем попап
+        _createPopup();
         //создаем карту
         _createMap();
         //создаем layerSwitcher
@@ -584,7 +746,8 @@ return{
     selectAddress : selectAddress,
     selectStreet :  selectStreet,
     getCurrentMapExtent: getCurrentMapExtent,
-    refreshMap:refreshMap
+    refreshMap:refreshMap,
+    stopEditor:stopEditor
 }
 
 })();

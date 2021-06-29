@@ -269,7 +269,7 @@ function dis(value, div) {
 
         function gettabulator(urlload, columns, select, rowformatter, idcontainer) {
             try {
-                table = new Tabulator((idcontainer? idcontainer : "#tableobj"), {
+                table = new Tabulator((idcontainer ? idcontainer : "#tableobj"), {
                     ajaxURL: urlload,
                     //gressiveRender : true ,
                     ajaxLoaderLoading: "<div style='display:inline-block; border:4px solid #333; border-radius:10px; background:#fff; font-weight:bold; font-size:16px; color:#000; padding:10px 20px;'>Завантаження даних</div>",
@@ -372,104 +372,7 @@ function dis(value, div) {
                      UIkit.notification({ message: 'Видалено', status: 'success' });
                 },
 				error: function (data) {
-					 switch (data.responseJSON.errorCode) {
-					  case "INVALID_TOKEN":
-						document.location.href = "login.html";
-						break;
-					case "INCORRECT LOGIN/PASSWORD":
-						UIkit.notification({ message: 'Помилка у логіні або у паролі', status: 'danger'});
-						break;
-					case "INCORRECT CITY":
-						UIkit.notification({ message: 'Помилка назви міста', status: 'danger'});
-						break;
-					case "INTERNAL ERROR":
-						UIkit.notification({ message: 'Внутрішня помилка серверу', status: 'danger'});
-						break;
-					case "CANNOT TRANSLITERATE CITY NAME":
-						UIkit.notification({ message: 'Неможливо перекласти назву міста', status: 'danger'});
-						break;
-					case "EMPTY REGISTER TITLE":
-						UIkit.notification({ message: 'Заголовок порожній', status: 'danger'});
-						break; 
-					case "EMPTY EMAIL":
-						UIkit.notification({ message: 'Електрона адреса порожня', status: 'danger'});
-						break;
-					case "INVALID EMAIL":
-						UIkit.notification({ message: 'Помилка у електронній адресі', status: 'danger'});
-						break;
-					case "EMPTY PHONE NUMBER":
-						UIkit.notification({ message: 'Номер телефону не внесений', status: 'danger'});
-						break;                         
-					case "LATITUDE OUT OF UKRAINE BOUNDARIES":
-						UIkit.notification({ message: 'Координата широти знаходиться за межами України', status: 'danger'});
-						break;
-					case "LONGITUDE OUT OF UKRAINE BOUNDARIES" :
-						UIkit.notification({ message: 'Координата довготи знаходиться за межами України', status: 'danger'});
-						break;
-					case "LOGIN LESS 8 SYMBOLS":
-						UIkit.notification({ message: 'Логін складається меньше ніж з 8-ми символів', status: 'danger'});
-						break;
-					case "PASSWORD LESS 8 SYMBOLS":
-						UIkit.notification({ message: 'Пароль складається меньше ніж з 8-ми символів', status: 'danger'});
-						break;
-					case "EMPTY RESPONSIBLE PERSON NAME":
-					UIkit.notification({ message: "Им'я відповідальної особи не введено", status: 'danger'});
-						break;
-					case "EMPTY STREET NAME":
-						UIkit.notification({ message: 'Назва вулиці порожня', status: 'danger'});
-						break;
-					case "EMPTY AUTHORITY NAME":
-						UIkit.notification({ message: 'Порожня назва органу', status: 'danger'});
-						break;
-					case "EMPTY DISTRICT NAME":
-						UIkit.notification({ message: 'Порожня назва району', status: 'danger'});
-						break;
-					case "EMPTY DECISION TITLE":
-						UIkit.notification({ message: 'Назва рішення не внесена', status: 'danger'});
-						break;
-					case "EMPTY PHONE NUMBER":
-						UIkit.notification({ message: 'Порожній номер телефону', status: 'danger'});
-						break;
-					case "EMPTY ADDRESS NUMBER":
-						UIkit.notification({ message: 'Порожня адреса', status: 'danger'});
-						break;
-					case "INCORRECT ADDRESS STATUS":
-						UIkit.notification({ message: 'Помилка у статусі адреси', status: 'danger'});
-						break;
-					case "EMPTY STREET TYPE NAME":
-						UIkit.notification({ message: 'Порожній тип вулиці', status: 'danger'});
-						break;
-					case "EMPTY SHORT STREET TYPE NAME":
-						UIkit.notification({ message: 'Порожній скорочений тип вулиці', status: 'danger'});
-						break;
-					case "USER ID NOT FOUND":
-						UIkit.notification({ message: 'Користувач не існує', status: 'danger'});
-						break;
-					case "STREET ID NOT FOUND":
-						UIkit.notification({ message: 'Вулиця не уснує', status: 'danger'});
-						break;
-					case "STREET_TYPE ID NOT FOUND":
-						UIkit.notification({ message: 'Тип вулиці не існує', status: 'danger'});
-						break;
-					case "DISTRICT ID NOT FOUND":
-						UIkit.notification({ message: 'Район не існує', status: 'danger'});
-						break;
-					case "AUTHORITY ID NOT FOUND":
-						UIkit.notification({ message: 'Орган не існує', status: 'danger'});
-						break;
-					case "DECISION ID NOT FOUND":
-						UIkit.notification({ message: 'Район не існує', status: 'danger'});
-						break;
-					case "ADDRESS ID NOT FOUND":
-						UIkit.notification({ message: 'Адреса не існує', status: 'danger'});
-						break;
-					case "EMPTY CITY NAME":
-						UIkit.notification({ message: 'Порожня назва міста', status: 'danger'});
-						break;
-					  default:
-						UIkit.notification({ message: data.responseJSON.error , status: 'danger'});
-						break;
-					}
+					 GETERROR(data);
 					location.href = "#close";
 					
 				},
@@ -479,126 +382,6 @@ function dis(value, div) {
 		function getCity(){
 			return "kharkiv";
 		}
-		function Login(login, password) {
-            location.href = "#load";
-            $.ajax({
-                url: `http://10.0.16.13:2023/portal/api/v1/register/${getCity()}/login`,
-                   type: "GET",
-                    data: {
-						"login": login,
-						"password": password
-					},
-                success: function (data) {
-					if(data.token){
-						localStorage.removeItem('token');
-						localStorage.setItem('token', data.token);
-						$(location).attr('href','index.html');
-					}
-                },
-				error: function (data) {
-					 switch (data.responseJSON.errorCode) {
-					  case "INVALID_TOKEN":
-						document.location.href = "login.html";
-						break;
-					case "INCORRECT LOGIN/PASSWORD":
-						UIkit.notification({ message: 'Помилка у логіні або у паролі', status: 'danger'});
-						break;
-					case "INCORRECT CITY":
-						UIkit.notification({ message: 'Помилка назви міста', status: 'danger'});
-						break;
-					case "INTERNAL ERROR":
-						UIkit.notification({ message: 'Внутрішня помилка серверу', status: 'danger'});
-						break;
-					case "CANNOT TRANSLITERATE CITY NAME":
-						UIkit.notification({ message: 'Неможливо перекласти назву міста', status: 'danger'});
-						break;
-					case "EMPTY REGISTER TITLE":
-						UIkit.notification({ message: 'Заголовок порожній', status: 'danger'});
-						break; 
-					case "EMPTY EMAIL":
-						UIkit.notification({ message: 'Електрона адреса порожня', status: 'danger'});
-						break;
-					case "INVALID EMAIL":
-						UIkit.notification({ message: 'Помилка у електронній адресі', status: 'danger'});
-						break;
-					case "EMPTY PHONE NUMBER":
-						UIkit.notification({ message: 'Номер телефону не внесений', status: 'danger'});
-						break;                         
-					case "LATITUDE OUT OF UKRAINE BOUNDARIES":
-						UIkit.notification({ message: 'Координата широти знаходиться за межами України', status: 'danger'});
-						break;
-					case "LONGITUDE OUT OF UKRAINE BOUNDARIES" :
-						UIkit.notification({ message: 'Координата довготи знаходиться за межами України', status: 'danger'});
-						break;
-					case "LOGIN LESS 8 SYMBOLS":
-						UIkit.notification({ message: 'Логін складається меньше ніж з 8-ми символів', status: 'danger'});
-						break;
-					case "PASSWORD LESS 8 SYMBOLS":
-						UIkit.notification({ message: 'Пароль складається меньше ніж з 8-ми символів', status: 'danger'});
-						break;
-					case "EMPTY RESPONSIBLE PERSON NAME":
-					UIkit.notification({ message: "Им'я відповідальної особи не введено", status: 'danger'});
-						break;
-					case "EMPTY STREET NAME":
-						UIkit.notification({ message: 'Назва вулиці порожня', status: 'danger'});
-						break;
-					case "EMPTY AUTHORITY NAME":
-						UIkit.notification({ message: 'Порожня назва органу', status: 'danger'});
-						break;
-					case "EMPTY DISTRICT NAME":
-						UIkit.notification({ message: 'Порожня назва району', status: 'danger'});
-						break;
-					case "EMPTY DECISION TITLE":
-						UIkit.notification({ message: 'Назва рішення не внесена', status: 'danger'});
-						break;
-					case "EMPTY PHONE NUMBER":
-						UIkit.notification({ message: 'Порожній номер телефону', status: 'danger'});
-						break;
-					case "EMPTY ADDRESS NUMBER":
-						UIkit.notification({ message: 'Порожня адреса', status: 'danger'});
-						break;
-					case "INCORRECT ADDRESS STATUS":
-						UIkit.notification({ message: 'Помилка у статусі адреси', status: 'danger'});
-						break;
-					case "EMPTY STREET TYPE NAME":
-						UIkit.notification({ message: 'Порожній тип вулиці', status: 'danger'});
-						break;
-					case "EMPTY SHORT STREET TYPE NAME":
-						UIkit.notification({ message: 'Порожній скорочений тип вулиці', status: 'danger'});
-						break;
-					case "USER ID NOT FOUND":
-						UIkit.notification({ message: 'Користувач не існує', status: 'danger'});
-						break;
-					case "STREET ID NOT FOUND":
-						UIkit.notification({ message: 'Вулиця не уснує', status: 'danger'});
-						break;
-					case "STREET_TYPE ID NOT FOUND":
-						UIkit.notification({ message: 'Тип вулиці не існує', status: 'danger'});
-						break;
-					case "DISTRICT ID NOT FOUND":
-						UIkit.notification({ message: 'Район не існує', status: 'danger'});
-						break;
-					case "AUTHORITY ID NOT FOUND":
-						UIkit.notification({ message: 'Орган не існує', status: 'danger'});
-						break;
-					case "DECISION ID NOT FOUND":
-						UIkit.notification({ message: 'Район не існує', status: 'danger'});
-						break;
-					case "ADDRESS ID NOT FOUND":
-						UIkit.notification({ message: 'Адреса не існує', status: 'danger'});
-						break;
-					case "EMPTY CITY NAME":
-						UIkit.notification({ message: 'Порожня назва міста', status: 'danger'});
-						break;
-					  default:
-						UIkit.notification({ message: data.responseJSON.error , status: 'danger'});
-						break;
-					}
-					location.href = "#close";
-					
-				},
-            });
-        }
 		
 		function DataObjToFormData(obj) {
 			let fd = new FormData();
@@ -638,7 +421,28 @@ function dis(value, div) {
 					location.href = "#close";
                 },
 				 error: function (data) {
-					 switch (data.responseJSON.errorCode) {
+					 GETERROR(data);
+					location.href = "#close";
+					
+				},
+            });
+        }
+		function showModal(name){
+			if (document.getElementById(name)) {
+                            UIkit.modal("#"+name).show();
+                            $("#"+name).scrollTop(0);
+                        }
+		}
+		function hideModal(name){
+			if (document.getElementById(name)) {
+                            UIkit.modal("#"+name).hide();
+                            $("#"+name).scrollTop(0);
+                        }
+		}
+		
+		function GETERROR(data){
+			if(data && data.responseJSON && data.responseJSON.errorCode){
+			switch (data.responseJSON.errorCode) {
 					  case "INVALID_TOKEN":
 						document.location.href = "login.html";
 						break;
@@ -679,7 +483,7 @@ function dis(value, div) {
 						UIkit.notification({ message: 'Пароль складається меньше ніж з 8-ми символів', status: 'danger'});
 						break;
 					case "EMPTY RESPONSIBLE PERSON NAME":
-					UIkit.notification({ message: "Им'я відповідальної особи не введено", status: 'danger'});
+						UIkit.notification({ message: "Им'я відповідальної особи не введено", status: 'danger'});
 						break;
 					case "EMPTY STREET NAME":
 						UIkit.notification({ message: 'Назва вулиці порожня', status: 'danger'});
@@ -732,27 +536,31 @@ function dis(value, div) {
 					case "EMPTY CITY NAME":
 						UIkit.notification({ message: 'Порожня назва міста', status: 'danger'});
 						break;
+						case "CANNOT SAVE FILE":
+						UIkit.notification({ message: 'Помилка при збереженні документу', status: 'danger'});
+						break;
+						case "LOGO_IS_NOT_IMAGE":
+						UIkit.notification({ message: 'Завантажений логотип не є рисунком', status: 'danger'});
+						break;
+						case "CITY REGISTER ALREADY EXISTS":
+						UIkit.notification({ message: 'Реєстр зазначеного міста вже існує', status: 'danger'});
+						break;
+						case "TRYING TO DELETE YOURSELF":
+						UIkit.notification({ message: 'Для видалення свого облікового запису зверніться до техпідтримки', status: 'danger'});
+						break;
 					  default:
 						UIkit.notification({ message: data.responseJSON.error , status: 'danger'});
 						break;
 					}
-					location.href = "#close";
-					
-				},
-            });
-        }
-		function showModal(name){
-			if (document.getElementById(name)) {
-                            UIkit.modal("#"+name).show();
-                            $("#"+name).scrollTop(0);
-                        }
+			}
+			else{
+				UIkit.notification({ message: 'Невизначена помилка', status: 'danger'});
+				return;
+			}
+					return;
 		}
-		function hideModal(name){
-			if (document.getElementById(name)) {
-                            UIkit.modal("#"+name).hide();
-                            $("#"+name).scrollTop(0);
-                        }
-		}
+		
+		
         function getobject(urlget, id, before, after, setcard) {
                 location.href = "#load";
                 $.ajax({
@@ -784,104 +592,7 @@ function dis(value, div) {
                         location.href = "#close";
                     },
 					error: function (data) {
-					 switch (data.responseJSON.errorCode) {
-					  case "INVALID_TOKEN":
-						document.location.href = "login.html";
-						break;
-					case "INCORRECT LOGIN/PASSWORD":
-						UIkit.notification({ message: 'Помилка у логіні або у паролі', status: 'danger'});
-						break;
-					case "INCORRECT CITY":
-						UIkit.notification({ message: 'Помилка назви міста', status: 'danger'});
-						break;
-					case "INTERNAL ERROR":
-						UIkit.notification({ message: 'Внутрішня помилка серверу', status: 'danger'});
-						break;
-					case "CANNOT TRANSLITERATE CITY NAME":
-						UIkit.notification({ message: 'Неможливо перекласти назву міста', status: 'danger'});
-						break;
-					case "EMPTY REGISTER TITLE":
-						UIkit.notification({ message: 'Заголовок порожній', status: 'danger'});
-						break; 
-					case "EMPTY EMAIL":
-						UIkit.notification({ message: 'Електрона адреса порожня', status: 'danger'});
-						break;
-					case "INVALID EMAIL":
-						UIkit.notification({ message: 'Помилка у електронній адресі', status: 'danger'});
-						break;
-					case "EMPTY PHONE NUMBER":
-						UIkit.notification({ message: 'Номер телефону не внесений', status: 'danger'});
-						break;                         
-					case "LATITUDE OUT OF UKRAINE BOUNDARIES":
-						UIkit.notification({ message: 'Координата широти знаходиться за межами України', status: 'danger'});
-						break;
-					case "LONGITUDE OUT OF UKRAINE BOUNDARIES" :
-						UIkit.notification({ message: 'Координата довготи знаходиться за межами України', status: 'danger'});
-						break;
-					case "LOGIN LESS 8 SYMBOLS":
-						UIkit.notification({ message: 'Логін складається меньше ніж з 8-ми символів', status: 'danger'});
-						break;
-					case "PASSWORD LESS 8 SYMBOLS":
-						UIkit.notification({ message: 'Пароль складається меньше ніж з 8-ми символів', status: 'danger'});
-						break;
-					case "EMPTY RESPONSIBLE PERSON NAME":
-					UIkit.notification({ message: "Им'я відповідальної особи не введено", status: 'danger'});
-						break;
-					case "EMPTY STREET NAME":
-						UIkit.notification({ message: 'Назва вулиці порожня', status: 'danger'});
-						break;
-					case "EMPTY AUTHORITY NAME":
-						UIkit.notification({ message: 'Порожня назва органу', status: 'danger'});
-						break;
-					case "EMPTY DISTRICT NAME":
-						UIkit.notification({ message: 'Порожня назва району', status: 'danger'});
-						break;
-					case "EMPTY DECISION TITLE":
-						UIkit.notification({ message: 'Назва рішення не внесена', status: 'danger'});
-						break;
-					case "EMPTY PHONE NUMBER":
-						UIkit.notification({ message: 'Порожній номер телефону', status: 'danger'});
-						break;
-					case "EMPTY ADDRESS NUMBER":
-						UIkit.notification({ message: 'Порожня адреса', status: 'danger'});
-						break;
-					case "INCORRECT ADDRESS STATUS":
-						UIkit.notification({ message: 'Помилка у статусі адреси', status: 'danger'});
-						break;
-					case "EMPTY STREET TYPE NAME":
-						UIkit.notification({ message: 'Порожній тип вулиці', status: 'danger'});
-						break;
-					case "EMPTY SHORT STREET TYPE NAME":
-						UIkit.notification({ message: 'Порожній скорочений тип вулиці', status: 'danger'});
-						break;
-					case "USER ID NOT FOUND":
-						UIkit.notification({ message: 'Користувач не існує', status: 'danger'});
-						break;
-					case "STREET ID NOT FOUND":
-						UIkit.notification({ message: 'Вулиця не уснує', status: 'danger'});
-						break;
-					case "STREET_TYPE ID NOT FOUND":
-						UIkit.notification({ message: 'Тип вулиці не існує', status: 'danger'});
-						break;
-					case "DISTRICT ID NOT FOUND":
-						UIkit.notification({ message: 'Район не існує', status: 'danger'});
-						break;
-					case "AUTHORITY ID NOT FOUND":
-						UIkit.notification({ message: 'Орган не існує', status: 'danger'});
-						break;
-					case "DECISION ID NOT FOUND":
-						UIkit.notification({ message: 'Район не існує', status: 'danger'});
-						break;
-					case "ADDRESS ID NOT FOUND":
-						UIkit.notification({ message: 'Адреса не існує', status: 'danger'});
-						break;
-					case "EMPTY CITY NAME":
-						UIkit.notification({ message: 'Порожня назва міста', status: 'danger'});
-						break;
-					  default:
-						UIkit.notification({ message: data.responseJSON.error , status: 'danger'});
-						break;
-					}
+					 GETERROR(data);
 					location.href = "#close";
 					
 				},
@@ -1017,7 +728,8 @@ function dis(value, div) {
           const elements = document.getElementsByClassName(classnames);
           [...elements].forEach(func);
         }
-
+		
+		
         function kindOfGetCardData(classname) {
             let isError = false;
 
@@ -1052,7 +764,8 @@ function dis(value, div) {
             if (element)
             switch (element.type) {
                 case "number": CARD[arrayname[i]] = +element.value; break;
-                case "text": case "password": case "select-one": case "textarea": CARD[arrayname[i]] = element.value; break;
+                case "text": case "password":  case "textarea": CARD[arrayname[i]] = element.value; break;
+				case "select-one": CARD[arrayname[i]] = +element.value; break;
                 case "date": CARD[arrayname[i]] = element.value =="" ? "/Date(12345)/" : DATEtoUTC(element.value); break;
                 case "datetime-local": CARD[arrayname[i]] = element.value =="" ? "/Date(12345)/" : DATETIMEtoUTC(element.value); break;
                 case "checkbox": CARD[arrayname[i]] = element.checked; break;
