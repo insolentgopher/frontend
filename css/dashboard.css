@@ -1,6 +1,7 @@
 /* -- Top navigation -- */
 #top-head {
-	z-index: 9;
+	z-index: 1001;
+	/*z-index: 9;*/
 	top: 0;
 	left:0;
 	right:0;
@@ -133,7 +134,7 @@
 #content {
 	/*margin-top: 52px;*/
 	margin-top: 64px;
-	padding: 30px 0 0 0;
+	padding: 0 0 0 0;
 	background-color: #f7f7f7;
 	margin-left: 0;
 	transition: margin 0.2s cubic-bezier(.4,0,.2,1);
@@ -248,10 +249,14 @@
   box-sizing: border-box;
   width: 270px;
   padding: 20px 20px;
-  background: #f8f8f8;
+  /*background: #f8f8f8;*/
+  background: rgba(255,255,255,0.5);
   /* 3 */
   overflow-y: auto;
   -webkit-overflow-scrolling: touch;
+  border-right: 1px solid #ebebed;
+ box-shadow: 0 2px 8px rgba(0,0,0,.04);
+ backdrop-filter: blur(7px);
 }
 /* Tablet landscape and bigger */
 @media (min-width: 960px) {
@@ -1031,4 +1036,8 @@
 }
 .uk-offcanvas-bar-light .uk-open > .uk-accordion-title::before {
   background-image: url("data:image/svg+xml;charset=UTF-8,%3Csvg%20width%3D%2213%22%20height%3D%2213%22%20viewBox%3D%220%200%2013%2013%22%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%3E%0A%20%20%20%20%3Crect%20fill%3D%22rgba%2824,%2024,%2024,%200.7%29%22%20width%3D%2213%22%20height%3D%221%22%20x%3D%220%22%20y%3D%226%22%20%2F%3E%0A%3C%2Fsvg%3E");
+}
+
+.uk-offcanvas-aside {
+    z-index: 1;
 }

@@ -28,20 +28,44 @@
 		<script src="https://unpkg.com/axios/dist/axios.js"></script>
 		<link rel="stylesheet" href="css/Custom.css" type="text/css">		
 		<script src="https://cdn.jsdelivr.net/npm/sweetalert2@10"></script>
+		
+		<link href="https://cdnjs.cloudflare.com/ajax/libs/tabulator/4.9.1/css/materialize/tabulator_materialize.css" rel="stylesheet">
+    <script type="text/javascript" src="https://unpkg.com/tabulator-tables@4.8/dist/js/tabulator.min.js"></script>
+	
 		<script type="text/javascript">
+		 var _table;
+		 var columns = [
+
+            {
+                    title: 'Користувач',
+                    field: 'user',
+                    sorter: "string",
+                    headerFilter:true,
+                    headerFilterPlaceholder: 'Пошук...'
+            },
+                ,
+            {
+                    title: 'Дата та час',
+                    field: 'datetime',
+                    sorter: "string",
+                    headerFilter:true,
+                    headerFilterPlaceholder: 'Пошук...'
+            },
+            {
+                    title: 'Дія',
+                    field: 'event',
+                    sorter: "string",
+                    headerFilter:true,
+                headerFilterPlaceholder: 'Пошук...',
+            }
+        ];
 		$(function () {
 		location.href="#close";
 		MainURL = "http://10.0.16.13:2023/portal/api/v1/register/";
 		
-		User = {
+		Audit = {
 		data: null,
-		CARD : {id: 0, comment: "", email: "", login: "", password: ""},
-		CARDempty : {id: 0, comment: "", email: "", login: "", password: ""},
-		URLGET: "/user",
-		URLGETS: "/user",
-		URLPOST: "/user",
-		URLPUT: "/user",
-		URLDELETE: "/user"
+		URLGET: "/audit",
 		};
 		getAdditionalyDataStatic();
 		getAdditionalyData();
@@ -65,10 +89,10 @@
 		async function getAdditionalyData() {
             try {
 				location.href="#load";
-				
-                const x = await axios.get(MainURL + getCity()+User.URLGET);
-                User.data = x.data;
-				paintUser();
+                const x = await axios.get(MainURL + getCity()+Audit.URLGET);
+                Audit.data = x.data;
+				_table = gettabulator('', columns);
+				_table.replaceData(Audit.data); 
             }
             catch {
                 UIkit.notification({ message: 'Помилка! Дані не були завантажені', status: 'danger' });
@@ -76,62 +100,6 @@
 			location.href="#close";
 
         }
-		
-		function paintUser(){
-		$("#tbodyUser").empty();
-		User.data.forEach(function (Item) {
-		$('#tbodyUser').append(`<tr><td>${Item.login}</td><td>${Item.email}</td><td>${Item.comment? Item.comment : ""}</td>
-										<td class="uk-text-nowrap"><a onclick='getUser(${Item.id})' class="uk-icon-button uk-margin-small-right" uk-icon="pencil"></a>
-											<a class="uk-icon-button uk-margin-small-right" onclick='deleteUser(${Item.id})' uk-icon="trash"></a>
-										</td></tr>`);
-            });
-		}
-		
-		function getUser(id) {
-		location.href="#load";
-        emptyformbyclass("User");
-        User.CARD = Object.assign({}, User.CARDempty);
-        User.CARD.id = id;
-        if (User.CARD.id != 0) {
-			$('#password').removeClass("necessarilytext");
-			$('#labelpassword').removeClass("required_uk");
-            $('#h2modalUser').text('Редагувати');
-			User.CARD = User.data.find(a=> a.id == id);
-            getobject_ByData(User.CARD, function before(){}, function after(){showModal('modalCardAddUser')});
-        }
-        else {
-			$('#password').addClass("necessarilytext");
-			$('#labelpassword').addClass("required_uk");
-            $('#h2modalCardAddUser').text('Додати');
-            showModal('modalCardAddUser');
-        }
-		location.href="#close";
-    }
-		
-	function deleteUser(id){
-	let token = localStorage.getItem('token');
-	deleteobject(MainURL + getCity()+User.URLDELETE + "/" + id, null, token, function func(){ getAdditionalyData();});
-	}
-	
-	async function updateUser(){
-	var c = getCardData(User.CARD, "User");
-        if (c) {
-		let id = User.CARD.id;
-		let token = localStorage.getItem('token');
-			if(id == 0)
-		{
-			await saveobject(MainURL + getCity()+User.URLPOST, c, token, "POST", function before(){
-			}, function after() {getAdditionalyData(); hideModal('modalCardAddUser')});
-		}
-		else{
-		
-			await saveobject(MainURL + getCity()+User.URLPUT + "/" + User.CARD.id, c, token, "PUT", function before(){},
-			 function after() {getAdditionalyData();hideModal('modalCardAddUser')});
-		}
-		
-            
-        }
-	}
 		</script>
 	</head>
 	<body>
@@ -159,9 +127,9 @@
 				<ul class="uk-nav uk-nav-default uk-nav-parent-icon" data-uk-nav>
 					<li class="uk-nav-header uk-heading-bullet">Адресний реєстр</li>
 					<li><a href="index.html"><span data-uk-icon="icon: search" class="uk-margin-small-right"></span>Пошук</a></li>
-					<li><a href="#"><span data-uk-icon="icon: history" class="uk-margin-small-right"></span>Аудит</a></li>
+					<li class='uk-active'><a href="audit.html"><span data-uk-icon="icon: history" class="uk-margin-small-right"></span>Аудит</a></li>
 					<li><a href="dictionaries.html"><span data-uk-icon="icon: thumbnails" class="uk-margin-small-right"></span>Довідники</a></li>
-					<li class='uk-active'><a href="users.html"><span data-uk-icon="icon: users" class="uk-margin-small-right"></span>Користувачі</a></li>
+					<li><a href="users.html"><span data-uk-icon="icon: users" class="uk-margin-small-right"></span>Користувачі</a></li>
 					<li><a href="#"><span data-uk-icon="icon: album" class="uk-margin-small-right"></span>Історія</a></li>
 					<li><a href="#"><span data-uk-icon="icon: cloud-upload" class="uk-margin-small-right"></span>Імпорт</a></li>
 					<li><a href="#"><span data-uk-icon="icon: cloud-download" class="uk-margin-small-right"></span>Еспорт</a></li>
@@ -173,7 +141,7 @@
 				
 				<div class="left-content-box uk-margin-top">
 					
-						<h5>Статистика</h5>
+						<!--<h5>Статистика</h5>
 						<div>
 							<span class="uk-text-small">Кількість адрес <small>(+50)</small></span>
 							<progress class="uk-progress" value="50" max="100"></progress>
@@ -182,7 +150,7 @@
 							<span class="uk-text-small">Додано нових за тиждень <small>(+78)</small></span>
 							<progress class="uk-progress success" value="78" max="100"></progress>
 						</div>
-						<!--<div>
+						<div>
 							<span class="uk-text-small">Feedback <small>(-12)</small></span>
 							<progress class="uk-progress warning" value="12" max="100"></progress>
 						</div>-->
@@ -209,76 +177,24 @@
 			</div>
 		</aside>
 		<div id="content" data-uk-height-viewport="expand: true">
-    <div id="modalCardAddUser" bg-close="false" class="uk-modal-container uk-flex-top" uk-modal>
-    <div class="uk-modal-dialog m uk-modal-body uk-margin-auto-vertical">
-        <form class="uk-form-stacked">
-            <legend class="uk-legend uk-heading-bullet uk-padding-small uk-padding-remove-top uk-padding-remove-bottom" id="h2modalCardAddUser"></legend>
-            <div class="uk-grid uk-grid-small uk-grid-match uk-flex-top uk-margin" uk-grid>
-
-                <div class="uk-width-1-2@s">
-                    <label class="uk-form-label required_uk">Логін</label>
-                    <div class="uk-form-controls">
-                        <input class="uk-input necessarilytext User" type="text" id="login">
-                    </div>
-                </div>
-				<div class="uk-width-1-2@s">
-                    <label class="uk-form-label" id='labelpassword'>Пароль</label>
-                    <div class="uk-form-controls">
-                        <input class="uk-input User" type="password" id="password">
-                    </div>
-                </div>
-				<div class="uk-width-1-1">
-                    <label class="uk-form-label required_uk">Електрона адреса</label>
-                    <div class="uk-form-controls">
-                        <input class="uk-input necessarilytext User" type="text" id="email">
-                    </div>
-                </div>
-				<div class="uk-width-1-1">
-                    <label class="uk-form-label">Додаткова інформація</label>
-                    <div class="uk-form-controls">
-                        <textarea class="uk-textarea User" rows='3'  id="comment"></textarea>
-                    </div>
-                </div>
-            </div>
-        </form>
-
-        <p class="uk-text-right">
-            <button class="uk-button uk-button-default uk-modal-close" type="button">Відмінити</button>
-            <button class="uk-button uk-button-primary" onclick="updateUser()" type="button">Зберегти</button>
-        </p>
-    </div>
-</div>
 			<div class="uk-container uk-container-expand">
 				<div class="uk-margin-top">		
-				<h3 class="uk-heading-bullet">Користувачі</h3>
+				<h3 class="uk-heading-bullet">Аудит</h3>
 					<div class="uk-card-body uk-card-small uk-card-default">		
-						<p uk-margin>
-							<a class="uk-button uk-button-default" uk-tooltip="Додати нового користувача" onclick='getUser(0)'>Додати</a>
-						</p>
-						<div class="uk-overflow-auto">										
-							<table class="uk-table uk-table-middle uk-table-divider uk-table-small" >
-								<thead>
-									<tr>
-									<th class="uk-width-auto">Логін</th>
-									<th class="uk-width-auto">Еmail</th>
-										<th class="uk-width-expand">Додатково</th>
-										<th class="uk-width-auto"></th>
-									</tr>
-								</thead>
-								<tbody id="tbodyUser">
-																				
-								</tbody>
-							</table>	
+						<div class="uk-overflow-auto">
+							<div id="tableobj">
+							</div>
 						</div>
 					</div>
 				</div>
-			
 			</div>
 			<footer class="uk-section uk-section-small uk-text-center">
 				<hr>
 				<p class="uk-text-small uk-text-center">Всі права захищені 2021</p>
-				
-			</footer>				
+				<!--
+				- <a href="#">MC</a> | Створено за допомоги <a href="http://getuikit.com" title="Відвідати UIkit 3" target="_blank" data-uk-tooltip><span data-uk-icon="uikit"></span></a> </p>
+				-->
+			</footer>			
 		</div>
 	</body>
 </html>

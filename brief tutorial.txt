@@ -9,4 +9,7 @@
 6) если нужно получить чужие наработки на свою локальную машину, выполняете 
    git pull (может потребовать токен - получите на https://docs.github.com/en/github/authenticating-to-github/keeping-your-account-and-data-secure/creating-a-personal-access-token)
 7) Если что непонятно, вы знаете как меня найти
-8) УДАЧИ!      
+8) УДАЧИ!      g
+
+
+ Set-Location -Path C:\D\frontend

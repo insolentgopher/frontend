@@ -41,12 +41,11 @@
 		UIkit.tooltip(document.getElementById("addAdr")).show();
 		location.href="#close";
 		MainURL = "http://10.0.16.13:2023/portal/api/v1/register/";
-		StreetType =[]; District = [];
-		STATUSES = [{id: 0 , name : 'Чинна' },{id: 1 , name : 'Зі змінами' },{id: 2 , name : 'Скасована' },{id: 3 , name : 'Чинність відновлена' }];
+		StreetType =[];
 		Street = {
 		data: null,
-		CARD : {id: 0, aliasOne: "", aliasTwo: "", rightTopLatitude: 0, righTopLongitude: 0, name: "", leftBottomLatitude: 0, leftBottomLongitude: 0, shortTypeName: "", typeId: 0, typeName: ""},
-		CARDempty : {id: 0, aliasOne: "", aliasTwo: "", rightTopLatitude: 0, rightTopLongitude: 0, name: "", leftBottomLatitude: 0, leftBottomLongitude: 0, shortTypeName: "", typeId: 0, typeName: ""},
+		CARD : {id: 0, aliasOne: "", aliasTwo: "", leftTopLatitude: 0, leftTopLongitude: 0, name: "", rightBottomLatitude: 0, rightBottomLongitude: 0, shortTypeName: "", typeId: 0, typeName: ""},
+		CARDempty : {id: 0, aliasOne: "", aliasTwo: "", leftTopLatitude: 0, leftTopLongitude: 0, name: "", rightBottomLatitude: 0, rightBottomLongitude: 0, shortTypeName: "", typeId: 0, typeName: ""},
 		URLGET: "/street",
 		URLGETS: "/street",
 		URLPOST: "/street",
@@ -60,103 +59,48 @@
 		CARDempty : {id: 0, addressNumber: "", block: "", cadastre: "", description: "", districtId: 0, latitude: 0, longitude: 0, postCode: 0, status: 0, streetId: 0},
 		URLGET: "/address",
 		URLGETS: "/address",
-		URLPOST: "/street/address",
-		URLPUT: "/street/address",
-		URLDELETE: "/street/address"
+		URLPOST: "/address",
+		URLPUT: "/address",
+		URLDELETE: "/address"
 		};
-		getAdditionalyDataStatic(function after(){getAdditionalyData();});
 		
+		getAdditionalyData();
 		
-		$('#modalCardAddAddress').on({
-
-    'show.uk.modal': function(){
-	
-        let content; content = $('#map').detach();
-		content.appendTo('#mapAddress');
-		APP_MAP.refreshMap();
-		APP_MAP.createAddress();
-    },
-
-    'hide.uk.modal': function(){
-	location.href="#load";
-	<!--UIkit.offcanvas(document.getElementById("offcanvas-usage")).show();-->
-	let content;
-        content = $('#map').detach();
-		content.appendTo('#divmap');
-		APP_MAP.refreshMap();
-		APP_MAP.stopEditor();
-		location.href="#close";
-    }
-});
 		$('#modalCardAddStreet').on({
 
     'show.uk.modal': function(){
-	
-        let content; content = $('#map').detach();
-		content.appendTo('#mapStreet');
-		APP_MAP.refreshMap();
-
+        
     },
 
     'hide.uk.modal': function(){
-	location.href="#load";
-	<!--UIkit.offcanvas(document.getElementById("offcanvas-usage")).show();-->
 	let content;
         content = $('#map').detach();
 		content.appendTo('#divmap');
-		APP_MAP.refreshMap();
-		location.href="#close";
     }
 });
 
 		});
-		async function getAdditionalyDataStatic(after) {
+		async function getAdditionalyData() {
             try {
 				location.href="#load";
 				const main = await axios.get(MainURL + getCity());
                 if(main.data)
 				{
+					<!--forEachClassName("custom-logo", i => i.setAttribute("src", main.data.logoUrl));-->
 					forEachClassName("citytitle", i => i.textContent= main.data.cityName);
 					forEachClassName("maintitle", i => i.textContent= main.data.title);
 					forEachClassName("custom-logo", i => i.setAttribute('src', main.data.logoUrl));
 				}
-
-				APP_MAP.selectStreet({rightTopLatitude:  main.data.rtLattitude ,
-				rightTopLongitude:  main.data.rtLongitude ,
-				leftBottomLatitude:  main.data.lbLattitude ,
-				leftBottomLongitude:  main.data.lbLongitude });
+				<!--forEachClassName("custom-logo", i => i.setAttribute('src', MainURL + getCity()+"/logo"));-->
+                
+				const x = await axios.get(MainURL + getCity()+Street.URLGET);
+                Street.data = x.data.sort((a, b) => a.name.localeCompare(b.name));
 				
-				CONFIG_MAP.Map.maxExtent = [main.data.lbLattitude, main.data.lbLongitude, main.data.rtLattitude, main.data.rtLongitude];
-				
-				const x = await axios.get(MainURL + getCity()+"/district");
-                District = x.data;
-				fillSelect('districtId', District, "id", "name");
 				const y = await axios.get(MainURL + getCity()+"/streetype");
                 StreetType = y.data;
 				fillSelect('typeId', StreetType, "id", "typeName");
 				
-				
-				
-				fillSelect('status', STATUSES, "id", "name");
-				after();
-            }
-            catch {
-                UIkit.notification({ message: 'Помилка! Дані не були завантажені', status: 'danger' });
-            }
-
-        }
-		async function getAdditionalyData() {
-		
-            try {
-				location.href="#load";
-				
-				const x = await axios.get(MainURL + getCity()+"/street");
-                Street.data = x.data;
-				Street.data.forEach(function (i) { i.fullname = i.name + ", " + i.shortTypeName});
-				searchStreet($('#search').val());
-				fillSelect('streetId', Street.data, "id", "fullname");
-				$('#countStreettext').text(' - ' + Street.data.length);
-				$('#countStreet').val(Street.data.length);
+				paintStreet(Street.data);
             }
             catch {
                 UIkit.notification({ message: 'Помилка! Дані не були завантажені', status: 'danger' });
@@ -164,124 +108,33 @@
 			location.href="#close";
 
         }
-		function selectingStreetTr(id){
-		removeSelectStreetTr();
-		$('#street'+id).addClass("uk-active");
-		}
 		
-		
-		function getSelectStreet(){
-		let  element = document.getElementsByClassName("streettr uk-active");
-		return element.length > 0 ? +element[0].id.replace('street','') : null;
-		}
-		
-		
-		function removeSelectStreetTr(){
-		forEachClassName("streettr uk-active", i => i.classList.remove("uk-active"));
-		}
-		function hideShowIconSearch(search){
-		if(search.length != 0){
-			$('#iconSearch').addClass('uk-hidden');
-			$('#iconClose').removeClass('uk-hidden');
-		}
-		else
-		{
-			$('#iconSearch').removeClass('uk-hidden');
-			$('#iconClose').addClass('uk-hidden');
-		}
-		}
 		function searchStreet(search){
-		<!--removeSelectStreetTr();-->
-		if(search.length > 2){
+		if(search != ""){
 		let arrayOfStrings = search.split(" ");
 		let obj = {...Street.data};
 		arrayOfStrings.forEach(function (Item) {
-			obj = Object.values(obj).filter(a => (a.name + " " + a.aliasOne+" " + a.aliasTwo).toUpperCase().indexOf(Item.toUpperCase())>-1);
+			obj = Object.values(obj).filter(a => (a.name + " " + a.typeName+ " " + a.shortTypeName +" " + a.aliasOne+" " + a.aliasTwo).toUpperCase().indexOf(Item.toUpperCase())>-1);
 			});
 			paintStreet(obj);
-			document.getElementById("search").focus();
 		}
-		if(search.length==0)
+		else
 		{
 			paintStreet(Street.data);
 		}
-		
 		}
 		function paintStreet(data){
-		location.href="#load";
 		$("#tbodyStreet").empty();
-		$("#container333").animate({ scrollTop: 0 }, "fast");
 		data.forEach(function (Item) {
-		$('#tbodyStreet').append(`<tr class="uk-visible-toggle streettr" id="street${Item.id}" ><td onclick='getAddresses(${Item.id})'>${Item.fullname}</td>
-										<td class="uk-text-nowrap uk-preserve-width"><a onclick=' getStreet(${Item.id})' class="uk-margin-small-right uk-invisible-hover" uk-icon="pencil"></a>
+		$('#tbodyStreet').append(`<tr class="uk-visible-toggle"><td onclick='getAddress(${Item.id})'>${Item.name}, ${Item.shortTypeName}</td>
+										<td class="uk-text-nowrap"><a onclick='getStreet(${Item.id})' class="uk-icon-button uk-margin-small-right uk-invisible-hover" uk-icon="pencil"></a>
 										</td></tr>`);
             });
-			if(data.length ==0){
-			$('#tbodyStreet').append(`<tr><td>Не знайдено</td>
-										<td></td></tr>`);
-			}
-			location.href="#close";
 		}
-		
-		function getstatus(id)
-		{
-		
-		return STATUSES.find(a=> a.id == id) ? STATUSES.find(a=> a.id == id).name : "?";
-		}
-		function getFullAdr(adr){
-		
-		let s = Street.data.find(a=> a.id == adr.streetId);
-		return (s.shortTypeName + " " +  s.name+ ", " + adr.addressNumber + (adr.block !='' ? (" корп." + adr.block) : ""));
-		}
-		async function getPoint(id){
+		async function getAddress(idstreet){
 		try {
-				location.href="#load";
-				let adr = Address.data.find(a=> a.id == id);
-				
-				if (adr){
-				
-				let d = District.find (a=> a.id == adr.districtId);
-				
-				let content = `<div class="">
-    <div class="uk-grid-small uk-grid-match uk-flex-top uk-margin-remove uk-visible-toggle" uk-grid>
-					  <div class="uk-width-1-1">
-						<ul class="uk-nav uk-nav-default">
-							<li class="uk-nav-header uk-text-primary">${getFullAdr(adr)}</li>
-						  <li class="uk-nav-divider"></li>
-							<li>Статус: <span class='uk-text-secondary'>${getstatus(adr.status)}</span></li>
-							<li>Район: <span class='uk-text-secondary'>${d ? d.name : ""}</span></li>
-							<li>Індекс: <span class='uk-text-secondary'>${adr.postCode}</span></li>
-							<li>Кадастровий номер: <span class='uk-text-secondary'>${adr.cadastre}</span></li>
-							<li>Додатково: <span class='uk-text-secondary'>${adr.description}</span></li>
-						</ul>
-					</div>
-					  </div>
-    <div uk-drop='pos: right-center' class='uk-drop uk-drop-small'>
-        <div class="uk-card uk-card-body uk-card-default uk-padding-small" style='left: -60px;'><a onclick='getAddress(${adr.id})' uk-icon="icon: pencil"></a>
-		<a href="#" uk-icon="icon: folder"></a></div>
-    </div>
-</div>`;
-				APP_MAP.selectAddress({... Address.data.find(a=> a.id == id), html: content});
-				}
-            }
-            catch {
-                UIkit.notification({ message: 'Помилка! Дані не були завантажені', status: 'danger' });
-            }
-			location.href="#close";
-		
-		
-		
-		}
-		
-		async function getAddresses(idstreet){
-		try {
-				location.href="#load";
-				
-				APP_MAP.selectStreet(Street.data.find(a=> a.id == idstreet));
 				const a = await axios.get(MainURL + getCity()+ "/street/" + idstreet + Address.URLGET);
-				Address.data = a.data;
 				paintAddress(a.data);
-				selectingStreetTr(idstreet);
             }
             catch {
                 UIkit.notification({ message: 'Помилка! Дані не були завантажені', status: 'danger' });
@@ -291,15 +144,45 @@
 		
 		
 		}
-		async function updateStreet(){
-		var c = getCardData(Street.CARD, "Street");
-        if (c) {
-		let r = APP_MAP.getCurrentMapExtent();
-		c.rightTopLatitude = r[3];
-		c.rightTopLongitude = r[2];
-		c.leftBottomLatitude = r[1];
-		c.leftBottomLongitude = r[0];
+		function paintAddress(data){
+		$("#tbodyAddress").empty();
+		data.forEach(function (Item) {
+		$('#tbodyAddress').append(`<span class="uk-badge">${Item.addressNumber}</span>`);
+            });
+		}
+		function getStreet(id) {
+		location.href="#load";
+        emptyformbyclass("Street");
+        Street.CARD = Object.assign({}, Street.CARDempty);
+        Street.CARD.id = id;
+        if (Street.CARD.id != 0) {
+			
+            $('#h2modalStreet').text('Редагувати вулицю');
+			Street.CARD = Street.data.find(a=> a.id == id);
+            getobject_ByData(Street.CARD, function before(){}, function after(){let content; content = $('#map').detach();
+		content.appendTo('#mapStreet'); showModal('modalCardAddStreet')});
+        }
+        else {
+            $('#h2modalStreet').text('Додати вулицю');
+			let content;
+            content = $('#map').detach();
+		content.appendTo('#mapStreet');
+		showModal('modalCardAddStreet');
+        }
 		
+		
+		
+		location.href="#close";
+    }
+		
+	function deleteStreet(){
+	let token = localStorage.getItem('token');
+	deleteobject(MainURL + getCity()+Street.URLDELETE + "/" + Street.CARD.id, null, token, function func(){ hideModal('modalCardAddStreet'); getAdditionalyData();});
+	}
+	
+	async function updateStreet(){
+	var c = getCardData(Street.CARD, "Street");
+        if (c) {
 		let id = Street.CARD.id;
 		let token = localStorage.getItem('token');
 			if(id == 0)
@@ -309,97 +192,13 @@
 		}
 		else{
 		
-			await saveobject(MainURL + getCity()+Street.URLPUT + "/" + id, c, token, "PUT", function before(){},
-			 function after() {getAdditionalyData(); hideModal('modalCardAddStreet')});
+			await saveobject(MainURL + getCity()+User.URLPUT + "/" + id, c, token, "PUT", function before(){},
+			 function after() {getAdditionalyData();hideModal('modalCardAddStreet')});
 		}
 		
             
         }
 	}
-		
-		async function updateAddress(){
-		var c = getCardData(Address.CARD, "Address");
-		if(c.latitude == 0 || c.longitude == 0 ){
-		UIkit.notification({ message: 'Потрібно позначити місце розташування на карті', status: 'danger' });
-		return;
-		}
-        if (c) {
-		let id = Address.CARD.id;
-		let token = localStorage.getItem('token');
-			if(id == 0)
-		{
-			await saveobject(MainURL + getCity()+Address.URLPOST, c, token, "POST", function before(){
-			}, function after() {if(getSelectStreet() == c.streetId) { getAddresses(c.streetId);} hideModal('modalCardAddAddress')});
-		}
-		else{
-		
-			await saveobject(MainURL + getCity()+Address.URLPUT + "/" + id, c, token, "PUT", function before(){},
-			 function after() {if(getSelectStreet() == c.streetId) { getAddresses(c.streetId);} hideModal('modalCardAddAddress')});
-		}
-		
-            
-        }
-	}
-		
-		
-		function paintAddress(data){
-		$("#tbodyAddress").empty();
-		$("#container444").animate({ scrollTop: 0 }, "fast");
-		data.forEach(function (Item) {
-		$('#tbodyAddress').append(`<span class="uk-badge ${Item.status == 2 ? 'line-through': ''}" onclick='getPoint(${Item.id})'>${Item.addressNumber}</span>`);
-            });
-			if(data.length ==0){
-			$('#tbodyAddress').append(`<span>Не знайдено</span>`);
-			}
-		}
-		function getStreet(id) {
-		
-        emptyformbyclass("Street");
-        Street.CARD = Object.assign({}, Street.CARDempty);
-        Street.CARD.id = id;
-        if (Street.CARD.id != 0) {
-			forEachClassName("delstreet", i => i.classList.remove("uk-hidden"));
-            $('#h2modalStreet').text('Редагувати вулицю');
-			Street.CARD = Street.data.find(a=> a.id == id);
-            getobject_ByData(Street.CARD, function before(){}, function after(){ APP_MAP.selectStreet( Street.data.find(a=> a.id == id)); showModal('modalCardAddStreet')});
-        }
-        else {
-		forEachClassName("delstreet", i => i.className += ' uk-hidden');
-            $('#h2modalStreet').text('Додати вулицю');
-		showModal('modalCardAddStreet');
-        }
-		
-    }
-		function getAddress(id) {
-		
-        emptyformbyclass("Address");
-        Address.CARD = Object.assign({}, Address.CARDempty);
-        Address.CARD.id = id;
-        if (Address.CARD.id != 0) {
-			forEachClassName("deladdress", i => i.classList.remove("uk-hidden"));
-            $('#h2modalAddress').text('Редагувати адресу');
-			Address.CARD = Address.data.find(a=> a.id == id);
-            getobject_ByData(Address.CARD, function before(){}, function after(){getPoint(id); showModal('modalCardAddAddress')});
-			
-			
-        }
-        else {
-		forEachClassName("deladdress", i => i.className += ' uk-hidden');
-		$('#streetId').val(getSelectStreet()).trigger('change');
-        $('#h2modalAddress').text('Додати адресу');
-		showModal('modalCardAddAddress');
-        }
-		
-    }
-	function deleteStreet(){
-	let token = localStorage.getItem('token');
-	deleteobject(MainURL + getCity()+Street.URLDELETE + "/" + Street.CARD.id, null, token, function func(){ hideModal('modalCardAddStreet'); getAdditionalyData();});
-	}
-	function deleteAddress(){
-	let token = localStorage.getItem('token');
-	deleteobject(MainURL + getCity()+Address.URLDELETE + "/" + Address.CARD.id, null, token, function func(){ hideModal('modalCardAddAddress'); getAddresses(Address.CARD.streetId);});
-	}
-	
 		</script>
 	</head>
 	<body>
@@ -407,82 +206,7 @@
  <span uk-spinner="ratio: 7"></span>
 		</div>
 		
-		
-		<div id="modalCardAddAddress" class="uk-modal-full"  uk-modal="stack: true">
-    <div class="uk-modal-dialog">
-        <button class="uk-modal-close-full uk-close-large" type="button" uk-close></button>
-  
-        <div class="uk-grid-collapse  uk-flex-middle" uk-grid>
-            <div class="uk-width-1-2@s" id="mapAddress" uk-height-viewport="offset-top: true"></div>
-            <div class="uk-width-1-2@s uk-padding-large">
-                <h1 class="uk-legend uk-heading-bullet" id="h2modalAddress"></h1>
-    <div class="uk-grid-small uk-grid-match uk-flex-top uk-margin" uk-grid>
-	<div class="uk-width-1-2@s">
-      <label class="uk-form-label required_uk">Вулиця</label>
-      <div class="uk-form-controls">
-      <select class="uk-select necessarilyselect uk-width-1-1 Address"  id="streetId"></select>                       
-      </div>
-     </div>
-	 
-     <div class="uk-width-1-4@s">
-      <label class="uk-form-label required_uk">Номер</label>
-      <div class="uk-form-controls">
-       <input class="uk-input necessarilytext Address" type="text" id="addressNumber">
-      </div>
-     </div>
-	 <div class="uk-width-1-4@s">
-	 <label class="uk-form-label">Корпус</label>
-      <div class="uk-form-controls">
-       <input class="uk-input Address" type="text" id="block">
-      </div>
-     </div>
-	 <div class="uk-width-1-3@s">
-      <label class="uk-form-label required_uk">Статус</label>
-      <div class="uk-form-controls">
-      <select class="uk-select necessarilyselect uk-width-1-1 Address"  id="status"></select>                       
-      </div>
-     </div>
-	 <div class="uk-width-2-3@s">
-      <label class="uk-form-label required_uk">Район</label>
-      <div class="uk-form-controls">
-      <select class="uk-select necessarilyselect uk-width-1-1 Address"  id="districtId"></select>                       
-      </div>
-     </div>
-	 <div class="uk-width-1-2@s">
-	 <label class="uk-form-label">Кадастровий номер</label>
-      <div class="uk-form-controls">
-       <input class="uk-input Address" type="text" id="cadastre">
-      </div>
-     </div>
-	 <div class="uk-width-1-2@s">
-	 <label class="uk-form-label">Індекс</label>
-      <div class="uk-form-controls">
-       <input class="uk-input Address" type="text" id="postCode">
-      </div>
-     </div>
-	 <div class="uk-width-1-1">
-	 <label class="uk-form-label">Додатково</label>
-      <div class="uk-form-controls">
-	   <textarea class="uk-textarea Address" rows='2'  id="description"></textarea>
-      </div>
-     </div>
-	 
-     
-     
-     <div class="uk-width-1-1">
-     <p class="uk-text-right">
-    <button class="uk-button uk-button-default deladdress" onclick="deleteAddress()" type="button">Видалити</button>
-    <button class="uk-button uk-button-primary " onclick="updateAddress()" type="button">Зберегти</button>
-   </p>
-   </div>
-     
-    </div>
-            </div>
-        </div>
-    </div>
-</div>
-
-<div id="modalCardAddStreet" class="uk-modal-full"  uk-modal="stack: true">
+<div id="modalCardAddStreet" class="uk-modal-full" uk-modal>
     <div class="uk-modal-dialog">
         <button class="uk-modal-close-full uk-close-large" type="button" uk-close></button>
   
@@ -518,7 +242,7 @@
      </div>
      <div class="uk-width-1-1">
      <p class="uk-text-right">
-    <button class="uk-button uk-button-default delstreet" onclick="deleteStreet()" type="button">Видалити</button>
+    <button class="uk-button uk-button-default" onclick="deleteStreet()" type="button">Видалити</button>
     <button class="uk-button uk-button-primary" onclick="updateStreet()" type="button">Зберегти</button>
    </p>
    </div>
@@ -540,7 +264,7 @@
 									<img class="custom-logo uk-margin-small-right" src="" alt=""><span class="uk-text-bold maintitle "></span>
 							</a>
 						</div>
-						<a class="uk-icon-button" href="#offcanvas-usage" data-uk-icon="icon:more-vertical" title="Налаштування" uk-toggle></a>
+						<a class="uk-icon-button" href="#offcanvas-usage" data-uk-icon="icon:settings" title="Налаштування" uk-toggle></a>
 					</div>
 					<div class="uk-navbar-right">
 						<ul class="uk-navbar-nav">
@@ -581,7 +305,7 @@
 				<ul class="uk-nav uk-nav-default uk-nav-parent-icon" data-uk-nav>
 					<li class="uk-nav-header uk-heading-bullet">Адресний реєстр</li>
 					<li class='uk-active'><a href="index.html"><span data-uk-icon="icon: search" class="uk-margin-small-right"></span>Пошук</a></li>
-					<li><a href="audit.html"><span data-uk-icon="icon: history" class="uk-margin-small-right"></span>Аудит</a></li>
+					<li><a href="#"><span data-uk-icon="icon: history" class="uk-margin-small-right"></span>Аудит</a></li>
 					<li><a href="dictionaries.html"><span data-uk-icon="icon: thumbnails" class="uk-margin-small-right"></span>Довідники</a></li>
 					<li ><a href="users.html"><span data-uk-icon="icon: users" class="uk-margin-small-right"></span>Користувачі</a></li>
 					<li><a href="#"><span data-uk-icon="icon: album" class="uk-margin-small-right"></span>Історія</a></li>
@@ -597,13 +321,13 @@
 					
 						<h5>Статистика</h5>
 						<div>
-							<span class="uk-text-small">Кількість вулиць <small id='countStreettext'></small></span>
-							<progress class="uk-progress" value="0" id='countStreet' max="5000"></progress>
+							<span class="uk-text-small">Кількість адрес <small>(+50)</small></span>
+							<progress class="uk-progress" value="50" max="100"></progress>
 						</div>
-						<!--<div>
+						<div>
 							<span class="uk-text-small">Додано нових за тиждень <small>(+78)</small></span>
 							<progress class="uk-progress success" value="78" max="100"></progress>
-						</div>-->
+						</div>
 						<!--<div>
 							<span class="uk-text-small">Feedback <small>(-12)</small></span>
 							<progress class="uk-progress warning" value="12" max="100"></progress>
@@ -637,7 +361,7 @@
 		
 
 
-<div id="offcanvas-usage" class="uk-padding-small uk-offcanvas-aside">
+<div id="offcanvas-usage" class="uk-padding-small" uk-offcanvas="bg-close:false;">
 
     <div class="aside-second uk-offcanvas-bar-light ">
 
@@ -646,17 +370,15 @@
         <div class="uk-grid-collapse uk-flex uk-flex-middle " uk-grid>
 		<div class="uk-width-expand">
 		<form class="uk-search uk-search-default uk-width-1-1">
-		<!--<span uk-search-icon></span>-->
-		<input class="uk-search-input" type="search" oninput='hideShowIconSearch(this.value); searchStreet(this.value)' id='search' placeholder="Пошук вулиці">
-		
-		<a class="uk-form-icon uk-form-icon-flip uk-hidden" id='iconClose' onclick="hideShowIconSearch(''); $('#search').val('').trigger('oninput')" uk-icon="icon: close"></a>
-		<a class="uk-form-icon uk-form-icon-flip" id='iconSearch' uk-icon="icon: search"></a>
+		<span uk-search-icon></span>
+		<input class="uk-search-input" type="search" oninput='searchStreet(this.value)' id='search' placeholder="Пошук вулиці">
 		</form>
 		</div>
 		<!--<div >
 			<a class="uk-margin-small-left" href="" uk-icon="search"></a>
 		</div>-->
 		<div>
+			<a class="uk-margin-small-left " onclick="$('#search').val('').trigger('oninput')" uk-icon="close"></a>
 			<a class="uk-margin-small-left " id='addAdr' onclick="getStreet(0)" uk-tooltip="title: Додати вулицю; delay: 500" uk-icon="plus-circle"></a>
 		</div>
         </div>
@@ -664,19 +386,19 @@
 
 	
 <table class="uk-table uk-table-small ">
-    <thead>
+    <!--<thead>
         <tr>
-            <th class='uk-width-expand'></th>
-            <th class='uk-preserve-auto'></th>
+            <th>Назва</th>
+            <th>Статус</th>
         </tr>
-    </thead>
+    </thead>-->
     <tbody id='tbodyStreet'>
     </tbody>
 </table>
 </div>
 <hr class="uk-margin-small">
 
-<h4 class="uk-heading-bullet uk-padding-small uk-margin-remove-top uk-padding-remove-top uk-padding-remove-bottom">Адреси<a class="uk-margin-small-left " id='addStr' onclick="getAddress(0)" uk-tooltip="title: Додати адресу; delay: 500" uk-icon="plus-circle"></a></h4>
+<h4 class="uk-heading-bullet uk-padding-small uk-padding-remove-top uk-padding-remove-bottom">Адреси</h4>
 <div id="container444" class="uk-height-small aside-second-second" style=" position:relative; top:0; bottom:0;">
 <div id='tbodyAddress'>
 
@@ -692,15 +414,20 @@
 	
 		
 		
-	<div class="uk-container uk-container-expand uk-padding-remove">
+			<div class="uk-container uk-container-expand">
 
-	<!--<div id="divmap" ><div id="map" class="map"></div></div> -->
-	<div id="divmap" style="height: calc(100vh - 64px);"><div id="map" class="map" style="height: 100%;"></div>
-	<div id="popup" class="ol-popup">
-      <!--<a href="#" id="popup-closer" class="ol-popup-closer"></a>-->
-      <div id="popup-content"></div>
-    </div></div>
 
+<div class="" style="margin:-40px;" >
+
+
+
+
+
+
+
+	<div id="divmap" uk-height-viewport="offset-top: true"><div id="map" class="map"  ></div></div>
+
+</div>
 				
 
 				<script src="js/map/editPanel_Map.js"></script>
@@ -743,15 +470,13 @@
 					
 					//рисуем
 					function app_draw_alert(e) {
-					Address.CARD.longitude = e.detail.coordinates[0];
-					Address.CARD.latitude = e.detail.coordinates[1];
 					  //alert("нарисовано " + e.detail.coordinates)
 					}
 					window.addEventListener("map_drawend",  app_draw_alert, null); 
 
 					//редактируем
 					function app_modify_alert(e) {
-					  alert("нарисовано " + e.detail.coordinates)
+					 // alert("нарисовано " + e.detail.coordinates)
 					}
 					window.addEventListener("map_modifyend",  app_modify_alert, null);
 					MAP_STARTER.start();
