@@ -471,7 +471,7 @@
 		<td>${Item.comment}</td>
 										<td class="uk-text-nowrap uk-preserve-width">
 										<a class="uk-margin-small-right" onclick="window.open('${Item.documentUrl}' , '_blank');" uk-icon="download"></a>
-										<a class="uk-margin-small-right" onclick="copyToClipboard('${Item.documentUrl}')" uk-icon="copy"></a>
+										<a class="uk-margin-small-right" onclick="copyTextToClipboard('${Item.documentUrl}')" uk-icon="copy"></a>
 											<a class="uk-margin-small-right" onclick='getDocument(${Item.id})' uk-icon="pencil"></a>
 											<a class="uk-margin-small-right" onclick='deleteDoc(${Item.id})' uk-icon="trash"></a>
 										</td></tr>`);
