@@ -32,7 +32,16 @@
 		$(function () {
 		location.href="#close";
 		MainURL = "http://10.0.16.13:2023/portal/api/v1/register/";
-		
+		TypeDocument= {
+		data: null,
+		CARD : {id: 0, TypeDocumenttypeName:""},
+		CARDempty : {id: 0, TypeDocumenttypeName:"" },
+		URLGET: "/documenttype",
+		URLGETS: "/documenttype",
+		URLPOST: "/documenttype",
+		URLPUT: "/documenttype",
+		URLDELETE: "/documenttype"
+		};
 		TypeStreet = {
 		data: null,
 		CARD : {id: 0, shortTypeName:"", typeName:""},
@@ -92,6 +101,10 @@
 				const y = await axios.get(MainURL + getCity()+District.URLGET);
                 District.data = y.data;
 				paintDistrict();
+				const a = await axios.get(MainURL + getCity()+TypeDocument.URLGET);
+                TypeDocument.data = a.data;
+				paintTypeDocument();
+				
 				const z = await axios.get(MainURL + getCity()+Authority.URLGET);
                 Authority.data = z.data;
 				paintAuthority();
@@ -104,6 +117,15 @@
 
         }
 		
+		function paintTypeDocument(){
+		$("#tbodyTypeDocument").empty();
+		TypeDocument.data.forEach(function (Item) {
+		$('#tbodyTypeDocument').append(`<tr><td>${Item.typeName}</td>
+										<td class="uk-text-nowrap"><a onclick='getTypeDocument(${Item.id})' class="uk-icon-button uk-margin-small-right" uk-icon="pencil"></a>
+											<a class="uk-icon-button uk-margin-small-right" onclick='deleteTypeDocument(${Item.id})' uk-icon="trash"></a>
+										</td></tr>`);
+            });
+		}
 		function paintAuthority(){
 		$("#tbodyAuthority").empty();
 		Authority.data.forEach(function (Item) {
@@ -132,6 +154,26 @@
             });
 		}
 		
+		
+		function getTypeDocument(id) {
+		location.href="#load";
+        emptyformbyclass("TypeDocument");
+        TypeDocument.CARD = Object.assign({}, TypeDocument.CARDempty);
+        TypeDocument.CARD.id = id;
+        if (TypeDocument.CARD.id != 0) {
+            $('#h2modalCardAddAuthority').text('Редагувати');
+			TypeDocument.CARD = TypeDocument.data.find(a=> a.id == id);
+			TypeDocument.CARD.TypeDocumenttypeName = TypeDocument.CARD.typeName;
+            getobject_ByData(TypeDocument.CARD, function before(){}, function after(){showModal('modalCardAddTypeDocument')});
+        }
+        else {
+            $('#h2modalCardAddTypeDocument').text('Додати');
+            showModal('modalCardAddTypeDocument');
+        }
+		location.href="#close";
+    }
+	
+	
 		function getAuthority(id) {
 		location.href="#load";
         emptyformbyclass("Authority");
@@ -182,6 +224,10 @@
 		location.href="#close";
     }
 	
+	function deleteTypeDocument(id){
+	let token = localStorage.getItem('token');
+	deleteobject(MainURL + getCity()+TypeDocument.URLDELETE + "/" + id, null, token, function func(){ getAdditionalyData();});
+	}
 	function deleteAuthority(id){
 	let token = localStorage.getItem('token');
 	deleteobject(MainURL + getCity()+Authority.URLDELETE + "/" + id, null, token, function func(){ getAdditionalyData();});
@@ -195,6 +241,26 @@
 	deleteobject(MainURL + getCity()+TypeStreet.URLDELETE + "/" + id, null, token, function func(){ getAdditionalyData();});
 	}
 	
+	async function updateTypeDocument(){
+	var c = getCardData(TypeDocument.CARD, "TypeDocument");
+        if (c) {
+		let id = TypeDocument.CARD.id;
+		c.typeName = c.TypeDocumenttypeName;
+		let token = localStorage.getItem('token');
+			if(id == 0)
+		{
+			await saveobject(MainURL + getCity()+TypeDocument.URLPOST, c, token, "POST", function before(){
+			}, function after() {getAdditionalyData(); hideModal('modalCardAddTypeDocument')});
+		}
+		else{
+		
+			await saveobject(MainURL + getCity()+TypeDocument.URLPUT + "/" + id, c, token, "PUT", function before(){},
+			 function after() {getAdditionalyData();hideModal('modalCardAddTypeDocument')});
+		}
+		
+            
+        }
+	}
 	async function updateAuthority(){
 	var c = getCardData(Authority.CARD, "Authority");
         if (c) {
@@ -238,6 +304,7 @@
 	var c = getCardData(TypeStreet.CARD, "TypeStreet");
         if (c) {
 		let id = TypeStreet.CARD.id;
+		
 		let token = localStorage.getItem('token');
 			if(id == 0)
 		{
@@ -331,6 +398,29 @@
 			</div>
 		</aside>
 		<div id="content" data-uk-height-viewport="expand: true">
+		
+		<div id="modalCardAddTypeDocument" bg-close="false" class="uk-modal-container uk-flex-top" uk-modal>
+    <div class="uk-modal-dialog m uk-modal-body uk-margin-auto-vertical">
+        <form class="uk-form-stacked">
+            <legend class="uk-legend uk-heading-bullet uk-padding-small uk-padding-remove-top uk-padding-remove-bottom" id="h2modalCardAddTypeDocument"></legend>
+            <div class="uk-grid uk-grid-small uk-grid-match uk-flex-top uk-margin" uk-grid>
+
+                <div class="uk-width-1-1">
+                    <label class="uk-form-label required_uk">Назва</label>
+                    <div class="uk-form-controls">
+                        <input class="uk-input necessarilytext TypeDocument" type="text" id="TypeDocumenttypeName">
+                    </div>
+                </div>
+				
+            </div>
+        </form>
+
+        <p class="uk-text-right">
+            <button class="uk-button uk-button-default uk-modal-close" type="button">Відмінити</button>
+            <button class="uk-button uk-button-primary" onclick="updateTypeDocument()" type="button">Зберегти</button>
+        </p>
+    </div>
+</div>
     <div id="modalCardAddAuthority" bg-close="false" class="uk-modal-container uk-flex-top" uk-modal>
     <div class="uk-modal-dialog m uk-modal-body uk-margin-auto-vertical">
         <form class="uk-form-stacked">
@@ -417,7 +507,7 @@
 									<li><a href="#">Типи вулиць</a></li>
 									<li><a href="#">Райони</a></li>
 									<li><a href="#">Органи</a></li>
-									
+									<li><a href="#">Типи документів</a></li>
 								</ul>
 
 								<ul class="uk-switcher uk-margin">
@@ -477,6 +567,24 @@
 											</tbody>
 										</table>	
 									</div>	
+									</li>
+									<li>
+									<div class="uk-card-body uk-card uk-card-default uk-card-small">
+										<p uk-margin>
+											<a class="uk-button uk-button-default" uk-tooltip="Додати новий тип документів" onclick='getTypeDocument(0)'>Додати</a>
+										</p>									
+										<table class="uk-table uk-table-middle uk-table-divider uk-table-small" >
+											<thead>
+												<tr>
+													<th class="uk-width-expand"></th>
+													<th></th>
+												</tr>
+											</thead>
+											<tbody id="tbodyTypeDocument">
+																							
+											</tbody>
+										</table>	
+									</div>										
 									</li>
 								</ul>		
 			

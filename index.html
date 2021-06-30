@@ -41,8 +41,23 @@
 		UIkit.tooltip(document.getElementById("addAdr")).show();
 		location.href="#close";
 		MainURL = "http://10.0.16.13:2023/portal/api/v1/register/";
-		StreetType =[]; District = [];
+		StreetType =[]; District = []; Authority=[]; DocumentType=[];
 		STATUSES = [{id: 0 , name : 'Чинна' },{id: 1 , name : 'Зі змінами' },{id: 2 , name : 'Скасована' },{id: 3 , name : 'Чинність відновлена' }];
+		STATUSESDOC = [{id: 0 , name : 'Дійсний' },{id: 1 , name : 'Анульований' },{id: 2 , name : 'Зі змінами' }];
+		
+		Document = {
+		data: null,
+		id: null,
+		isStreet: true,
+		CARD : {id:0, documentTypeId: null, authorityId: null, Documentstatus: null, number: '', issued: '', title: '', applicantName: '', applicantCode: '', documentUrl: '', comment: '', blob: null},
+		CARDempty : {id:0, documentTypeId: null, authorityId: null, Documentstatus: null, number: '', issued: '', title: '', applicantName: '', applicantCode: '', documentUrl: '', comment: '', blob: null},
+		URLGET: function f(type, id){ return `/${type}/${id}/document`;},
+		URLGETS: function f(type, id){ return `/${type}/${id}/document`;},
+		URLPOST: function f(type, id){ return `/${type}/${id}/document`;},
+		URLPUT: "/document",
+		URLDELETE: "/document"
+		};
+		
 		Street = {
 		data: null,
 		CARD : {id: 0, aliasOne: "", aliasTwo: "", rightTopLatitude: 0, righTopLongitude: 0, name: "", leftBottomLatitude: 0, leftBottomLongitude: 0, shortTypeName: "", typeId: 0, typeName: ""},
@@ -55,7 +70,6 @@
 		};
 		Address = {
 		data: null,
-		
 		CARD : {id: 0, addressNumber: "", block: "", cadastre: "", description: "", districtId: 0, latitude: 0, longitude: 0, postCode: 0, status: 0, streetId: 0},
 		CARDempty : {id: 0, addressNumber: "", block: "", cadastre: "", description: "", districtId: 0, latitude: 0, longitude: 0, postCode: 0, status: 0, streetId: 0},
 		URLGET: "/address",
@@ -66,6 +80,9 @@
 		};
 		getAdditionalyDataStatic(function after(){getAdditionalyData();});
 		
+		$('#Fileupload').on("change", function(){
+		$('#file').text($('#Fileupload').val());
+		});
 		
 		$('#modalCardAddAddress').on({
 
@@ -131,13 +148,24 @@
 				const x = await axios.get(MainURL + getCity()+"/district");
                 District = x.data;
 				fillSelect('districtId', District, "id", "name");
+				
 				const y = await axios.get(MainURL + getCity()+"/streetype");
                 StreetType = y.data;
 				fillSelect('typeId', StreetType, "id", "typeName");
 				
 				
+				const yy = await axios.get(MainURL + getCity()+"/documenttype");
+				DocumentType =  yy.data;
+				fillSelect('documentTypeId', yy.data, "id", "typeName");
+				
+				const zz = await axios.get(MainURL + getCity()+"/authority");
+				Authority= zz.data;
+				fillSelect('authorityId', zz.data, "id", "name");
+				
+				fillSelect('Documentstatus', STATUSESDOC, "id", "name");
 				
 				fillSelect('status', STATUSES, "id", "name");
+				
 				after();
             }
             catch {
@@ -213,7 +241,7 @@
 		$("#container333").animate({ scrollTop: 0 }, "fast");
 		data.forEach(function (Item) {
 		$('#tbodyStreet').append(`<tr class="uk-visible-toggle streettr" id="street${Item.id}" ><td onclick='getAddresses(${Item.id})'>${Item.fullname}</td>
-										<td class="uk-text-nowrap uk-preserve-width"><a onclick=' getStreet(${Item.id})' class="uk-margin-small-right uk-invisible-hover" uk-icon="pencil"></a>
+										<td class="uk-text-nowrap uk-preserve-width"><a onclick=' getDocumentStreet(${Item.id})' class="uk-margin-small-right uk-invisible-hover" uk-icon="folder"></a><a onclick=' getStreet(${Item.id})' class="uk-margin-small-right uk-invisible-hover" uk-icon="pencil"></a>
 										</td></tr>`);
             });
 			if(data.length ==0){
@@ -258,7 +286,7 @@
 					  </div>
     <div uk-drop='pos: right-center' class='uk-drop uk-drop-small'>
         <div class="uk-card uk-card-body uk-card-default uk-padding-small" style='left: -60px;'><a onclick='getAddress(${adr.id})' uk-icon="icon: pencil"></a>
-		<a href="#" uk-icon="icon: folder"></a></div>
+		<a onclick='getDocumentStreet(${adr.id})' uk-icon="icon: folder"></a></div>
     </div>
 </div>`;
 				APP_MAP.selectAddress({... Address.data.find(a=> a.id == id), html: content});
@@ -399,15 +427,249 @@
 	let token = localStorage.getItem('token');
 	deleteobject(MainURL + getCity()+Address.URLDELETE + "/" + Address.CARD.id, null, token, function func(){ hideModal('modalCardAddAddress'); getAddresses(Address.CARD.streetId);});
 	}
+	async function getDocumentAddress(id)
+	{
+	try{
+		let a = await axios.get(MainURL + getCity()+ "/address/"  +id + "/document");
+		paintDocument(a.data);
+		Document.data = a.data;
+		Document.isStreet = false;
+		Document.id = id;
+		showModal('modalCardDoc');
+		}
+			catch{
+			UIkit.notification({ message: 'Помилка! Дані не були завантажені', status: 'danger' });
+			}
+	}
+	async function getDocumentStreet(id)
+	{
+	try{
+			let a = await axios.get(MainURL + getCity()+ "/street/"  +id + "/document");
+			paintDocument(a.data);
+			Document.data = a.data;
+			Document.isStreet = true;
+			Document.id = id;
+			showModal('modalCardDoc');
+			}
+			catch{
+			UIkit.notification({ message: 'Помилка! Дані не були завантажені', status: 'danger' });
+			}
+
+	}
 	
+	function paintDocument(data){
+		$("#tbodyDocument").empty();
+		data.forEach(function (Item) {
+							
+		$('#tbodyDocument').append(`<tr><td>${Item.title}</td>
+		<td>${DocumentType.find(a=> a.id ==Item.documentTypeId) ?  DocumentType.find(a=> a.id ==Item.documentTypeId).typeName : ""}</td>
+		<td>${Item.number}</td>
+		<td>${getdate2(Item.issued)}</td>
+		<td>${STATUSESDOC.find(a=> a.id ==Item.status) ?  STATUSESDOC.find(a=> a.id ==Item.status).name : ""}</td>
+		<td>${Authority.find(a=> a.id ==Item.authorityId) ?  Authority.find(a=> a.id ==Item.authorityId).name : ""}</td>
+		<td>${Item.applicantName + ' ' + Item.applicantCode}</td>
+		<td>${Item.comment}</td>
+										<td class="uk-text-nowrap uk-preserve-width">
+										<a class="uk-margin-small-right" onclick="window.open('${Item.documentUrl}' , '_blank');" uk-icon="download"></a>
+										<a class="uk-margin-small-right" onclick="copyToClipboard('${Item.documentUrl}')" uk-icon="copy"></a>
+											<a class="uk-margin-small-right" onclick='getDocument(${Item.id})' uk-icon="pencil"></a>
+											<a class="uk-margin-small-right" onclick='deleteDoc(${Item.id})' uk-icon="trash"></a>
+										</td></tr>`);
+            });
+			if(data.length==0){
+			$('#tbodyDocument').append(`<tr colspan = 9><td>Не знайдено</td></tr>`);
+			}
+		}
+		
+		function getDocument(id){
+		emptyformbyclass("Document");
+		$('#Fileupload').val('');
+		$('#file').text('Оберіть файл');
+        Document.CARD = Object.assign({}, Document.CARDempty);
+        Document.CARD.id = id;
+        if (Document.CARD.id != 0) {
+		$('#loaddoc').hide();
+            $('#h2modalDocument').text('Редагувати документ');
+			Document.CARD = Document.data.find(a=> a.id == id);
+			Document.CARD.Documentstatus = Document.CARD.status;
+            getobject_ByData(Document.CARD, function before(){}, function after(){showModal('modalCardAddDocument')});
+			
+        }
+        else {
+		$('#loaddoc').show();
+        $('#h2modalDocument').text('Додати документ');
+		showModal('modalCardAddDocument');
+        }
+		}
+		
+		async function updateDocument(){
+		var c = getCardData(Document.CARD, "Document");
+		if (c.id == 0 && document.getElementById('Fileupload').files[0] == undefined) {
+		UIkit.notification({ message: 'Оберіть файл', status: 'danger' });
+		return;
+		}
+        if (c) {
+		let id = Document.CARD.id;
+		let token = localStorage.getItem('token');
+		
+		var FD = new FormData();
+        FD.append("authorityId", c.authorityId);
+        FD.append("number", c.number);
+		FD.append("documentTypeId", c.documentTypeId);
+		FD.append("comment", c.comment);
+		FD.append("applicantName", c.applicantName);
+		FD.append("title", c.title);
+		FD.append("applicantCode", c.applicantCode);
+		FD.append("status", c.Documentstatus);
+		FD.append("issued", c.issued);
+		
+			if(id == 0)
+		{
+			FD.append("blob", document.getElementById('Fileupload').files[0]);
+			
+			await saveobject(MainURL + getCity()+Document.URLPOST((Document.isStreet ? "street": "address") , Document.id), FD, token, "POST", function before(){
+			}, function after() {hideModal('modalCardAddDocument')});
+		}
+		else{
+		
+			await saveobject(MainURL + getCity()+Document.URLPUT + "/" + id, FD, token, "PUT", function before(){},
+			 function after() {hideModal('modalCardAddDocument')});
+		}
+		
+            
+        }
+		}
 		</script>
 	</head>
 	<body>
 <div id="load" class="modalDialog " style="padding-left:calc(50% - 100px); padding-top:200px; overflow-y:auto; z-index:2000;position: fixed">
  <span uk-spinner="ratio: 7"></span>
 		</div>
-		
-		
+				<div id="modalCardAddDocument" bg-close="false" class="uk-modal-container uk-flex-top" uk-modal="stack: true">
+    <div class="uk-modal-dialog m uk-modal-body uk-margin-auto-vertical" >
+        <button class="uk-modal-close-full uk-close-large" type="button" uk-close></button>
+  
+		<h1 class="uk-legend uk-heading-bullet" id="h2modalDocument"></h1>
+        <div class="uk-grid-collapse  uk-flex-middle" uk-grid>
+            <div class="uk-width-1-1">
+    <div class="uk-grid-small uk-grid-match uk-flex-top uk-margin" uk-grid>
+	<div class="uk-width-1-4@m">
+      <label class="uk-form-label required_uk">Тип</label>
+      <div class="uk-form-controls">
+      <select class="uk-select necessarilyselect uk-width-1-1 Document"  id="documentTypeId"></select>                       
+      </div>
+     </div>
+	 
+     <div class="uk-width-expand@m uk-width-1-2@s">
+      <label class="uk-form-label required_uk">Номер</label>
+      <div class="uk-form-controls">
+       <input class="uk-input necessarilytext Document" type="text" id="number">
+      </div>
+     </div>
+	 <div class="uk-width-small@m uk-width-1-2@s">
+      <label class="uk-form-label required_uk">Дата</label>
+      <div class="uk-form-controls">
+	  <input class="necessarilytext uk-input Document" type="date" id="issued">
+      </div>
+     </div>
+	  <div class="uk-width-1-1">
+      <label class="uk-form-label required_uk">Назва</label>
+      <div class="uk-form-controls">
+       <input class="uk-input necessarilytext Document" type="text" id="title">
+      </div>
+     </div>
+	  <div class="uk-width-1-3@m">
+      <label class="uk-form-label required_uk">Статус</label>
+      <div class="uk-form-controls">
+      <select class="uk-select necessarilyselect uk-width-1-1 Document"  id="Documentstatus"></select>                       
+      </div>
+     </div>
+	 <div class="uk-width-2-3@m">
+      <label class="uk-form-label required_uk">Орган що видав</label>
+      <div class="uk-form-controls">
+      <select class="uk-select necessarilyselect uk-width-1-1 Document"  id="authorityId"></select>                       
+      </div>
+     </div>
+	 <!--<div class="uk-width-1-1">
+      <label class="uk-form-label">Посилання</label>
+      <div class="uk-form-controls">
+       <input class="uk-input Document" type="text" id="documentUrl">
+      </div>
+     </div>-->
+	 <div class="uk-width-1-1">
+      <label class="uk-form-label">ПІБ заявника</label>
+      <div class="uk-form-controls">
+       <input class="uk-input Document" type="text" id="applicantName">
+      </div>
+     </div>
+	 <div class="uk-width-1-1">
+      <label class="uk-form-label">ЄДРПОУ заявника</label>
+      <div class="uk-form-controls">
+       <input class="uk-input Document" type="text" id="applicantCode">
+      </div>
+     </div>
+	 <div class="uk-width-1-1">
+	 <label class="uk-form-label">Додатково</label>
+      <div class="uk-form-controls">
+	   <textarea class="uk-textarea Document" rows='2'  id="comment"></textarea>
+      </div>
+     </div>
+	 <div id='loaddoc' class="uk-width-1-1 uk-card uk-card-primary uk-card-small uk-card-body">
+                                                    <label class="uk-form-label">Завантажити документ</label>
+                                                    <div id="fileupload" class="uk-placeholder uk-text-center">
+                                                        <div class="uk-width-1-1@s uk-margin-small-bottom" uk-form-custom>
+                                                            <div class="js-upload" uk-form-custom>
+                                                                <input type="file" id="Fileupload" accept="application/vnd.openxmlformats-officedocument.wordprocessingml.document">
+                                                                <button class="uk-button uk-width-1-1  uk-button-default" type="button" tabindex="-1" id="file">Оберіть файл</button>
+                                                            </div>
+                                                        </div>
+                                                       
+                                                    </div>
+	</div>
+     
+     
+     <div class="uk-width-1-1">
+     <p class="uk-text-right">
+    <button class="uk-button uk-button-primary " onclick="updateDocument()" type="button">Зберегти</button>
+   </p>
+   </div>
+     
+    </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+		<div id="modalCardDoc" bg-close="false" class="uk-modal-container uk-flex-top" uk-modal="stack: true">
+    <div class="uk-modal-dialog l uk-modal-body uk-margin-auto-vertical" >
+        <button class="uk-modal-close-full uk-close-large" type="button" uk-close></button>
+	<h1 class="uk-legend uk-heading-bullet">Документи</h1>
+        <div class="uk-grid-collapse  uk-flex-middle" uk-grid>
+            <div class="uk-width-1-1">
+			<p uk-margin>
+				<a class="uk-button uk-button-default" uk-tooltip="Додати новий документ" onclick='getDocument(0)'>Додати</a>
+			</p>		
+			<table class="uk-table uk-table-middle uk-table-divider uk-table-small" >
+					<thead>
+						<tr>
+							<th class="uk-width-expand">Назва</th>
+							<th class="uk-width-auto">Тип</th>
+							<th class="uk-width-auto">Номер</th>
+							<th class="uk-width-auto">Дата</th>
+							<th class="uk-width-auto">Статус</th>
+							<th class="uk-width-auto">Орган</th>
+							<th class="uk-width-auto">Заявник</th>
+							<th class="uk-width-auto">Додатково</th>
+							<th class="uk-width-auto"></th>
+						</tr>
+						</thead>
+						<tbody id="tbodyDocument">										
+						</tbody>
+			</table>	
+			</div>
+        </div>
+    </div>
+</div>
 		<div id="modalCardAddAddress" class="uk-modal-full"  uk-modal="stack: true">
     <div class="uk-modal-dialog">
         <button class="uk-modal-close-full uk-close-large" type="button" uk-close></button>

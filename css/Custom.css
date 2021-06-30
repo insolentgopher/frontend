@@ -116,7 +116,9 @@ select.uk-width-1-1 + .select2, select.uk-width-1-1 + .select2-container, select
 
 #tbodyAddress .uk-badge {
     background-color: rgba(24,24,24, 0.1);
-    color: #666;
+    color: #666!important;
+	font-size: 14px;
+	margin-left: 3px;
 	
 }
 #tbodyAddress .uk-badge:hover {
@@ -187,4 +189,12 @@ content: "✖";
 
 .select2-search.select2-search--dropdown{
 	padding: 0;
+}
+
+
+.uk-width-small\@m {
+    width: 170px !important;
+}
+input::-webkit-inner-spin-button {
+            align-self: center;
 }

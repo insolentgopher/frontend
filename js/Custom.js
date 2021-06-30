@@ -33,7 +33,8 @@ function dis(value, div) {
                     rgItem.elements.push(item);
             });
         }
-
+		
+		
 
         function pushNewGroup(element, group) {
             group.push({
@@ -163,6 +164,41 @@ function dis(value, div) {
             }
             return 0;
         }
+		
+		function fallbackCopyTextToClipboard(text) {
+		  var textArea = document.createElement("textarea");
+		  textArea.value = text;
+		  document.body.appendChild(textArea);
+		  textArea.focus();
+		  textArea.select();
+
+		  try {
+			var successful = document.execCommand('copy');
+			var msg = successful ? 'successful' : 'unsuccessful';
+			UIkit.notification({ message: 'Посилання скопійоване', status: 'success' });
+		  } catch (err) {
+			  UIkit.notification({ message: 'Помилка! ', status: 'danger' });
+		  }
+
+		  document.body.removeChild(textArea);
+		}
+		function copyTextToClipboard(text) {
+		  if (!navigator.clipboard) {
+			fallbackCopyTextToClipboard(text);
+			return;
+		  }
+		  navigator.clipboard.writeText(text).then(function() {
+			UIkit.notification({ message: 'Посилання скопійоване', status: 'success' });
+		  }, function(err) {
+			UIkit.notification({ message: 'Помилка! ', status: 'danger' });
+		  });
+		}
+		
+		
+		function DateToUnix(dateString)
+		{
+			return + new Date(dateString);
+		}
         function DATEtoUTC(dateString) {
             var date = new Date(dateString);
             return "/Date("+Date.UTC(date.getFullYear(), date.getMonth(), date.getDate())+")/";
@@ -399,14 +435,14 @@ function dis(value, div) {
             location.href = "#load";
             $.ajax({
                 url: urlsave,
-                   type: type,
-                    data: JSON.stringify(data),
+                    type: type,
+                    data: data instanceof FormData ? data :  JSON.stringify(data),
 					headers: {
 						token:token
 					},
 					cache : false,
 					processData: false,
-					contentType: "application/json; charset=utf-8",
+					contentType: data instanceof FormData ?  'multipart/form-data' : "application/json; charset=utf-8",
                 success: function (data) {
 					before();
 					switch (data) {
@@ -766,8 +802,8 @@ function dis(value, div) {
                 case "number": CARD[arrayname[i]] = +element.value; break;
                 case "text": case "password":  case "textarea": CARD[arrayname[i]] = element.value; break;
 				case "select-one": CARD[arrayname[i]] = +element.value; break;
-                case "date": CARD[arrayname[i]] = element.value =="" ? "/Date(12345)/" : DATEtoUTC(element.value); break;
-                case "datetime-local": CARD[arrayname[i]] = element.value =="" ? "/Date(12345)/" : DATETIMEtoUTC(element.value); break;
+                case "date": CARD[arrayname[i]] = element.value =="" ? "0" : DateToUnix(element.value); break;
+                case "datetime-local": CARD[arrayname[i]] = element.value =="" ? "0" : DateToUnix(element.value); break;
                 case "checkbox": CARD[arrayname[i]] = element.checked; break;
                 case "color": CARD[arrayname[i]] = element.value; break;
                 case "select-multiple": CARD[arrayname[i]] = $('#' + arrayname[i]).val() && $('#' + arrayname[i]).val().length > 0 ? getIntArray($('#' + arrayname[i]).val()).toString() : [].toString(); break;
