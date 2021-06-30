@@ -429,20 +429,53 @@ function dis(value, div) {
         }
 		
 		
-		
+		 function saveobjectFORMDATA(urlsave, data, token,type, before, after){
+			 location.href = "#load";
+    $.ajax({
+            type: type,
+            enctype: 'multipart/form-data',
+            url: urlsave,
+            data: data,
+            processData: false,
+            contentType: false,
+            cache: false,
+            timeout: 600000,
+            headers: {
+                token: token
+            },
+            success: function (data) {
+					before();
+					switch (data) {
+					  case "OK":
+						UIkit.notification({ message: 'Збережено', status: 'success' });
+						break;
+					  default:
+						UIkit.notification({ message: data , status: 'success' });
+						break;
+					}
+					after();
+					location.href = "#close";
+                },
+				 error: function (data) {
+					 GETERROR(data);
+					location.href = "#close";
+					
+				},
+        });
+ }
 		
         function saveobject(urlsave, data, token, type, before, after) {
             location.href = "#load";
             $.ajax({
                 url: urlsave,
                     type: type,
-                    data: data instanceof FormData ? data :  JSON.stringify(data),
+                    data: JSON.stringify(data),
 					headers: {
 						token:token
 					},
 					cache : false,
 					processData: false,
-					contentType: data instanceof FormData ?  'multipart/form-data' : "application/json; charset=utf-8",
+					contentType: "application/json; charset=utf-8",
                 success: function (data) {
 					before();
 					switch (data) {
