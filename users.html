@@ -57,6 +57,7 @@
 					forEachClassName("custom-logo", i => i.setAttribute('src', main.data.logoUrl));
 				}
 				}
+
 				catch {
                 UIkit.notification({ message: 'Помилка! Дані не були завантажені', status: 'danger' });
             }
@@ -249,32 +250,36 @@
     </div>
 </div>
 			<div class="uk-container uk-container-expand">
-								<div class="uk-card-body uk-card uk-card-default uk-card-small">
-										<p uk-margin>
-											<a class="uk-button uk-button-default" uk-tooltip="Додати нового користувача" onclick='getUser(0)'>Додати</a>
-										</p>									
-										<table class="uk-table uk-table-middle uk-table-divider uk-table-small" >
-											<thead>
-												<tr>
-												<th class="uk-width-auto">Логін</th>
-												<th class="uk-width-auto">Еmail</th>
-													<th class="uk-width-expand">Додатково</th>
-													<th class="uk-width-auto"></th>
-												</tr>
-											</thead>
-											<tbody id="tbodyUser">
-																							
-											</tbody>
-										</table>	
-									</div>
-
-
-				<footer class="uk-section uk-section-small uk-text-center">
-					<hr>
-					<p class="uk-text-small uk-text-center">Всі права захищені 2021</p>
-					
-				</footer>
+				<div class="uk-margin-top">		
+				<h3 class="uk-heading-bullet">Користувачі</h3>
+					<div class="uk-card-body uk-card-small uk-card-default">		
+						<p uk-margin>
+							<a class="uk-button uk-button-default" uk-tooltip="Додати нового користувача" onclick='getUser(0)'>Додати</a>
+						</p>
+						<div class="uk-overflow-auto">										
+							<table class="uk-table uk-table-middle uk-table-divider uk-table-small" >
+								<thead>
+									<tr>
+									<th class="uk-width-auto">Логін</th>
+									<th class="uk-width-auto">Еmail</th>
+										<th class="uk-width-expand">Додатково</th>
+										<th class="uk-width-auto"></th>
+									</tr>
+								</thead>
+								<tbody id="tbodyUser">
+																				
+								</tbody>
+							</table>	
+						</div>
+					</div>
+				</div>
+			
 			</div>
+			<footer class="uk-section uk-section-small uk-text-center">
+				<hr>
+				<p class="uk-text-small uk-text-center">Всі права захищені 2021</p>
+				
+			</footer>				
 		</div>
 	</body>
 </html>
