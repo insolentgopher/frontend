@@ -27,50 +27,14 @@
 		<script src="js/Custom.js"></script>
 		<script src="https://unpkg.com/axios/dist/axios.js"></script>
 		<link rel="stylesheet" href="css/Custom.css" type="text/css">		
-		<script src="https://cdn.jsdelivr.net/npm/sweetalert2@10"></script>
-		<link href="https://cdnjs.cloudflare.com/ajax/libs/tabulator/4.9.1/css/materialize/tabulator_materialize.css" rel="stylesheet">
-    <script type="text/javascript" src="https://unpkg.com/tabulator-tables@4.8/dist/js/tabulator.min.js"></script>
-	
-	<link href="https://cdnjs.cloudflare.com/ajax/libs/tabulator/4.9.1/css/materialize/tabulator_materialize.css" rel="stylesheet">
+		
 	
 		<script type="text/javascript">
-		 var _table;
-		 var columns = [
-
-            {
-                    title: 'Користувач',
-                    field: 'user',
-					minWidth: 100,
-                    sorter: "string",
-                    headerFilter:true,
-                    headerFilterPlaceholder: 'Пошук...'
-            },
-                ,
-            {
-                    title: 'Дата та час',
-                    field: 'datetime',
-					minWidth: 100,
-                    sorter: "string",
-                    headerFilter:true,
-                    headerFilterPlaceholder: 'Пошук...'
-            },
-            {
-                    title: 'Дія',
-                    field: 'event',
-					minWidth: 100,
-                    sorter: "string",
-                    headerFilter:true,
-                headerFilterPlaceholder: 'Пошук...',
-            }
-        ];
+		 
 		$(function () {
 		location.href="#close";
 		MainURL = "http://10.0.16.13:2023/portal/api/v1/register/";
 		
-		Audit = {
-		data: null,
-		URLGET: "/audit",
-		};
 		getAdditionalyDataStatic();
 		getAdditionalyData();
 		});
@@ -90,20 +54,7 @@
             }
 			location.href="#close";
 		}
-		async function getAdditionalyData() {
-            try {
-				location.href="#load";
-                const x = await axios.get(MainURL + getCity()+Audit.URLGET);
-                Audit.data = x.data;
-				_table = gettabulator('', columns, false);
-				_table.replaceData(Audit.data); 
-            }
-            catch {
-                UIkit.notification({ message: 'Помилка! Дані не були завантажені', status: 'danger' });
-            }
-			location.href="#close";
-
-        }
+		
 		</script>
 	</head>
 	<body>
@@ -131,12 +82,12 @@
 				<ul class="uk-nav uk-nav-default uk-nav-parent-icon" data-uk-nav>
 					<li class="uk-nav-header uk-heading-bullet">Адресний реєстр</li>
 					<li><a href="index.html"><span data-uk-icon="icon: search" class="uk-margin-small-right"></span>Пошук</a></li>
-					<li class='uk-active'><a href="audit.html"><span data-uk-icon="icon: file-edit" class="uk-margin-small-right"></span>Аудит</a></li>
+					<li><a href="audit.html"><span data-uk-icon="icon: file-edit" class="uk-margin-small-right"></span>Аудит</a></li>
 					<li><a href="dictionaries.html"><span data-uk-icon="icon: thumbnails" class="uk-margin-small-right"></span>Довідники</a></li>
 					<li><a href="users.html"><span data-uk-icon="icon: users" class="uk-margin-small-right"></span>Користувачі</a></li>
 					<li><a href="#"><span data-uk-icon="icon: history" class="uk-margin-small-right"></span>Історія</a></li>
 					<li><a href="#"><span data-uk-icon="icon: cloud-upload" class="uk-margin-small-right"></span>Імпорт</a></li>
-					<li><a href="export.html"><span data-uk-icon="icon: cloud-download" class="uk-margin-small-right"></span>Експорт</a></li>
+					<li class='uk-active'><a href="#"><span data-uk-icon="icon: cloud-download" class="uk-margin-small-right"></span>Експорт</a></li>
 
 					<li class="uk-nav-header uk-heading-bullet">Модуль 2</li>
 					<li><a href="#"><span data-uk-icon="icon: search" class="uk-margin-small-right"></span>Розділ 1</a></li>
@@ -181,16 +132,26 @@
 			</div>
 		</aside>
 		<div id="content" data-uk-height-viewport="expand: true">
-			<div class="uk-container uk-container-expand">
-				<div class="uk-margin-top">		
-				<h3 class="uk-heading-bullet">Аудит</h3>
-					<div class="uk-card-body uk-card-small uk-card-default">		
-						<div class="uk-overflow-auto">
-							<div id="tableobj">
-							</div>
-						</div>
-					</div>
-				</div>
+			<div class="uk-container uk-container-expand uk-padding-small">
+				<div class="uk-child-width-1-3@m uk-child-width-1-2@s  uk-grid-small uk-grid-match" uk-grid>
+    <div>
+        <div class="uk-card uk-card-primary uk-card-body">
+            <h3 class="uk-card-title">Адреси</h3>
+            <p>Перелік адрес з полями...... </p>
+			<button class="uk-button uk-button-default uk-width-1-1"  onclick="" type="button"><span uk-icon="icon: download; "></span> у форматі .csv</button>
+        </div>
+    </div>
+    <div>
+        <div class="uk-card uk-card-primary uk-card-body">
+            <h3 class="uk-card-title">Вулиці</h3>
+            <p>Перелік вулиць з полями .... </p>
+			<button class="uk-button uk-button-default uk-width-1-1 " onclick="" type="button"><span uk-icon="icon: download;"></span> у форматі .csv</button>
+        </div>
+    </div>
+    <div>
+      
+    </div>
+</div>
 			</div>
 			<footer class="uk-section uk-section-small uk-text-center">
 				<hr>

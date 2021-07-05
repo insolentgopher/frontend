@@ -231,7 +231,7 @@ function dis(value, div) {
             return dd;
         }
         function getdate2(dateString) {
-        var date = new Date(dateString);
+        var date = new Date(dateString*1000);
         var dd = ("00" + (date.getDate())).slice(-2) + "." +
           ("00" + (date.getMonth() + 1)).slice(-2) + "." +
           date.getFullYear();
@@ -310,7 +310,6 @@ function dis(value, div) {
                     //gressiveRender : true ,
                     ajaxLoaderLoading: "<div style='display:inline-block; border:4px solid #333; border-radius:10px; background:#fff; font-weight:bold; font-size:16px; color:#000; padding:10px 20px;'>Завантаження даних</div>",
                     movableColumns: true,
-
                     layout: (window.outerWidth < 768 ? "fitData" : "fitColumns"), //fit columns to width of table (optional) fitColumns
                     resizableRows: true,
                     resizableColumns: "header",
@@ -319,7 +318,7 @@ function dis(value, div) {
                     pagination: "local",
                     paginationSize: 20,
                     paginationSizeSelector: [20, 50, 100, 200],
-                    selectable: select ? true : 1,
+                    selectable: select,
                     height:"100%",
                     tooltipsHeader: true,
                     tooltips: false,
@@ -364,6 +363,10 @@ function dis(value, div) {
                 return '<a  class="uk-icon-button" uk-icon="trash"></a>'
             if (value.getColumn().getDefinition().field == 'Редагувати')
                 return '<a   class="uk-icon-button" uk-icon="pencil" ></a>'
+			
+			if (value.getColumn().getDefinition().field == 'Завантажити')
+                return '<a  class="uk-icon-button" uk-icon="download" ></a>'
+			
 
              if (value.getColumn().getDefinition().field == 'arrayservices')
                 return  value.getData().fileType==3 ? '<a  class="uk-icon-link" uk-icon="star" ></a>' : ''
@@ -463,6 +466,41 @@ function dis(value, div) {
 				},
         });
  }
+		
+		
+		function GETobjectDATA(url, data, token, before, after) {
+            location.href = "#load";
+            $.ajax({
+                url: urlsave,
+                    type: 'GET',
+                    data: JSON.stringify(data),
+					headers: {
+						token:token
+					},
+					cache : false,
+					processData: false,
+					contentType: "application/json; charset=utf-8",
+                success: function (data) {
+					before();
+					switch (data) {
+					  case "OK":
+						UIkit.notification({ message: 'Збережено', status: 'success' });
+						break;
+					  default:
+						UIkit.notification({ message: data , status: 'success' });
+						break;
+					}
+					after();
+					location.href = "#close";
+					return data;
+                },
+				 error: function (data) {
+					 GETERROR(data);
+					location.href = "#close";
+					return null;
+				},
+            });
+        }
 		
         function saveobject(urlsave, data, token, type, before, after) {
             location.href = "#load";

@@ -28,51 +28,15 @@
 		<script src="https://unpkg.com/axios/dist/axios.js"></script>
 		<link rel="stylesheet" href="css/Custom.css" type="text/css">		
 		<script src="https://cdn.jsdelivr.net/npm/sweetalert2@10"></script>
-		<link href="https://cdnjs.cloudflare.com/ajax/libs/tabulator/4.9.1/css/materialize/tabulator_materialize.css" rel="stylesheet">
-    <script type="text/javascript" src="https://unpkg.com/tabulator-tables@4.8/dist/js/tabulator.min.js"></script>
-	
-	<link href="https://cdnjs.cloudflare.com/ajax/libs/tabulator/4.9.1/css/materialize/tabulator_materialize.css" rel="stylesheet">
-	
 		<script type="text/javascript">
-		 var _table;
-		 var columns = [
-
-            {
-                    title: 'Користувач',
-                    field: 'user',
-					minWidth: 100,
-                    sorter: "string",
-                    headerFilter:true,
-                    headerFilterPlaceholder: 'Пошук...'
-            },
-                ,
-            {
-                    title: 'Дата та час',
-                    field: 'datetime',
-					minWidth: 100,
-                    sorter: "string",
-                    headerFilter:true,
-                    headerFilterPlaceholder: 'Пошук...'
-            },
-            {
-                    title: 'Дія',
-                    field: 'event',
-					minWidth: 100,
-                    sorter: "string",
-                    headerFilter:true,
-                headerFilterPlaceholder: 'Пошук...',
-            }
-        ];
-		$(function () {
+			$(function () {
+		
+		CARD = null;
 		location.href="#close";
 		MainURL = "http://10.0.16.13:2023/portal/api/v1/register/";
-		
-		Audit = {
-		data: null,
-		URLGET: "/audit",
-		};
 		getAdditionalyDataStatic();
 		getAdditionalyData();
+		
 		});
 		async function getAdditionalyDataStatic() {
 		try {
@@ -85,25 +49,51 @@
 					forEachClassName("custom-logo", i => i.setAttribute('src', main.data.logoUrl));
 				}
 				}
+
 				catch {
                 UIkit.notification({ message: 'Помилка! Дані не були завантажені', status: 'danger' });
             }
 			location.href="#close";
 		}
+		
 		async function getAdditionalyData() {
-            try {
-				location.href="#load";
-                const x = await axios.get(MainURL + getCity()+Audit.URLGET);
-                Audit.data = x.data;
-				_table = gettabulator('', columns, false);
-				_table.replaceData(Audit.data); 
-            }
-            catch {
+		try {
+		location.href="#load";
+		
+		let d = await axios.get(MainURL + getCity()+'/login/current', {
+				headers: {token: localStorage.getItem('token')}
+			  }
+			);
+			CARD = d.data;
+			$('#login').val(CARD.login);
+			$('#password').val('');
+			}
+
+				catch {
                 UIkit.notification({ message: 'Помилка! Дані не були завантажені', status: 'danger' });
             }
 			location.href="#close";
-
-        }
+		}
+		
+		
+		async function updateUser(){
+		
+       if ($('#login').val() == "") {
+	   UIkit.notification({ message: 'Введіть логін', status: 'danger' });
+	   return;
+	   }
+	   
+	   CARD.login = $('#login').val();
+		CARD.password = $('#password').val();
+		
+		let token = localStorage.getItem('token');
+		
+			await saveobject(MainURL + getCity()+"/user/" + CARD.id, CARD, token, "PUT", function before(){},
+			 function after() {getAdditionalyData();});
+		  
+	}
+	
+	
 		</script>
 	</head>
 	<body>
@@ -131,8 +121,9 @@
 				<ul class="uk-nav uk-nav-default uk-nav-parent-icon" data-uk-nav>
 					<li class="uk-nav-header uk-heading-bullet">Адресний реєстр</li>
 					<li><a href="index.html"><span data-uk-icon="icon: search" class="uk-margin-small-right"></span>Пошук</a></li>
-					<li class='uk-active'><a href="audit.html"><span data-uk-icon="icon: file-edit" class="uk-margin-small-right"></span>Аудит</a></li>
+					<li><a href="audit.html"><span data-uk-icon="icon: file-edit" class="uk-margin-small-right"></span>Аудит</a></li>
 					<li><a href="dictionaries.html"><span data-uk-icon="icon: thumbnails" class="uk-margin-small-right"></span>Довідники</a></li>
+					<li><a href="documents.html"><span data-uk-icon="icon: album" class="uk-margin-small-right"></span>Архів</a></li>
 					<li><a href="users.html"><span data-uk-icon="icon: users" class="uk-margin-small-right"></span>Користувачі</a></li>
 					<li><a href="#"><span data-uk-icon="icon: history" class="uk-margin-small-right"></span>Історія</a></li>
 					<li><a href="#"><span data-uk-icon="icon: cloud-upload" class="uk-margin-small-right"></span>Імпорт</a></li>
@@ -145,7 +136,7 @@
 				
 				<div class="left-content-box uk-margin-top">
 					
-						<!--<h5>Статистика</h5>
+						<h5>Статистика</h5>
 						<div>
 							<span class="uk-text-small">Кількість адрес <small>(+50)</small></span>
 							<progress class="uk-progress" value="50" max="100"></progress>
@@ -154,7 +145,7 @@
 							<span class="uk-text-small">Додано нових за тиждень <small>(+78)</small></span>
 							<progress class="uk-progress success" value="78" max="100"></progress>
 						</div>
-						<div>
+						<!--<div>
 							<span class="uk-text-small">Feedback <small>(-12)</small></span>
 							<progress class="uk-progress warning" value="12" max="100"></progress>
 						</div>-->
@@ -170,7 +161,7 @@
 					<li>
 						<a href="register.html" class="uk-icon-link" data-uk-icon="icon: settings" title="Налаштування" data-uk-tooltip></a>
 					</li>
-					<li>
+					<li  class='uk-active'>
 						<a href="#myaccount.html" class="uk-icon-link" data-uk-icon="icon: user"  title="Обліковий запис" data-uk-tooltip></a>
 					</li>
 					
@@ -181,24 +172,42 @@
 			</div>
 		</aside>
 		<div id="content" data-uk-height-viewport="expand: true">
+   
 			<div class="uk-container uk-container-expand">
-				<div class="uk-margin-top">		
-				<h3 class="uk-heading-bullet">Аудит</h3>
-					<div class="uk-card-body uk-card-small uk-card-default">		
-						<div class="uk-overflow-auto">
-							<div id="tableobj">
-							</div>
+				<div class="uk-width-medium uk-padding-small" uk-scrollspy="cls: uk-animation-fade">
+			<!-- registration -->
+			<h1 class="uk-text-center uk-h3">Обліковий запис</h1>
+			<form class="toggle-class">
+				<fieldset class="uk-fieldset">
+					<div class="uk-margin-small">
+						<div class="uk-inline uk-width-1-1">
+							<span class="uk-form-icon uk-form-icon-flip" data-uk-icon="icon: user"></span>
+							<input class="uk-input uk-border-pill" required placeholder="e-mail, логін" id='login' type="text" autocomplete="off">
 						</div>
 					</div>
-				</div>
+					<div class="uk-margin-small">
+						<div class="uk-inline uk-width-1-1">
+							<span class="uk-form-icon uk-form-icon-flip" data-uk-icon="icon: lock"></span>
+							<input class="uk-input uk-border-pill" required placeholder="пароль" id='password' type="password">
+						</div>
+					</div>
+					<div class="uk-margin-bottom">
+						<button type="button" onclick="updateUser()" class="uk-button uk-button-primary uk-border-pill uk-width-1-1" >Змінити дані</button>
+					</div>
+				</fieldset>
+			</form>
+			<!-- /registration -->
+
+		
+
+			</div>
+			
 			</div>
 			<footer class="uk-section uk-section-small uk-text-center">
 				<hr>
 				<p class="uk-text-small uk-text-center">Всі права захищені 2021</p>
-				<!--
-				- <a href="#">MC</a> | Створено за допомоги <a href="http://getuikit.com" title="Відвідати UIkit 3" target="_blank" data-uk-tooltip><span data-uk-icon="uikit"></span></a> </p>
-				-->
-			</footer>			
+				
+			</footer>				
 		</div>
 	</body>
 </html>

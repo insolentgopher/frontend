@@ -1,90 +1,440 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="uk">
 	<head>
 		<meta charset="utf-8">
 		<meta name="viewport" content="width=device-width, initial-scale=1">
-		<title>Реєстрація - Автоматизована система управління геоданими</title>
+		<title>Автоматизована система управління геоданими - Модуль адресний реєстр</title>
 		<link rel="icon" href="img/favicon/favicon.ico" type="image/x-icon">
 		<!-- CSS FILES -->
 		<link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/uikit@latest/dist/css/uikit.min.css">
-		<link rel="stylesheet" type="text/css" href="css/login-dark.css">
+		<link rel="stylesheet" type="text/css" href="css/dashboard.css">
+		<link rel="stylesheet" type="text/css" href="css/perfect-scrollbar.css">
 		
-		<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.1.1/jquery.min.js"></script>
-		<script src="js/Custom.js"></script>
+        <!--Map CSS------------------>
+        <link rel="stylesheet" href="lib/ol/ol.css" type="text/css">
+        <link rel="stylesheet" href="lib/ol-layerswitcher/ol-layerswitcher.css" type="text/css">
+
+		<!-- Scrollbar JS FILES -->
+		<script src="js/perfect-scrollbar.js"></script>
 		
-		<link rel="stylesheet" href="css/Custom.css" type="text/css">		
-		<script type="text/javascript">
-		$(function () {
-		location.href="#close";
-		});
-		function formSubmit()
-		{
-		if($('#login').val()!="" && $('#password').val()!="")
-		{
-			Register($('#login').val(), $('#password').val());
-		}
-		}
-		</script>
-	</head>
-	<!--<body class="login uk-cover-container uk-background-secondary uk-flex uk-flex-center uk-flex-middle uk-height-viewport uk-overflow-hidden uk-light" data-uk-height-viewport>-->
-	<body>
-	<div id="load" class="modalDialog" style="padding-left:calc(50% - 100px); padding-top:200px; overflow-y:auto; z-index:2000;position: fixed">
-
-        <span uk-spinner="ratio: 7"></span>
-		</div>
-	<div class="uk-grid-collapse" uk-grid>
-	<div class="uk-width-1-2 uk-visible@l">
-
-	<div class="login uk-cover-container uk-background-secondary uk-flex uk-flex-center uk-flex-middle uk-height-viewport uk-overflow-hidden uk-light" data-uk-height-viewport>
-	<div class="uk-position-cover uk-overlay-secondary"></div>
-		<div class="uk-width-xlarge uk-position-z-index">
-		<h1 class="">Автоматизована система управління геоданими</h1>
-		</div>
-	</div>
-
-	</div>
-	<div class="uk-width-1-2@l uk-width-1-1@m">
-	<div class="uk-flex uk-flex-center uk-flex-middle uk-height-viewport">
-			
-			<div class="uk-width-medium uk-padding-small" uk-scrollspy="cls: uk-animation-fade">
-			<!-- registration -->
-			<h1 class="uk-text-center uk-h3">Реєстрація</h1>
-			<form class="toggle-class">
-				<fieldset class="uk-fieldset">
-					<div class="uk-margin-small">
-						<div class="uk-inline uk-width-1-1">
-							<span class="uk-form-icon uk-form-icon-flip" data-uk-icon="icon: user"></span>
-							<input class="uk-input uk-border-pill" required placeholder="e-mail, логін" id='login' type="text" autocomplete="off">
-						</div>
-					</div>
-					<div class="uk-margin-small">
-						<div class="uk-inline uk-width-1-1">
-							<span class="uk-form-icon uk-form-icon-flip" data-uk-icon="icon: lock"></span>
-							<input class="uk-input uk-border-pill" required placeholder="пароль" id='password' type="password">
-						</div>
-					</div>
-					<div class="uk-margin-bottom">
-						<button type="" class="uk-button uk-button-primary uk-border-pill uk-width-1-1" onclick='formSubmit()'>ЗАРЕЄСТРУВАТИСЬ</button>
-					</div>
-				</fieldset>
-			</form>
-			<!-- /registration -->
-
-		
-
-			</div>
-			</div>	
-	</div>	
-	</div>
-
-
-		<div class="uk-position-bottom-center uk-position-small uk-hidden@l uk-position-z-index">
-			<span class="uk-text-small uk-text-muted">© 2021 - Автоматизована система управління геоданими</span>
-		</div>
-
-		
-		<!-- JS FILES -->
+		<!-- UIKIT JS FILES -->
 		<script src="https://cdn.jsdelivr.net/npm/uikit@latest/dist/js/uikit.min.js"></script>
 		<script src="https://cdn.jsdelivr.net/npm/uikit@latest/dist/js/uikit-icons.min.js"></script>
+        <!--Map JS------------------>
+        <!-- <script src="lib/ol/ol.js" defer></script> -->
+        <script src="lib/ol/ol.js"></script>
+        
+        <!-- <script src="https://openlayers.org/en/v5.3.0/build/ol.js"></script> -->
+        <script src="lib/ol-layerswitcher/ol-layerswitcher.js"></script>		
+		
+		 <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.1.1/jquery.min.js"></script>
+		 <script src="js/Custom.js"></script>
+		 
+		 <link rel="stylesheet" href="css/select2.min.css" type="text/css">
+		<script src="js/select2.min.js"></script>
+		<script src="https://unpkg.com/axios/dist/axios.js"></script>
+		<link rel="stylesheet" href="css/Custom.css" type="text/css">		
+		<script src="https://cdn.jsdelivr.net/npm/sweetalert2@10"></script>
+		<script type="text/javascript">
+		$(function () {
+		UIkit.offcanvas(document.getElementById("offcanvas-usage")).show();
+		<!--UIkit.tooltip(document.getElementById("addAdr")).show();-->
+		location.href="#close";
+		MainURL = "http://10.0.16.13:2023/portal/api/v1/register/";
+
+		Register = {
+		data: null,
+		CARD : {id:0, cityName: "", email: "", lbLattitudenumber: 0, lbLongitude: 0, rtLattitude: 0, rtLongitude: 0, phone: '', regionName: '', title: '', responsiblePerson: ''},
+		CARDempty : {id:0, cityName: "", email: "", lbLattitudenumber: 0, lbLongitude: 0, rtLattitude: 0, rtLongitude: 0, phone: '', regionName: '', title: '', responsiblePerson: ''},
+		};
+		
+		
+		
+		
+		getAdditionalyDataStatic();
+		
+		
+		$('#inputFile').on('change', function (e) {
+		if($('#inputFile').val() !=''){
+			const file = this.files[0];
+			const  fileType = file['type'];
+			const validImageTypes = ['image/gif', 'image/jpeg', 'image/png'];
+			if (!validImageTypes.includes(fileType)) {
+				UIkit.notification({ message: 'Тип файлу не підтримується. Оберіть інший', status: 'danger' });
+				$('#inputFile').val('');
+			}
+
+
+				readURL(this);
+			
+		}});
+		});
+		
+		
+		function readURL(input) {
+            if (input.files && input.files[0]) {
+                var reader = new FileReader();
+                reader.onload = function (e) {
+                    $('#logo').attr('data-src', e.target.result);
+                }
+                reader.readAsDataURL(input.files[0]);
+            }
+        }
+		
+		
+		async function getAdditionalyDataStatic() {
+            try {
+				location.href="#load";
+				const main = await axios.get(MainURL + getCity());
+				Register.CARD = main.data;
+				getobject_ByData(main.data);
+                if(main.data)
+				{
+					forEachClassName("citytitle", i => i.textContent= main.data.cityName);
+					forEachClassName("maintitle", i => i.textContent= main.data.title);
+					forEachClassName("custom-logo", i => i.setAttribute('src', main.data.logoUrl));
+					forEachClassName("logo", i => i.setAttribute('data-src', main.data.logoUrl));
+				}
+
+				APP_MAP.selectStreet({rightTopLatitude:  main.data.rtLattitude ,
+				rightTopLongitude:  main.data.rtLongitude ,
+				leftBottomLatitude:  main.data.lbLattitude ,
+				leftBottomLongitude:  main.data.lbLongitude });
+				
+				CONFIG_MAP.Map.maxExtent = [main.data.lbLattitude, main.data.lbLongitude, main.data.rtLattitude, main.data.rtLongitude];
+				
+            }
+            catch {
+                UIkit.notification({ message: 'Помилка! Дані не були завантажені', status: 'danger' });
+            }
+location.href="#close";
+        }
+			async function updateRegister(){
+	var c = getCardData(Register.CARD);
+		
+        if (c) {
+		let id = Register.CARD.id;
+		let token = localStorage.getItem('token');
+		
+		var FD = new FormData();
+        FD.append("cityName", c.cityName);
+        FD.append("email", c.email);
+		FD.append("phone", c.phone);
+		FD.append("regionName", c.regionName);
+		FD.append("responsiblePerson", c.responsiblePerson);
+		FD.append("title", c.title);
+		
+		let r = APP_MAP.getCurrentMapExtent();
+		
+		FD.append("ltLattitude", r[3]);
+		FD.append("ltLongitude", r[2]);
+		FD.append("rbLattitude", r[1]);
+		FD.append("rbLongitude", r[0]);
+		
+		if(document.getElementById('inputFile').files[0] != undefined)
+			FD.append("coatofarms", $("#inputFile").prop('files')[0]);
+		
+		await saveobjectFORMDATA(MainURL  + id, FD, token, "PUT", function before(){},
+			 function after() {getAdditionalyDataStatic();});
+		
+        }
+	}
+		</script>
+	</head>
+	<body>
+<div id="load" class="modalDialog " style="padding-left:calc(50% - 100px); padding-top:calc(50vh - 100px); overflow-y:auto; z-index:2000;position: fixed">
+ <span uk-spinner="ratio: 7"></span>
+		</div>
+
+		<!--HEADER-->
+		<header id="top-head" class="uk-position-fixed">
+			<div class="uk-container uk-container-expand uk-background-default topbar">
+				<nav class="uk-navbar uk-dark" data-uk-navbar="mode:click; duration: 250">
+					<div class="uk-navbar-left">
+					
+						<div class="uk-navbar-item uk-hidden@m">
+							<a class="uk-link-reset" href="index.html">
+									<img class="custom-logo uk-margin-small-right" src="" alt=""><span class="uk-text-bold maintitle "></span>
+							</a>
+						</div>
+						<a class="uk-icon-button" href="#offcanvas-usage" data-uk-icon="icon:more-vertical" title="Налаштування" uk-toggle></a>
+					</div>
+					<div class="uk-navbar-right">
+						<ul class="uk-navbar-nav">
+							<li>
+								<a href="#" data-uk-icon="icon:user" title="Ваш обліковий запис" data-uk-tooltip></a>
+								<div class="uk-navbar-dropdown">
+									<ul class="uk-nav uk-navbar-dropdown-nav">
+										<li class="uk-nav-header">Обліковий запис</li>
+										<li><a href="#"><span data-uk-icon="icon: info"></span> Загальне</a></li>
+										<li><a href="#"><span data-uk-icon="icon: refresh"></span> Редагувати</a></li>
+										<li><a href="#"><span data-uk-icon="icon: settings"></span> Налаштування</a></li>
+										<li class="uk-nav-divider"></li>
+										<li><a href="#"><span data-uk-icon="icon: image"></span> Ваші данні</a></li>
+										<!--<li class="uk-nav-divider"></li>
+										<li><a href="#"><span data-uk-icon="icon: sign-out"></span> Вийти</a></li>-->
+									</ul>
+								</div>								
+							</li>
+							<li><a href="login.html" data-uk-icon="icon:  sign-out" title="Вийти" data-uk-tooltip></a></li>
+							<li><a class="uk-navbar-toggle" data-uk-toggle data-uk-navbar-toggle-icon href="#offcanvas-nav" title="Додаткове меню" data-uk-tooltip></a></li>
+						</ul>
+					</div>
+				</nav>
+			</div>
+		</header>
+		<!--/HEADER-->
+		<!-- LEFT BAR -->
+		<aside id="left-col" class="uk-light uk-visible@m">
+			<div class="left-logo uk-flex uk-flex-middle content-box-dark">
+			<!--<a class="uk-logo" href="#"><img class="custom-logo" src="img/logo.png" alt="">АСУ геоданими</a>-->
+			<a class="uk-link-reset" href="index.html">
+				<img class="custom-logo uk-margin-small-right" src="" alt=""><span class="uk-text-bold citytitle "></span>
+			</a>
+			</div>
+			
+		
+			<div class="left-nav-wrap">
+				<ul class="uk-nav uk-nav-default uk-nav-parent-icon" data-uk-nav>
+					<li class="uk-nav-header uk-heading-bullet">Адресний реєстр</li>
+					<li><a href="index.html"><span data-uk-icon="icon: search" class="uk-margin-small-right"></span>Пошук</a></li>
+					<li><a href="audit.html"><span data-uk-icon="icon: file-edit" class="uk-margin-small-right"></span>Аудит</a></li>
+					<li><a href="dictionaries.html"><span data-uk-icon="icon: thumbnails" class="uk-margin-small-right"></span>Довідники</a></li>
+					<li><a href="documents.html"><span data-uk-icon="icon: album" class="uk-margin-small-right"></span>Архів</a></li>
+					
+					<li ><a href="users.html"><span data-uk-icon="icon: users" class="uk-margin-small-right"></span>Користувачі</a></li>
+					<li><a href="#"><span data-uk-icon="icon: history" class="uk-margin-small-right"></span>Історія</a></li>
+					<li><a href="#"><span data-uk-icon="icon: cloud-upload" class="uk-margin-small-right"></span>Імпорт</a></li>
+					<li><a href="export.html"><span data-uk-icon="icon: cloud-download" class="uk-margin-small-right"></span>Експорт</a></li>
+
+					<li class="uk-nav-header uk-heading-bullet">Модуль 2</li>
+					<li><a href="#"><span data-uk-icon="icon: search" class="uk-margin-small-right"></span>Розділ 1</a></li>
+					<li><a href="#"><span data-uk-icon="icon: users" class="uk-margin-small-right"></span>Розділ 2</a></li>
+				</ul>
+				
+				<div class="left-content-box uk-margin-top">
+					
+						<h5>Статистика</h5>
+						<div>
+							<span class="uk-text-small">Кількість вулиць <small id='countStreettext'></small></span>
+							<progress class="uk-progress" value="0" id='countStreet' max="5000"></progress>
+						</div>
+						<!--<div>
+							<span class="uk-text-small">Додано нових за тиждень <small>(+78)</small></span>
+							<progress class="uk-progress success" value="78" max="100"></progress>
+						</div>-->
+						<!--<div>
+							<span class="uk-text-small">Feedback <small>(-12)</small></span>
+							<progress class="uk-progress warning" value="12" max="100"></progress>
+						</div>-->
+					
+				</div>
+				
+			</div>
+			<div class="bar-bottom">
+				<ul class="uk-subnav uk-flex uk-flex-center uk-child-width-1-5" data-uk-grid>
+					<li>
+						<a href="/index" class="uk-icon-link" data-uk-icon="icon: home" title="Головна" data-uk-tooltip></a>
+					</li>
+					<li class='uk-active'>
+						<a class="uk-icon-link" href="register.html" data-uk-icon="icon: settings" title="Налаштування" data-uk-tooltip></a>
+					</li>
+					<li>
+						<a href="#myaccount.html" class="uk-icon-link" data-uk-icon="icon: user"  title="Обліковий запис" data-uk-tooltip></a>
+					</li>
+					
+					<li>
+						<a href="login.html" class="uk-icon-link" data-uk-tooltip="Вийти" data-uk-icon="icon: sign-out"></a>
+					</li>
+				</ul>
+			</div>
+		</aside>
+		<!-- /LEFT BAR -->
+				
+	
+		<!-- CONTENT -->
+		<div id="content" data-uk-height-viewport="expand: true">
+
+	<div class="uk-container uk-container-expand uk-padding-remove">
+<div class="uk-grid-collapse  uk-flex-top uk-height-match"  uk-grid>
+            <div class="uk-width-1-2@s" id="map" uk-height-viewport="offset-top: true"></div>
+			
+            <div class="uk-width-1-2@s uk-padding-small uk-grid-small" uk-grid>
+                <h1 class="uk-legend uk-heading-bullet">Інформація про реєстр</h1>
+				<div class="uk-width-1-1">
+				<div class="uk-grid-collapse  uk-flex-middle" uk-grid>
+				
+				<div class="uk-width-1-3@m uk-padding-remove uk-padding-right-small uk-margin-remove">
+				<div id='logo' class="logo uk-width-1-1 uk-height-1-1 uk-flex uk-flex-center uk-flex-bottom uk-background-cover uk-light uk-margin-small  " style='background-size: contain; min-height: 130px' data-src="" uk-img>
+				   <div class="js-upload" uk-form-custom>
+                                                                <input type="file" id="inputFile">
+                                                                <button class="uk-button-small" type="button" tabindex="-1" id="file"><span uk-icon='icon: cloud-upload'></span></button>
+																
+                                                    </div></div>
+				
+			
+				</div>
+	 
+	 
+	 <div class="uk-width-2-3@m">			
+				
+	<div class="uk-width-1-1">			
+      <label class="uk-form-label required_uk">Населений пункт</label>
+      <div class="uk-form-controls">
+       <input class="uk-input necessarilytext" type="text" autocomplete="off" id="cityName">
+      </div>
+     </div>
+     <div class="uk-width-1-1">
+      <label class="uk-form-label required_uk">Область</label>
+      <div class="uk-form-controls">
+	  <input class="uk-input necessarilytext" type="text" autocomplete="off" id="regionName">                   
+      </div>
+     </div>
+	
+	 </div>
+	 </div>
+	 
+	  <div class="uk-width-1-1">
+      <label class="uk-form-label required_uk">Заголовок</label>
+      <div class="uk-form-controls">
+      <input class="uk-input necessarilytext" type="text" autocomplete="off" id="title">          
+      </div>
+     </div>
+	 
+	 
+	 </div>
+<div class="uk-width-1-1 uk-grid-small" uk-grid>
+	  <h1 class="uk-legend uk-heading-bullet">Відповідальна особа</h1>
+
+	 <div class="uk-width-1-1@m">
+	 
+      <label class="uk-form-label required_uk">ПІБ</label>
+      <div class="uk-form-controls">
+       <input class="uk-input necessarilytext" type="text" autocomplete="off" id="responsiblePerson">
+      </div>
+     </div>
+	 <div class="uk-width-1-2@m">
+      <label class="uk-form-label required_uk">Електрона адреса</label>
+      <div class="uk-form-controls">
+       <input class="uk-input necessarilytext" type="text" autocomplete="off" id="email">
+      </div>
+     </div>
+
+	 <div class="uk-width-1-2@m">
+      <label class="uk-form-label required_uk">Телефон</label>
+      <div class="uk-form-controls">
+       <input class="uk-input necessarilytext" type="text" autocomplete="off" id="phone">
+      </div>
+     </div>
+	 
+	 
+	 
+
+     <div class="uk-width-1-1">
+     <p class="uk-text-right">
+    <button class="uk-button uk-button-primary" onclick="updateRegister()" type="button">Зберегти</button>
+   </p>
+    </div></div></div>
+            </div>
+        </div>
+
+				
+
+				<script src="js/map/editPanel_Map.js"></script>
+				<script src="js/map/Config_Map.js"></script>
+				<script src="js/map/Map.js"></script>
+				<script src="js/map/Start_Map.js"></script>  
+
+				<script type="text/javascript">
+				//проверка тестовых функций карты
+				//старт
+					function ready() {
+					  window.addEventListener("map_editpanel_changed",  function(e){
+					  switch(e.detail.layer){
+						case 'address':{
+						  if (e.detail.action == 'add')
+							APP_MAP.createAddress();
+						  else if (e.detail.action == 'edit')
+							APP_MAP.modifyAddress();
+						  else 
+							APP_MAP.removeAddress();
+						}
+						  break;
+						case 'street' : {
+						  if (e.detail.action == 'add')
+							APP_MAP.createStreet();
+						  else if (e.detail.action == 'edit')
+							APP_MAP.modifyStreet();
+						  else 
+							APP_MAP.removeStreet();
+						  }
+							break;
+						}
+					  }, null);
+					  MAP_EDITPANEL.initPanel();   
+
+					function app_alert(e) {
+					  //alert('кликнули по координатам ' + e.detail.coordinates)
+					}
+					window.addEventListener("map_singleclick",  app_alert, null);      
+					
+					//рисуем
+					function app_draw_alert(e) {
+					Address.CARD.longitude = e.detail.coordinates[0];
+					Address.CARD.latitude = e.detail.coordinates[1];
+					  //alert("нарисовано " + e.detail.coordinates)
+					}
+					window.addEventListener("map_drawend",  app_draw_alert, null); 
+
+					//редактируем
+					function app_modify_alert(e) {
+					  alert("нарисовано " + e.detail.coordinates)
+					}
+					window.addEventListener("map_modifyend",  app_modify_alert, null);
+					MAP_STARTER.start();
+					}
+					document.addEventListener("DOMContentLoaded", ready);
+				//клик по карте
+				 
+				</script>
+			
+			
+<!--
+				<footer class="uk-section uk-section-small uk-text-center">
+					<hr>
+					<p class="uk-text-small uk-text-center">Всі права захищені 2021</p>
+				</footer>
+				-->
+			</div>
+		</div>
+		<!-- /CONTENT -->
+		<!-- OFFCANVAS -->
+		<div id="offcanvas-nav" data-uk-offcanvas="flip: true; overlay: true">
+			<div class="uk-offcanvas-bar uk-offcanvas-bar-animation uk-offcanvas-slide">
+				<button class="uk-offcanvas-close uk-close uk-icon" type="button" data-uk-close></button>
+				<ul class="uk-nav uk-nav-default">
+					<li class="uk-active"><a href="#">Active</a></li>
+					<li class="uk-parent">
+						<a href="#">Parent</a>
+						<ul class="uk-nav-sub"> 
+							<li><a href="#">Sub item</a></li>
+							<li><a href="#">Sub item</a></li>
+						</ul>
+					</li>
+					<li class="uk-nav-header">Header</li>
+					<li><a href="#js-options"><span class="uk-margin-small-right uk-icon" data-uk-icon="icon: table"></span> Item</a></li>
+					<li><a href="#"><span class="uk-margin-small-right uk-icon" data-uk-icon="icon: thumbnails"></span> Item</a></li>
+					<li class="uk-nav-divider"></li>
+					<li><a href="#"><span class="uk-margin-small-right uk-icon" data-uk-icon="icon: trash"></span> Item</a></li>
+				</ul>
+				<h3>Title</h3>
+				<p>Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.</p>
+			</div>
+		</div>
+		<!-- /OFFCANVAS -->
+	    <script>
+    new PerfectScrollbar('#left-col');
+    </script>	
+
 	</body>
 </html>

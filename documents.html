@@ -1,0 +1,522 @@
+<!DOCTYPE html>
+<html lang="uk">
+	<head>
+		<meta charset="utf-8">
+		<meta name="viewport" content="width=device-width, initial-scale=1">
+		<title>Автоматизована система управління геоданими - Модуль адресний реєстр</title>
+		<link rel="icon" href="img/favicon/favicon.ico" type="image/x-icon">
+		<!-- CSS FILES -->
+		<link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/uikit@latest/dist/css/uikit.min.css">
+		<link rel="stylesheet" type="text/css" href="css/dashboard.css">
+		
+        <!--Map CSS------------------>
+        <link rel="stylesheet" href="lib/ol/ol.css" type="text/css">
+        <link rel="stylesheet" href="lib/ol-layerswitcher/ol-layerswitcher.css" type="text/css">
+
+		<!-- UIKIT JS FILES -->
+		<script src="https://cdn.jsdelivr.net/npm/uikit@latest/dist/js/uikit.min.js"></script>
+		<script src="https://cdn.jsdelivr.net/npm/uikit@latest/dist/js/uikit-icons.min.js"></script>
+        <!--Map JS------------------>
+        <!-- <script src="lib/ol/ol.js" defer></script> -->
+        <script src="lib/ol/ol.js"></script>
+        
+        <!-- <script src="https://openlayers.org/en/v5.3.0/build/ol.js"></script> -->
+        <script src="lib/ol-layerswitcher/ol-layerswitcher.js"></script>
+		 <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.1.1/jquery.min.js"></script>
+		
+		<script src="js/Custom.js"></script>
+		<script src="https://unpkg.com/axios/dist/axios.js"></script>
+		<link rel="stylesheet" href="css/Custom.css" type="text/css">		
+		<script src="https://cdn.jsdelivr.net/npm/sweetalert2@10"></script>
+		
+		
+		<link href="https://cdnjs.cloudflare.com/ajax/libs/tabulator/4.9.1/css/materialize/tabulator_materialize.css" rel="stylesheet">
+		<script type="text/javascript" src="https://unpkg.com/tabulator-tables@4.8/dist/js/tabulator.min.js"></script>
+		<link href="https://cdnjs.cloudflare.com/ajax/libs/tabulator/4.9.1/css/materialize/tabulator_materialize.css" rel="stylesheet">
+		 <link rel="stylesheet" href="css/select2.min.css" type="text/css">
+		<script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
+	
+		<script type="text/javascript">
+		var _table;
+		 var columns = [
+			{
+                    title: 'Тип',
+                    field: 'documentTypeId',
+                    sorter: "string",
+					minWidth: 100,
+                   formatter: function(value){
+						return DocumentType.find(a => a.id == value.getData().documentTypeId) ? DocumentType.find(a => a.id == value.getData().documentTypeId).typeName : '' ;
+					},
+					headerFilter:true,
+                    headerFilterPlaceholder: 'Пошук...',
+                    sorter: function (a, b) {
+                    return sortTabulator(a, b, DocumentType.map(function (a) { return { id: a.id, name: a.typeName }; }));
+					},
+					headerFilterFunc: function (headerValue, rowData) {
+						return filterTabulator(headerValue, (rowData ? rowData.toString() : ''), DocumentType.map(function (a) { return { id: a.id, name: a.typeName }; }));
+					}
+            },
+             {
+                    title: 'Номер',
+					minWidth: 100,
+                    field: 'number',
+                    sorter: "string",
+                    headerFilter:true,
+					
+                headerFilterPlaceholder: 'Пошук...',
+            },
+			{
+                    title: 'Дата',
+					minWidth: 100,
+                    field: 'issued',
+                    sorter: "number",
+                    headerFilter:true,
+                headerFilterPlaceholder: 'Пошук...',
+				formatter: function(value){
+						return getdate2(value.getData().issued / 1000);
+					},
+				
+            },
+			{
+                    title: 'Заголовок',
+					minWidth: 100,
+                    field: 'title',
+                    sorter: "string",
+                    headerFilter:true,
+                headerFilterPlaceholder: 'Пошук...',
+            },
+            {
+                    title: 'Видавник',
+					minWidth: 100,
+                    field: 'authorityId',
+                    sorter: "string",
+                    formatter: function(value){
+						return Authority.find(a => a.id == value.getData().authorityId) ? Authority.find(a => a.id == value.getData().authorityId).name : '' ;
+					},
+					headerFilter:true,
+                    headerFilterPlaceholder: 'Пошук...',
+                    sorter: function (a, b) {
+                    return sortTabulator(a, b, Authority.map(function (a) { return { id: a.id, name: a.name }; }));
+					},
+					headerFilterFunc: function (headerValue, rowData) {
+						return filterTabulator(headerValue, (rowData ? rowData.toString() : ''), Authority.map(function (a) { return { id: a.id, name: a.name }; }));
+					}
+            },
+			{
+                    title: 'Заявник',
+					minWidth: 100,
+                    field: 'applicantName',
+                    sorter: "string",
+					headerFilter:true,
+                    headerFilterPlaceholder: 'Пошук...',
+                    formatter: function(value){
+						return value.getData().applicantName +'<br> ' +  value.getData().applicantCode;
+					},
+					
+            },
+            {
+                    title: 'Статус',
+					minWidth: 100,
+                    field: 'status',
+                    sorter: "string",
+					formatter: function(value){
+						return STATUSES.find(a => a.id == value.getData().status) ? STATUSES.find(a => a.id == value.getData().status).name : '' ;
+					},
+					headerFilter:true,
+                    headerFilterPlaceholder: 'Пошук...',
+                    sorter: function (a, b) {
+                    return sortTabulator(a, b, STATUSES.map(function (a) { return { id: a.id, name: a.name }; }));
+					},
+					headerFilterFunc: function (headerValue, rowData) {
+						return filterTabulator(headerValue, (rowData ? rowData.toString() : ''), STATUSES.map(function (a) { return { id: a.id, name: a.name }; }));
+					}
+            },
+			{
+                    title: '',
+                    field: 'Завантажити',
+                    sortable:false,
+                    formatter: openIcon,
+                    headerSort:false,
+                    resizable:false,
+                    width: 50,
+                    align:"center",
+                    cellClick: function (e, cell) {
+                      window.open(cell.getData().documentUrl , '_blank');
+                }
+            },
+			{
+                    title: '',
+                    field: 'Редагувати',
+                    sortable:false,
+                    formatter: openIcon,
+                    headerSort:false,
+                    resizable:false,
+                    width: 50,
+                    align:"center",
+                    cellClick: function (e, cell) {
+                      getDocument(cell.getData().id);
+                }
+            },
+                {
+                    title: '',
+                    field: 'Видалити',
+                        sortable: false,
+                    headerSort:false,
+                    formatter: openIcon,
+                    width: 50,
+                        resizable: false,
+                    align:"center",
+                    cellClick :function(e, cell){
+                    deleteDocument(cell.getData().id);
+                   }
+
+                },
+        ];
+		$(function () {
+		location.href="#close";
+		MainURL = "http://10.0.16.13:2023/portal/api/v1/register/";
+		STATUSES = [{id: 0 , name : 'Дійсний' },{id: 1 , name : 'Анульований' },{id: 2 , name : 'Зі змінами' }];
+		DocumentType = [], Authority = [];
+		Document = {
+		data: null,
+		CARD : {id:0, documentTypeId: null, authorityId: null, status: null, number: '', issued: '', title: '', applicantName: '', applicantCode: '', documentUrl: '', comment: '', blob: null},
+		CARDempty : {id:0, documentTypeId: null, authorityId: null, status: null, number: '', issued: '', title: '', applicantName: '', applicantCode: '', documentUrl: '', comment: '', blob: null},
+		URLGET: "/document",
+		URLGETS: "/document",
+		URLPOST: "/document",
+		URLPUT: "/document",
+		URLDELETE: "/document"
+		};
+		_table = gettabulator('', columns, false);
+		getAdditionalyDataStatic();
+	
+	
+		$('#Fileupload').on("change", function(){
+		$('#file').text($('#Fileupload').val());
+		});
+		});
+		async function getAdditionalyDataStatic() {
+		try {
+		location.href="#load";
+		const main = await axios.get(MainURL + getCity());
+                if(main.data)
+				{
+					forEachClassName("citytitle", i => i.textContent= main.data.cityName);
+					forEachClassName("maintitle", i => i.textContent= main.data.title);
+					forEachClassName("custom-logo", i => i.setAttribute('src', main.data.logoUrl));
+				}
+				
+				const yy = await axios.get(MainURL + getCity()+"/documenttype");
+				DocumentType =  yy.data;
+				fillSelect('documentTypeId', yy.data, "id", "typeName");
+				
+				const zz = await axios.get(MainURL + getCity()+"/authority");
+				Authority= zz.data;
+				fillSelect('authorityId', zz.data, "id", "name");
+				
+				fillSelect('status', STATUSES, "id", "name");
+				getAdditionalyData();
+				}
+
+				catch {
+                UIkit.notification({ message: 'Помилка! Дані не були завантажені', status: 'danger' });
+            }
+			location.href="#close";
+		}
+		async function getAdditionalyData() {
+            try {
+				location.href="#load";
+				
+                const x = await axios.get(MainURL + getCity()+Document.URLGET);
+                Document.data = x.data;
+				
+				_table.replaceData(Document.data); 
+            }
+            catch {
+                UIkit.notification({ message: 'Помилка! Дані не були завантажені', status: 'danger' });
+            }
+			location.href="#close";
+
+        }
+		function getFullAdr(adr){
+		
+		return (adr.street.shortTypeName + " " +  adr.street.name+ ", " + adr.addressNumber + (adr.block !='' ? (" корп." + adr.block) : ""));
+		}
+		async function getDocument(id){
+		location.href="#load";
+		$('#dod').empty();
+		emptyformbyclass("Document");
+		$('#Fileupload').val('');
+        Document.CARD = Object.assign({}, Document.CARDempty);
+        Document.CARD.id = id;
+        if (Document.CARD.id != 0) {
+		$('#file').text('Замінити файл');
+            $('#h2modalDocument').text('Редагувати документ');
+			let d = await axios.get(MainURL + getCity()+Document.URLGET+'/'+id);
+			<!--Document.CARD = Document.data.find(a=> a.id == id);-->
+			if(d.data.linkedDistricts || d.data.linkedStreets || d.data.linkedAddresses || d.data.linkedDocuments){
+				$('#dod').append(`<h4 class="uk-legend uk-heading-bullet">Зв'язки</h4>`);
+				
+				if(d.data.linkedDistricts)
+					$('#dod').append(`<p><span class = 'uk-text-secondary'>Райони:</span> ${Array.from(new Set(d.data.linkedDistricts.map((item) => item.name))).join(', ')}</p>`);
+					
+				if(d.data.linkedStreets)
+					$('#dod').append(`<p><span class = 'uk-text-secondary'>Вулиці:</span> ${Array.from(new Set(d.data.linkedStreets.map((item) => (item.shortTypeName + ' ' + item.name)))).join(', ')}</p>`);
+
+				if(d.data.linkedAddresses)
+					$('#dod').append(`<p><span class = 'uk-text-secondary'>Адреси:</span> ${Array.from(new Set(d.data.linkedAddresses.map((item) => getFullAdr(item)))).join(', ')}</p>`);
+
+				if(d.data.linkedDocuments)
+					$('#dod').append(`<p><span class = 'uk-text-secondary'>Документи:</span> ${Array.from(new Set(d.data.linkedDocuments.map((item) => (DocumentType.find(a=> a.id ==item.documentTypeId) ?  DocumentType.find(a=> a.id ==item.documentTypeId).typeName : "" ) +' '+ (Authority.find(a=> a.id ==item.authorityId) ?  Authority.find(a=> a.id ==item.authorityId).nameInGenitiveCase : "") + " №" + item.number +' від '+ getdate2(item.issued/1000) +'р.'))).join(', ')}</p>`);					
+					
+			}
+            getobject_ByData(d.data, function before(){}, function after(){showModal('modalCardAddDocument')});
+			
+        }
+        else {
+		$('#file').text('Обрати файл');
+        $('#h2modalDocument').text('Додати документ');
+		showModal('modalCardAddDocument');
+        }
+		location.href="#close";
+		}
+		
+	function deleteDocument(id){
+	let token = localStorage.getItem('token');
+	deleteobject(MainURL + getCity()+Document.URLDELETE + "/" + id, null, token, function func(){ getAdditionalyData();});
+	}
+	
+	async function updateDocument(){
+	var c = getCardData(Document.CARD, "Document");
+		if (c.id == 0 && document.getElementById('Fileupload').files[0] == undefined) {
+		UIkit.notification({ message: 'Оберіть файл', status: 'danger' });
+		return;
+		}
+        if (c) {
+		let id = Document.CARD.id;
+		let token = localStorage.getItem('token');
+		
+		var FD = new FormData();
+        FD.append("authorityId", c.authorityId);
+        FD.append("number", c.number);
+		FD.append("documentTypeId", c.documentTypeId);
+		FD.append("comment", c.comment);
+		FD.append("applicantName", c.applicantName);
+		FD.append("title", c.title);
+		FD.append("applicantCode", c.applicantCode);
+		FD.append("status", c.status);
+		FD.append("issued", c.issued);
+		if(document.getElementById('Fileupload').files[0] != undefined)
+			FD.append("blob", $("#Fileupload").prop('files')[0]);
+			
+			if(id == 0)
+		{
+			
+			await saveobjectFORMDATA(MainURL + getCity()+Document.URLPOST, FD, token, "POST", function before(){
+			}, function after() {getAdditionalyData(); hideModal('modalCardAddDocument')});
+		}
+		else{
+		
+			await saveobjectFORMDATA(MainURL + getCity()+Document.URLPUT + "/" + id, FD, token, "PUT", function before(){},
+			 function after() {getAdditionalyData(); hideModal('modalCardAddDocument')});
+		}
+		
+            
+        }
+	}
+		</script>
+	</head>
+	<body>
+<div id="load" class="modalDialog" style="padding-left:calc(50% - 100px); padding-top:200px; overflow-y:auto; z-index:2000;position: fixed">
+
+        <span uk-spinner="ratio: 7"></span>
+		</div>
+		<!--HEADER-->
+		<header id="top-head" class="uk-position-fixed">
+			<div class="left-logo uk-flex uk-flex-middle content-box-dark">
+			<a class="uk-link-reset" href="index.html">
+				<img class="custom-logo uk-margin-small-right" src="" alt=""><span class="uk-text-bold maintitle "></span>
+			</a>
+			</div>
+		</header>
+		<!--/HEADER-->
+		<!-- LEFT BAR -->
+		<aside id="left-col" class="uk-light uk-visible@m">
+			<div class="left-logo uk-flex uk-flex-middle content-box-dark">
+			<a class="uk-link-reset" href="index.html">
+				<img class="custom-logo uk-margin-small-right" src="" alt=""><span class="uk-text-bold citytitle "></span>
+			</a>
+			</div>
+			<div class="left-nav-wrap">
+				<ul class="uk-nav uk-nav-default uk-nav-parent-icon" data-uk-nav>
+					<li class="uk-nav-header uk-heading-bullet">Адресний реєстр</li>
+					<li><a href="index.html"><span data-uk-icon="icon: search" class="uk-margin-small-right"></span>Пошук</a></li>
+					<li><a href="audit.html"><span data-uk-icon="icon: file-edit" class="uk-margin-small-right"></span>Аудит</a></li>
+					<li><a href="dictionaries.html"><span data-uk-icon="icon: thumbnails" class="uk-margin-small-right"></span>Довідники</a></li>
+					<li class='uk-active'><a href="documents.html"><span data-uk-icon="icon: album" class="uk-margin-small-right"></span>Архів</a></li>
+					<li><a href="users.html"><span data-uk-icon="icon: users" class="uk-margin-small-right"></span>Користувачі</a></li>
+					<li><a href="#"><span data-uk-icon="icon: history" class="uk-margin-small-right"></span>Історія</a></li>
+					<li><a href="#"><span data-uk-icon="icon: cloud-upload" class="uk-margin-small-right"></span>Імпорт</a></li>
+					<li><a href="export.html"><span data-uk-icon="icon: cloud-download" class="uk-margin-small-right"></span>Експорт</a></li>
+
+					<li class="uk-nav-header uk-heading-bullet">Модуль 2</li>
+					<li><a href="#"><span data-uk-icon="icon: search" class="uk-margin-small-right"></span>Розділ 1</a></li>
+					<li><a href="#"><span data-uk-icon="icon: users" class="uk-margin-small-right"></span>Розділ 2</a></li>
+				</ul>
+				
+				<div class="left-content-box uk-margin-top">
+					
+						<h5>Статистика</h5>
+						<div>
+							<span class="uk-text-small">Кількість адрес <small>(+50)</small></span>
+							<progress class="uk-progress" value="50" max="100"></progress>
+						</div>
+						<div>
+							<span class="uk-text-small">Додано нових за тиждень <small>(+78)</small></span>
+							<progress class="uk-progress success" value="78" max="100"></progress>
+						</div>
+						<!--<div>
+							<span class="uk-text-small">Feedback <small>(-12)</small></span>
+							<progress class="uk-progress warning" value="12" max="100"></progress>
+						</div>-->
+					
+				</div>
+				
+			</div>
+			<div class="bar-bottom">
+				<ul class="uk-subnav uk-flex uk-flex-center uk-child-width-1-5" data-uk-grid>
+					<li>
+						<a href="index.html" class="uk-icon-link" data-uk-icon="icon: home" title="Головна" data-uk-tooltip></a>
+					</li>
+					<li>
+						<a href="register.html" class="uk-icon-link" data-uk-icon="icon: settings" title="Налаштування" data-uk-tooltip></a>
+					</li>
+					<li>
+						<a href="#myaccount.html" class="uk-icon-link" data-uk-icon="icon: user"  title="Обліковий запис" data-uk-tooltip></a>
+					</li>
+					
+					<li>
+						<a href="login.html" class="uk-icon-link" data-uk-tooltip="Вийти" data-uk-icon="icon: sign-out"></a>
+					</li>
+				</ul>
+			</div>
+		</aside>
+		<div id="content" data-uk-height-viewport="expand: true">
+		<div id="modalCardAddDocument" bg-close="false" class="uk-modal-container uk-flex-top" uk-modal="stack: true">
+    <div class="uk-modal-dialog m uk-modal-body uk-margin-auto-vertical" >
+        <button class="uk-modal-close-full uk-close-large" type="button" uk-close></button>
+  
+		<h1 class="uk-legend uk-heading-bullet" id="h2modalDocument"></h1>
+        <div class="uk-grid-collapse  uk-flex-middle" uk-grid>
+            <div class="uk-width-1-1">
+    <div class="uk-grid-small uk-grid-match uk-flex-top uk-margin" uk-grid>
+	<div class="uk-width-1-4@m uk-width-1-2@s">
+      <label class="uk-form-label required_uk">Тип</label>
+      <div class="uk-form-controls">
+      <select class="uk-select necessarilyselect uk-width-1-1 Document"  id="documentTypeId"></select>                       
+      </div>
+     </div>
+	 <div class="uk-width-1-4@m uk-width-1-2@s">
+      <label class="uk-form-label required_uk">Видавник</label>
+      <div class="uk-form-controls">
+      <select class="uk-select necessarilyselect uk-width-1-1 Document"  id="authorityId"></select>                       
+      </div>
+     </div>
+     <div class="uk-width-1-4@m uk-width-1-2@s">
+      <label class="uk-form-label required_uk">Номер</label>
+      <div class="uk-form-controls">
+       <input class="uk-input necessarilytext Document" type="text" autocomplete="off" id="number">
+      </div>
+     </div>
+	 <div class="uk-width-1-4@m uk-width-1-2@s">
+      <label class="uk-form-label required_uk">Дата</label>
+      <div class="uk-form-controls">
+	  <input class="necessarilytext uk-input Document" type="date" id="issued">
+      </div>
+     </div>
+	 <div class="uk-width-1-4@m">
+      <label class="uk-form-label required_uk">Статус</label>
+      <div class="uk-form-controls">
+      <select class="uk-select necessarilyselect uk-width-1-1 Document"  id="status"></select>                       
+      </div>
+     </div>
+	  <div class="uk-width-1-1">
+      <label class="uk-form-label required_uk">Повна назва</label>
+      <div class="uk-form-controls">
+       <input class="uk-input necessarilytext Document" type="text" autocomplete="off" id="title">
+      </div>
+     </div>
+	 <div class="uk-width-1-1">
+	 <label class="uk-form-label">Заголовок</label>
+      <div class="uk-form-controls">
+	   <textarea class="uk-textarea Document" rows='2'  id="comment"></textarea>
+      </div>
+     </div>
+	  
+	
+	 <!--<div class="uk-width-1-1">
+      <label class="uk-form-label">Посилання</label>
+      <div class="uk-form-controls">
+       <input class="uk-input Document" type="text" autocomplete="off" id="documentUrl">
+      </div>
+     </div>-->
+	 <div class="uk-width-1-1">
+      <label class="uk-form-label">ПІБ заявника</label>
+      <div class="uk-form-controls">
+       <input class="uk-input Document" type="text" autocomplete="off" id="applicantName">
+      </div>
+     </div>
+	 <div class="uk-width-1-1">
+      <label class="uk-form-label">ЄДРПОУ заявника</label>
+      <div class="uk-form-controls">
+       <input class="uk-input Document" type="text" autocomplete="off" id="applicantCode">
+      </div>
+     </div>
+	 <div class="uk-width-1-1">
+	 <div id='loaddoc' class=" uk-width-1-1">
+                                                    
+                                                            <div class="js-upload" uk-form-custom>
+                                                                <input type="file" id="Fileupload">
+                                                                <button class="uk-button uk-width-1-1  uk-button-default" type="button" tabindex="-1" id="file">Оберіть файл</button>
+																
+                                                    </div>
+	</div>
+    </div> 
+     <div class="uk-width-1-1" id='dod'>
+	 
+    </div> 
+     <div class="uk-width-1-1">
+     <p class="uk-text-right">
+    <button class="uk-button uk-button-primary " onclick="updateDocument()" type="button">Зберегти</button>
+   </p>
+   </div>
+     
+    </div>
+            </div>
+        </div>
+    </div>
+</div>
+			<div class="uk-container uk-container-expand">
+				<div class="uk-margin-top">		
+				<h3 class="uk-heading-bullet">Документи</h3>
+				
+					<div class="uk-card-body uk-card-small uk-card-default js-upload">		
+						<p uk-margin>
+							<a class="uk-button uk-button-default" uk-tooltip="Додати документ" onclick='getDocument(0)'>Додати</a>
+						</p>
+						<div class="uk-overflow-auto">
+							<div id="tableobj">
+							</div>
+						</div>
+					</div>
+				</div>
+			
+			</div>
+			<footer class="uk-section uk-section-small uk-text-center">
+				<hr>
+				<p class="uk-text-small uk-text-center">Всі права захищені 2021</p>
+				
+			</footer>				
+		</div>
+	</body>
+</html>

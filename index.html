@@ -31,14 +31,14 @@
 		 <script src="js/Custom.js"></script>
 		 
 		 <link rel="stylesheet" href="css/select2.min.css" type="text/css">
-		<script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
+		<script src="js/select2.min.js"></script>
 		<script src="https://unpkg.com/axios/dist/axios.js"></script>
 		<link rel="stylesheet" href="css/Custom.css" type="text/css">		
 		<script src="https://cdn.jsdelivr.net/npm/sweetalert2@10"></script>
 		<script type="text/javascript">
 		$(function () {
 		UIkit.offcanvas(document.getElementById("offcanvas-usage")).show();
-		UIkit.tooltip(document.getElementById("addAdr")).show();
+		<!--UIkit.tooltip(document.getElementById("addAdr")).show();-->
 		location.href="#close";
 		MainURL = "http://10.0.16.13:2023/portal/api/v1/register/";
 		StreetType =[]; District = []; Authority=[]; DocumentType=[];
@@ -60,8 +60,8 @@
 		
 		Street = {
 		data: null,
-		CARD : {id: 0, aliasOne: "", aliasTwo: "", rightTopLatitude: 0, righTopLongitude: 0, name: "", leftBottomLatitude: 0, leftBottomLongitude: 0, shortTypeName: "", typeId: 0, typeName: ""},
-		CARDempty : {id: 0, aliasOne: "", aliasTwo: "", rightTopLatitude: 0, rightTopLongitude: 0, name: "", leftBottomLatitude: 0, leftBottomLongitude: 0, shortTypeName: "", typeId: 0, typeName: ""},
+		CARD : {id: 0, aliasOne: "", aliasTwo: "", rightTopLatitude: 0, righTopLongitude: 0, name: "", leftBottomLatitude: 0, leftBottomLongitude: 0, shortTypeName: "", typeId: 0, typeName: "", Streetstatus: null},
+		CARDempty : {id: 0, aliasOne: "", aliasTwo: "", rightTopLatitude: 0, rightTopLongitude: 0, name: "", leftBottomLatitude: 0, leftBottomLongitude: 0, shortTypeName: "", typeId: 0, typeName: "", Streetstatus: null},
 		URLGET: "/street",
 		URLGETS: "/street",
 		URLPOST: "/street",
@@ -74,9 +74,9 @@
 		CARDempty : {id: 0, addressNumber: "", block: "", cadastre: "", description: "", districtId: 0, latitude: 0, longitude: 0, postCode: 0, status: 0, streetId: 0},
 		URLGET: "/address",
 		URLGETS: "/address",
-		URLPOST: "/street/address",
-		URLPUT: "/street/address",
-		URLDELETE: "/street/address"
+		URLPOST: "/address",
+		URLPUT: "/address",
+		URLDELETE: "/address"
 		};
 		getAdditionalyDataStatic(function after(){getAdditionalyData();});
 		
@@ -163,7 +163,7 @@
 				fillSelect('authorityId', zz.data, "id", "name");
 				
 				fillSelect('Documentstatus', STATUSESDOC, "id", "name");
-				
+				fillSelect('Streetstatus', STATUSES, "id", "name");
 				fillSelect('status', STATUSES, "id", "name");
 				
 				after();
@@ -183,6 +183,13 @@
 				Street.data.forEach(function (i) { i.fullname = i.name + ", " + i.shortTypeName});
 				searchStreet($('#search').val());
 				fillSelect('streetId', Street.data, "id", "fullname");
+				
+				$('#streetId').select2({
+				 inputTooShort: "Пошук (введіть від трьох літер)",
+		minimumInputLength: 3,
+    minimumResultsForSearch: 20 // at least 20 results must be displayed
+});
+
 				$('#countStreettext').text(' - ' + Street.data.length);
 				$('#countStreet').val(Street.data.length);
             }
@@ -240,8 +247,8 @@
 		$("#tbodyStreet").empty();
 		$("#container333").animate({ scrollTop: 0 }, "fast");
 		data.forEach(function (Item) {
-		$('#tbodyStreet').append(`<tr class="uk-visible-toggle streettr" id="street${Item.id}" ><td onclick='getAddresses(${Item.id})'>${Item.fullname}</td>
-										<td class="uk-text-nowrap uk-preserve-width"><a onclick=' getDocumentStreet(${Item.id})' class="uk-margin-small-right uk-invisible-hover" uk-icon="folder"></a><a onclick=' getStreet(${Item.id})' class="uk-margin-small-right uk-invisible-hover" uk-icon="pencil"></a>
+		$('#tbodyStreet').append(`<tr class="uk-visible-toggle streettr" id="street${Item.id}" ><td class=" ${Item.status == 2 ? 'line-through': ''}" onclick='getAddresses(${Item.id})'>${Item.fullname}</td>
+										<td class="uk-text-nowrap uk-preserve-width"><a onclick=' getInfoStreet(${Item.id})' class="uk-margin-small-right uk-invisible-hover" uk-icon="info"></a><a onclick=' getStreet(${Item.id})' class="uk-margin-small-right uk-invisible-hover" uk-icon="pencil"></a>
 										</td></tr>`);
             });
 			if(data.length ==0){
@@ -280,13 +287,12 @@
 							<li>Район: <span class='uk-text-secondary'>${d ? d.name : ""}</span></li>
 							<li>Індекс: <span class='uk-text-secondary'>${adr.postCode}</span></li>
 							<li>Кадастровий номер: <span class='uk-text-secondary'>${adr.cadastre}</span></li>
-							<li>Додатково: <span class='uk-text-secondary'>${adr.description}</span></li>
 						</ul>
 					</div>
 					  </div>
     <div uk-drop='pos: right-center' class='uk-drop uk-drop-small'>
-        <div class="uk-card uk-card-body uk-card-default uk-padding-small" style='left: -60px;'><a onclick='getAddress(${adr.id})' uk-icon="icon: pencil"></a>
-		<a onclick='getDocumentStreet(${adr.id})' uk-icon="icon: folder"></a></div>
+        <div class="uk-card uk-card-body uk-card-default uk-padding-small" style='left: -60px;'>
+		<a onclick='getInfoAddress(${adr.id})' uk-icon="icon: info"></a><a onclick='getAddress(${adr.id})' uk-icon="icon: pencil"></a></div>
     </div>
 </div>`;
 				APP_MAP.selectAddress({... Address.data.find(a=> a.id == id), html: content});
@@ -327,7 +333,7 @@
 		c.rightTopLongitude = r[2];
 		c.leftBottomLatitude = r[1];
 		c.leftBottomLongitude = r[0];
-		
+		c.status = c.Streetstatus;
 		let id = Street.CARD.id;
 		let token = localStorage.getItem('token');
 			if(id == 0)
@@ -374,7 +380,7 @@
 		$("#tbodyAddress").empty();
 		$("#container444").animate({ scrollTop: 0 }, "fast");
 		data.forEach(function (Item) {
-		$('#tbodyAddress').append(`<span class="uk-badge ${Item.status == 2 ? 'line-through': ''}" onclick='getPoint(${Item.id})'>${Item.addressNumber}</span>`);
+		$('#tbodyAddress').append(`<span class="uk-badge ${Item.status == 2 ? 'line-through': ''}" onclick='getPoint(${Item.id})'>${Item.addressNumber + (Item.block !='' ? (" корп." + Item.block) : "")}</span>`);
             });
 			if(data.length ==0){
 			$('#tbodyAddress').append(`<span>Не знайдено</span>`);
@@ -389,6 +395,7 @@
 			forEachClassName("delstreet", i => i.classList.remove("uk-hidden"));
             $('#h2modalStreet').text('Редагувати вулицю');
 			Street.CARD = Street.data.find(a=> a.id == id);
+			Street.CARD.Streetstatus = Street.CARD.status;
             getobject_ByData(Street.CARD, function before(){}, function after(){ APP_MAP.selectStreet( Street.data.find(a=> a.id == id)); showModal('modalCardAddStreet')});
         }
         else {
@@ -461,13 +468,9 @@
 		$("#tbodyDocument").empty();
 		data.forEach(function (Item) {
 							
-		$('#tbodyDocument').append(`<tr><td>${Item.title}</td>
-		<td>${DocumentType.find(a=> a.id ==Item.documentTypeId) ?  DocumentType.find(a=> a.id ==Item.documentTypeId).typeName : ""}</td>
-		<td>${Item.number}</td>
-		<td>${getdate2(Item.issued)}</td>
-		<td>${STATUSESDOC.find(a=> a.id ==Item.status) ?  STATUSESDOC.find(a=> a.id ==Item.status).name : ""}</td>
-		<td>${Authority.find(a=> a.id ==Item.authorityId) ?  Authority.find(a=> a.id ==Item.authorityId).name : ""}</td>
-		<td>${Item.applicantName + ' ' + Item.applicantCode}</td>
+		$('#tbodyDocument').append(`<tr>
+		<td>${DocumentType.find(a=> a.id ==Item.documentTypeId) ?  DocumentType.find(a=> a.id ==Item.documentTypeId).typeName : ""} ${Authority.find(a=> a.id ==Item.authorityId) ?  Authority.find(a=> a.id ==Item.authorityId).name : ""} № ${Item.number} від ${getdate2(Item.issued)}р.</td>
+		
 										<td class="uk-text-nowrap uk-preserve-width">
 										<a class="uk-margin-small-right" onclick="window.open('${Item.documentUrl}' , '_blank');" uk-icon="download"></a>
 										<a class="uk-margin-small-right" onclick="copyTextToClipboard('${Item.documentUrl}')" uk-icon="copy"></a>
@@ -476,7 +479,7 @@
 										</td></tr>`);
             });
 			if(data.length==0){
-			$('#tbodyDocument').append(`<tr colspan = 8><td>Не знайдено</td></tr>`);
+			$('#tbodyDocument').append(`<tr colspan = 2><td>Не знайдено</td></tr>`);
 			}
 		}
 		
@@ -538,10 +541,171 @@
             
         }
 		}
+		
+		function deleteDoc(id){
+	let token = localStorage.getItem('token');
+	deleteobject(MainURL + getCity()+Document.URLDELETE + "/" + id, null, token, function func(){ if(Document.isStreet) getDocumentStreet(Document.id); else getDocumentAddress(Document.id);});
+	}
+	
+	
+	async function getInfoAddress(id){
+		try{
+		$('#info').empty();
+		location.href = '#load';
+			let st = Address.data.find(a=> a.id == id);
+			let a = await axios.get(MainURL + getCity()+ "/address/"  +id + "/document");
+			$('#info').append(`<div class="uk-card uk-card-default uk-margin-top uk-width-1-1">
+    <div class="uk-card-header">
+       <div class="uk-card-badge uk-label">${STATUSES.find(a=> a.id == st.status).name}</div>
+	   
+        <div class="uk-grid-small uk-flex-middle" uk-grid>
+            
+            <div class="uk-width-expand">
+                <h3 class="uk-card-title uk-margin-remove-bottom">${getFullAdr(st)}</h3>
+				<p class="uk-text-meta uk-margin-remove-top">зареєстровано ${getdate2(st.createdAt)}р.</p>
+                <!--<p class="uk-text-meta uk-margin-remove-top">зареєстровано 03.04.2019</p>-->
+				
+            </div>
+        </div>
+    </div>
+    <div class="uk-card-body">
+<p><span class = 'uk-text-secondary'>Район:</span> ${District.find(a=> a.id == st.districtId).name} </p>
+<p><span class = 'uk-text-secondary'>Кадастровий номер:</span> ${st.cadastre}</p>
+<p><span class = 'uk-text-secondary'>Індекс:</span> ${st.postCode}</p>
+      
+        <h4 class='uk-legend uk-heading-bullet'>Документи</h4>
+      <table class="uk-table uk-table-middle uk-table-divider uk-table-small" id='tbldoc'>
+											
+										</table>
+    </div>
+</div>`);
+
+if(a.data.length>0){
+$('#tbldoc').append(`<thead>
+												<tr>
+													<th class="uk-width-expand"></th>
+													<th></th>
+												</tr>
+											</thead>
+											<tbody id="tbodyDocument"></tbody>`);
+											
+											
+											
+											
+            a.data.forEach(function (Item) {
+			$('#tbodyDocument').append(`<tr>
+		<td>${DocumentType.find(a=> a.id ==Item.documentTypeId) ?  DocumentType.find(a=> a.id ==Item.documentTypeId).typeName : ""} ${Authority.find(a=> a.id ==Item.authorityId) ?  Authority.find(a=> a.id ==Item.authorityId).nameInGenitiveCase : ""} № ${Item.number} від ${getdate2(Item.issued)}р.</td>
+		
+										<td class="uk-text-nowrap uk-preserve-width">
+										<a class="uk-margin-small-right" onclick="window.open('${Item.documentUrl}' , '_blank');" uk-icon="download"></a>
+										<a class="uk-margin-small-right" onclick="copyTextToClipboard('${Item.documentUrl}')" uk-icon="copy"></a>
+											<a class="uk-margin-small-right" onclick='getDocument(${Item.id})' uk-icon="pencil"></a>
+											<a class="uk-margin-small-right" onclick='deleteDoc(${Item.id})' uk-icon="trash"></a>
+										</td></tr>`);
+            });
+			}
+			else{
+			$('#tbldoc').append(`<p>Не знайдено</p>`);
+			}
+			showModal('modalInfo');
+			}
+			catch{
+			UIkit.notification({ message: 'Помилка! Дані не були завантажені', status: 'danger' });
+			}
+			location.href = '#close';
+	}
+	
+	
+	
+	async function getInfoStreet(id){
+		try{
+		$('#info').empty();
+		location.href = '#load';
+			let st = Street.data.find(a=> a.id == id);
+			
+			let a = await axios.get(MainURL + getCity()+ "/street/"  +id + "/document");
+			
+			
+			$('#info').append(`<div class="uk-card uk-card-default uk-margin-top uk-width-1-1">
+    <div class="uk-card-header">
+       <div class="uk-card-badge uk-label">${STATUSES.find(a=> a.id == st.status).name}</div>
+        <div class="uk-grid-small uk-flex-middle" uk-grid>
+            
+            <div class="uk-width-expand">
+                <h3 class="uk-card-title uk-margin-remove-bottom">${StreetType.find(a=> a.id == st.typeId).typeName} ${st.name}</h3>
+                <p class="uk-text-meta uk-margin-remove-top">зареєстровано ${getdate2(st.createdAt)}р.</p>
+            </div>
+        </div>
+    </div>
+    <div class="uk-card-body">
+       <!--<div class="uk-grid-small uk-grid-match uk-flex-top  uk-child-width-1-2" uk-grid>
+         <div>
+         <div class="uk-card-default uk-card-body">
+            <h3 class="uk-card-title">Аліас 1</h3>
+            <p>${st.aliasOne}</p>
+        </div>
+      </div>
+         <div>
+         <div class="uk-card-default uk-card-body">
+            <h3 class="uk-card-title">Аліас 2</h3>
+            <p>${st.aliasTwo}</p>
+        </div>
+  </div>-->
+  
+  <h4 class='uk-legend uk-heading-bullet'>Історія</h4>
+	  <div id='addrinfo'>
+	  <p>У розробці</p>
+        </div>
+    
+      
+        <h4 class='uk-legend uk-heading-bullet'>Документи</h4>
+      <table class="uk-table uk-table-middle uk-table-divider uk-table-small" id='tbldoc'>
+											
+										</table>
+    </div>
+</div>`);
+
+
+
+
+if(a.data.length>0){
+$('#tbldoc').append(`<thead>
+												<tr>
+													<th class="uk-width-expand"></th>
+													<th></th>
+												</tr>
+											</thead>
+											<tbody id="tbodyDocument"></tbody>`);
+											
+											
+											
+											
+            a.data.forEach(function (Item) {
+			$('#tbodyDocument').append(`<tr>
+		<td>${DocumentType.find(a=> a.id ==Item.documentTypeId) ?  DocumentType.find(a=> a.id ==Item.documentTypeId).typeName : ""} ${Authority.find(a=> a.id ==Item.authorityId) ?  Authority.find(a=> a.id ==Item.authorityId).nameInGenitiveCase : ""} № ${Item.number} від ${getdate2(Item.issued)}р.</td>
+		
+										<td class="uk-text-nowrap uk-preserve-width">
+										<a class="uk-margin-small-right" onclick="window.open('${Item.documentUrl}' , '_blank');" uk-icon="download"></a>
+										<a class="uk-margin-small-right" onclick="copyTextToClipboard('${Item.documentUrl}')" uk-icon="copy"></a>
+											<a class="uk-margin-small-right" onclick='getDocument(${Item.id})' uk-icon="pencil"></a>
+											<a class="uk-margin-small-right" onclick='deleteDoc(${Item.id})' uk-icon="trash"></a>
+										</td></tr>`);
+            });
+			}
+			else{
+			$('#tbldoc').append(`<p>Не знайдено</p>`);
+			}
+			showModal('modalInfo');
+			}
+			catch{
+			UIkit.notification({ message: 'Помилка! Дані не були завантажені', status: 'danger' });
+			}
+			location.href = '#close';
+	}
 		</script>
 	</head>
 	<body>
-<div id="load" class="modalDialog " style="padding-left:calc(50% - 100px); padding-top:calc(50hv - 100px); overflow-y:auto; z-index:2000;position: fixed">
+<div id="load" class="modalDialog " style="padding-left:calc(50% - 100px); padding-top:calc(50vh - 100px); overflow-y:auto; z-index:2000;position: fixed">
  <span uk-spinner="ratio: 7"></span>
 		</div>
 				<div id="modalCardAddDocument" bg-close="false" class="uk-modal-container uk-flex-top" uk-modal="stack: true">
@@ -640,7 +804,14 @@
         </div>
     </div>
 </div>
-
+<div id="modalInfo" bg-close="false" class="uk-modal-container uk-flex-top" uk-modal="stack: true">
+    <div class="uk-modal-dialog m uk-modal-body uk-margin-auto-vertical" >
+        <button class="uk-modal-close-full uk-close-large" type="button" uk-close></button>
+        <div class="uk-grid-collapse  uk-flex-middle" uk-grid id='info'>
+            
+        </div>
+    </div>
+</div>
 		<div id="modalCardDoc" bg-close="false" class="uk-modal-container uk-flex-top" uk-modal="stack: true">
     <div class="uk-modal-dialog l uk-modal-body uk-margin-auto-vertical" >
         <button class="uk-modal-close-full uk-close-large" type="button" uk-close></button>
@@ -653,13 +824,7 @@
 			<table class="uk-table uk-table-middle uk-table-divider uk-table-small" >
 					<thead>
 						<tr>
-							<th class="uk-width-expand">Назва</th>
-							<th class="uk-width-auto">Тип</th>
-							<th class="uk-width-auto">Номер</th>
-							<th class="uk-width-auto">Дата</th>
-							<th class="uk-width-auto">Статус</th>
-							<th class="uk-width-auto">Орган</th>
-							<th class="uk-width-auto">Заявник</th>
+							<th class="uk-width-expand"></th>
 							<th class="uk-width-auto"></th>
 						</tr>
 						</thead>
@@ -754,30 +919,37 @@
             <div class="uk-width-1-2@s uk-padding-large">
                 <h1 class="uk-legend uk-heading-bullet" id="h2modalStreet"></h1>
     <div class="uk-grid-small uk-grid-match uk-flex-top uk-margin" uk-grid>
-     <div class="uk-width-2-3@s">
-      <label class="uk-form-label required_uk">Адреса</label>
+     <div class="uk-width-2-3@m">
+      <label class="uk-form-label required_uk">Назва</label>
       <div class="uk-form-controls">
        <input class="uk-input necessarilytext Street" type="text" autocomplete="off" id="name">
       </div>
      </div>
-     <div class="uk-width-1-3@s">
+     <div class="uk-width-1-6@m uk-width-1-2@s">
       <label class="uk-form-label required_uk">Тип</label>
       <div class="uk-form-controls">
       <select class="uk-select necessarilyselect uk-width-1-1 Street"  id="typeId"></select>                       
       </div>
      </div>
+	 <div class="uk-width-1-6@m uk-width-1-2@s">
+      <label class="uk-form-label required_uk">Статус</label>
+      <div class="uk-form-controls">
+      <select class="uk-select necessarilyselect uk-width-1-1 Street"  id="Streetstatus"></select>                       
+      </div>
+     </div>
+	 
      <div class="uk-width-1-1">
-      <label class="uk-form-label">Аліас 1</label>
+      <label class="uk-form-label">Аліаси</label>
       <div class="uk-form-controls">
        <textarea class="uk-textarea Street" rows='2'  id="aliasOne"></textarea>
       </div>
      </div>
-     <div class="uk-width-1-1">
+     <!--<div class="uk-width-1-1">
       <label class="uk-form-label">Аліас 2</label>
       <div class="uk-form-controls">
        <textarea class="uk-textarea Street" rows='2'  id="aliasTwo"></textarea>
       </div>
-     </div>
+     </div>-->
      <div class="uk-width-1-1">
      <p class="uk-text-right">
     <button class="uk-button uk-button-default delstreet" onclick="deleteStreet()" type="button">Видалити</button>
@@ -843,12 +1015,14 @@
 				<ul class="uk-nav uk-nav-default uk-nav-parent-icon" data-uk-nav>
 					<li class="uk-nav-header uk-heading-bullet">Адресний реєстр</li>
 					<li class='uk-active'><a href="index.html"><span data-uk-icon="icon: search" class="uk-margin-small-right"></span>Пошук</a></li>
-					<li><a href="audit.html"><span data-uk-icon="icon: history" class="uk-margin-small-right"></span>Аудит</a></li>
+					<li><a href="audit.html"><span data-uk-icon="icon: file-edit" class="uk-margin-small-right"></span>Аудит</a></li>
 					<li><a href="dictionaries.html"><span data-uk-icon="icon: thumbnails" class="uk-margin-small-right"></span>Довідники</a></li>
+					<li><a href="documents.html"><span data-uk-icon="icon: album" class="uk-margin-small-right"></span>Архів</a></li>
+					
 					<li ><a href="users.html"><span data-uk-icon="icon: users" class="uk-margin-small-right"></span>Користувачі</a></li>
-					<li><a href="#"><span data-uk-icon="icon: album" class="uk-margin-small-right"></span>Історія</a></li>
+					<li><a href="#"><span data-uk-icon="icon: history" class="uk-margin-small-right"></span>Історія</a></li>
 					<li><a href="#"><span data-uk-icon="icon: cloud-upload" class="uk-margin-small-right"></span>Імпорт</a></li>
-					<li><a href="#"><span data-uk-icon="icon: cloud-download" class="uk-margin-small-right"></span>Еспорт</a></li>
+					<li><a href="export.html"><span data-uk-icon="icon: cloud-download" class="uk-margin-small-right"></span>Експорт</a></li>
 
 					<li class="uk-nav-header uk-heading-bullet">Модуль 2</li>
 					<li><a href="#"><span data-uk-icon="icon: search" class="uk-margin-small-right"></span>Розділ 1</a></li>
@@ -880,10 +1054,10 @@
 						<a href="/index" class="uk-icon-link" data-uk-icon="icon: home" title="Головна" data-uk-tooltip></a>
 					</li>
 					<li>
-						<a href="#" class="uk-icon-link" data-uk-icon="icon: settings" title="Налаштування" data-uk-tooltip></a>
+						<a href="register.html" class="uk-icon-link" data-uk-icon="icon: settings" title="Налаштування" data-uk-tooltip></a>
 					</li>
 					<li>
-						<a href="#" class="uk-icon-link" data-uk-icon="icon: social"  title="Соціальні мережі, поділитись" data-uk-tooltip></a>
+						<a href="#myaccount.html" class="uk-icon-link" data-uk-icon="icon: user"  title="Обліковий запис" data-uk-tooltip></a>
 					</li>
 					
 					<li>
@@ -919,7 +1093,7 @@
 			<a class="uk-margin-small-left" href="" uk-icon="search"></a>
 		</div>-->
 		<div>
-			<a class="uk-margin-small-left " id='addAdr' onclick="getStreet(0)" uk-tooltip="title: Додати вулицю; delay: 500" uk-icon="plus-circle"></a>
+			<a class="uk-margin-small-left " id='addAdr' onclick="getStreet(0)" uk-tooltip="title: Додати вулицю; delay: 500" uk-icon="plus"></a>
 		</div>
         </div>
 <div id="container333" class="uk-height-large uk-margin-small aside-second-first" style=" position:relative; top:0; bottom:0;"> 
@@ -938,7 +1112,7 @@
 </div>
 <hr class="uk-margin-small">
 
-<h4 class="uk-heading-bullet uk-padding-small uk-margin-remove-top uk-padding-remove-top uk-padding-remove-bottom">Адреси<a class="uk-margin-small-left " id='addStr' onclick="getAddress(0)" uk-tooltip="title: Додати адресу; delay: 500" uk-icon="plus-circle"></a></h4>
+<h4 class="uk-heading-bullet uk-padding-small uk-margin-remove-top uk-padding-remove-top uk-padding-remove-bottom">Адреси<a class="uk-margin-small-left " id='addStr' onclick="getAddress(0)" uk-tooltip="title: Додати адресу; delay: 500" uk-icon="plus"></a></h4>
 <div id="container444" class="uk-height-small aside-second-second" style=" position:relative; top:0; bottom:0;">
 <div id='tbodyAddress'>
 
