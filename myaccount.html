@@ -101,20 +101,60 @@
 
         <span uk-spinner="ratio: 7"></span>
 		</div>
-		<!--HEADER-->
+		<!--HEADER
 		<header id="top-head" class="uk-position-fixed">
 			<div class="left-logo uk-flex uk-flex-middle content-box-dark">
 			<a class="uk-link-reset" href="index.html">
-				<img class="custom-logo uk-margin-small-right" src="" alt=""><span class="uk-text-bold maintitle "></span>
+				<span class="uk-text-bold maintitle "></span>
 			</a>
 			</div>
 		</header>
 		<!--/HEADER-->
+		
+		<!--HEADER-->
+		<header id="top-head" class="uk-position-fixed">
+			<div class="uk-container uk-container-expand uk-background-default topbar">
+				<nav class="uk-navbar uk-dark" data-uk-navbar="mode:click; duration: 250">
+					<div class="uk-navbar-left">
+					
+						<div class="uk-navbar-item">
+							<a class="uk-link-reset" href="index.html">
+									<span class="uk-text-bold maintitle "></span>
+							</a>
+						</div>
+					</div>
+					<div class="uk-navbar-right">
+						<ul class="uk-navbar-nav">
+							<li>
+								<a href="#" data-uk-icon="icon:user" title="Ваш обліковий запис" data-uk-tooltip></a>
+								<div class="uk-navbar-dropdown">
+									<ul class="uk-nav uk-navbar-dropdown-nav">
+										<li class="uk-nav-header">Обліковий запис</li>
+										<li><a href="#"><span data-uk-icon="icon: info"></span> Загальне</a></li>
+										<li><a href="#"><span data-uk-icon="icon: refresh"></span> Редагувати</a></li>
+										<li><a href="#"><span data-uk-icon="icon: settings"></span> Налаштування</a></li>
+										<li class="uk-nav-divider"></li>
+										<li><a href="#"><span data-uk-icon="icon: image"></span> Ваші данні</a></li>
+										<!--<li class="uk-nav-divider"></li>
+										<li><a href="#"><span data-uk-icon="icon: sign-out"></span> Вийти</a></li>-->
+									</ul>
+								</div>								
+							</li>
+							<li><a href="login.html" data-uk-icon="icon:  sign-out" title="Вийти" data-uk-tooltip></a></li>
+							<li><a class="uk-navbar-toggle" data-uk-toggle data-uk-navbar-toggle-icon href="#offcanvas-nav" title="Додаткове меню" data-uk-tooltip></a></li>
+						</ul>
+					</div>
+				</nav>
+			</div>
+		</header>
+		<!--/HEADER-->		
+		
+		
 		<!-- LEFT BAR -->
 		<aside id="left-col" class="uk-light uk-visible@m">
 			<div class="left-logo uk-flex uk-flex-middle content-box-dark">
 			<a class="uk-link-reset" href="index.html">
-				<img class="custom-logo uk-margin-small-right" src="" alt=""><span class="uk-text-bold citytitle "></span>
+				<img class="custom-logo" src="" alt=""><span class="uk-text-bold citytitle "></span>
 			</a>
 			</div>
 			<div class="left-nav-wrap">
@@ -173,9 +213,11 @@
 		</aside>
 		<div id="content" data-uk-height-viewport="expand: true">
    
-			<div class="uk-container uk-container-expand">
+			<div class="uk-flex uk-flex-center uk-flex-middle  uk-container uk-container-expand" uk-height-viewport="offset-top: true; offset-bottom: true">
+			<div class="" >
 				<div class="uk-width-medium uk-padding-small" uk-scrollspy="cls: uk-animation-fade">
 			<!-- registration -->
+			
 			<h1 class="uk-text-center uk-h3">Обліковий запис</h1>
 			<form class="toggle-class">
 				<fieldset class="uk-fieldset">
@@ -196,16 +238,17 @@
 					</div>
 				</fieldset>
 			</form>
+			
 			<!-- /registration -->
-
+			</div>
 		
 
 			</div>
 			
 			</div>
-			<footer class="uk-section uk-section-small uk-text-center">
-				<hr>
-				<p class="uk-text-small uk-text-center">Всі права захищені 2021</p>
+			<footer class="uk-section uk-section-small uk-text-center uk-padding-small">
+				<hr class="uk-margin-remove">
+				<p class="uk-text-small uk-text-center">© 2021 - Автоматизована система управління геоданими</p>
 				
 			</footer>				
 		</div>

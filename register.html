@@ -1,6 +1,8 @@
 <!DOCTYPE html>
 <html lang="uk">
 	<head>
+
+
 		<meta charset="utf-8">
 		<meta name="viewport" content="width=device-width, initial-scale=1">
 		<title>Автоматизована система управління геоданими - Модуль адресний реєстр</title>
@@ -35,7 +37,15 @@
 		<script src="https://unpkg.com/axios/dist/axios.js"></script>
 		<link rel="stylesheet" href="css/Custom.css" type="text/css">		
 		<script src="https://cdn.jsdelivr.net/npm/sweetalert2@10"></script>
+		
+		
+		<meta http-equiv="Cache-Control" content="no-cache"> 
+<META HTTP-EQUIV="Pragma" CONTENT="no-cache">
+
+
 		<script type="text/javascript">
+		
+		
 		$(function () {
 		UIkit.offcanvas(document.getElementById("offcanvas-usage")).show();
 		<!--UIkit.tooltip(document.getElementById("addAdr")).show();-->
@@ -96,12 +106,12 @@
 					forEachClassName("logo", i => i.setAttribute('data-src', main.data.logoUrl));
 				}
 
-				APP_MAP.selectStreet({rightTopLatitude:  main.data.rtLattitude ,
+				APP_MAP.selectStreet({rightTopLatitude:  main.data.rtLatitude ,
 				rightTopLongitude:  main.data.rtLongitude ,
-				leftBottomLatitude:  main.data.lbLattitude ,
+				leftBottomLatitude:  main.data.lbLatitude ,
 				leftBottomLongitude:  main.data.lbLongitude });
 				
-				CONFIG_MAP.Map.maxExtent = [main.data.lbLattitude, main.data.lbLongitude, main.data.rtLattitude, main.data.rtLongitude];
+				CONFIG_MAP.Map.maxExtent = [main.data.lbLatitude, main.data.lbLongitude, main.data.rtLatitude, main.data.rtLongitude];
 				
             }
             catch {
@@ -126,10 +136,10 @@ location.href="#close";
 		
 		let r = APP_MAP.getCurrentMapExtent();
 		
-		FD.append("ltLattitude", r[3]);
-		FD.append("ltLongitude", r[2]);
-		FD.append("rbLattitude", r[1]);
-		FD.append("rbLongitude", r[0]);
+		FD.append("rightTopLatitude", r[3]);
+		FD.append("rightTopLongitude", r[2]);
+		FD.append("leftBottomLatitude", r[1]);
+		FD.append("leftBottomLongitude", r[0]);
 		
 		if(document.getElementById('inputFile').files[0] != undefined)
 			FD.append("coatofarms", $("#inputFile").prop('files')[0]);
@@ -154,10 +164,10 @@ location.href="#close";
 					
 						<div class="uk-navbar-item uk-hidden@m">
 							<a class="uk-link-reset" href="index.html">
-									<img class="custom-logo uk-margin-small-right" src="" alt=""><span class="uk-text-bold maintitle "></span>
+									<span class="uk-text-bold maintitle "></span>
 							</a>
 						</div>
-						<a class="uk-icon-button" href="#offcanvas-usage" data-uk-icon="icon:more-vertical" title="Налаштування" uk-toggle></a>
+						<span class="uk-text-bold maintitle "></span>
 					</div>
 					<div class="uk-navbar-right">
 						<ul class="uk-navbar-nav">
@@ -189,7 +199,7 @@ location.href="#close";
 			<div class="left-logo uk-flex uk-flex-middle content-box-dark">
 			<!--<a class="uk-logo" href="#"><img class="custom-logo" src="img/logo.png" alt="">АСУ геоданими</a>-->
 			<a class="uk-link-reset" href="index.html">
-				<img class="custom-logo uk-margin-small-right" src="" alt=""><span class="uk-text-bold citytitle "></span>
+				<img class="custom-logo" src="" alt=""><span class="uk-text-bold citytitle "></span>
 			</a>
 			</div>
 			
@@ -240,7 +250,7 @@ location.href="#close";
 						<a class="uk-icon-link" href="register.html" data-uk-icon="icon: settings" title="Налаштування" data-uk-tooltip></a>
 					</li>
 					<li>
-						<a href="#myaccount.html" class="uk-icon-link" data-uk-icon="icon: user"  title="Обліковий запис" data-uk-tooltip></a>
+						<a href="myaccount.html" class="uk-icon-link" data-uk-icon="icon: user"  title="Обліковий запис" data-uk-tooltip></a>
 					</li>
 					
 					<li>

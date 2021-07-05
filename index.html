@@ -138,12 +138,12 @@
 					forEachClassName("custom-logo", i => i.setAttribute('src', main.data.logoUrl));
 				}
 
-				APP_MAP.selectStreet({rightTopLatitude:  main.data.rtLattitude ,
+				APP_MAP.selectStreet({rightTopLatitude:  main.data.rtLatitude ,
 				rightTopLongitude:  main.data.rtLongitude ,
-				leftBottomLatitude:  main.data.lbLattitude ,
+				leftBottomLatitude:  main.data.lbLatitude ,
 				leftBottomLongitude:  main.data.lbLongitude });
 				
-				CONFIG_MAP.Map.maxExtent = [main.data.lbLattitude, main.data.lbLongitude, main.data.rtLattitude, main.data.rtLongitude];
+				CONFIG_MAP.Map.maxExtent = [main.data.lbLatitude, main.data.lbLongitude, main.data.rtLatitude, main.data.rtLongitude];
 				
 				const x = await axios.get(MainURL + getCity()+"/district");
                 District = x.data;
@@ -181,22 +181,26 @@
 				const x = await axios.get(MainURL + getCity()+"/street");
                 Street.data = x.data;
 				Street.data.forEach(function (i) { i.fullname = i.name + ", " + i.shortTypeName});
-				searchStreet($('#search').val());
+				
 				fillSelect('streetId', Street.data, "id", "fullname");
 				
 				$('#streetId').select2({
 				 inputTooShort: "Пошук (введіть від трьох літер)",
-		minimumInputLength: 3,
-    minimumResultsForSearch: 20 // at least 20 results must be displayed
-});
+					minimumInputLength: 3,
+					minimumResultsForSearch: 20 // at least 20 results must be displayed
+				});
 
 				$('#countStreettext').text(' - ' + Street.data.length);
 				$('#countStreet').val(Street.data.length);
+				location.href="#close";
+				searchStreet($('#search').val());
+				
+				
             }
             catch {
+			location.href="#close";
                 UIkit.notification({ message: 'Помилка! Дані не були завантажені', status: 'danger' });
             }
-			location.href="#close";
 
         }
 		function selectingStreetTr(id){
@@ -226,21 +230,22 @@
 		}
 		}
 		function searchStreet(search){
-		<!--removeSelectStreetTr();-->
-		if(search.length > 2){
-		let arrayOfStrings = search.split(" ");
-		let obj = {...Street.data};
-		arrayOfStrings.forEach(function (Item) {
-			obj = Object.values(obj).filter(a => (a.name + " " + a.aliasOne+" " + a.aliasTwo).toUpperCase().indexOf(Item.toUpperCase())>-1);
-			});
-			paintStreet(obj);
-			document.getElementById("search").focus();
-		}
-		if(search.length==0)
-		{
-			paintStreet(Street.data);
-		}
-		
+			location.href="#load";
+			<!--removeSelectStreetTr();-->
+			if(search.length > 2){
+			let arrayOfStrings = search.split(" ");
+			let obj = {...Street.data};
+			arrayOfStrings.forEach(function (Item) {
+				obj = Object.values(obj).filter(a => (a.name + " " + a.aliasOne+" " + a.aliasTwo).toUpperCase().indexOf(Item.toUpperCase())>-1);
+				});
+				paintStreet(obj);
+				document.getElementById("search").focus();
+			}
+			if(search.length==0)
+			{
+				paintStreet(Street.data);
+			}
+			location.href="#close";
 		}
 		function paintStreet(data){
 		location.href="#load";
@@ -971,10 +976,12 @@ $('#tbldoc').append(`<thead>
 					
 						<div class="uk-navbar-item uk-hidden@m">
 							<a class="uk-link-reset" href="index.html">
-									<img class="custom-logo uk-margin-small-right" src="" alt=""><span class="uk-text-bold maintitle "></span>
+									<span class="uk-text-bold maintitle "></span>
 							</a>
 						</div>
 						<a class="uk-icon-button" href="#offcanvas-usage" data-uk-icon="icon:more-vertical" title="Налаштування" uk-toggle></a>
+						 <span class="uk-text-bold maintitle uk-margin-small-left"></span>
+						
 					</div>
 					<div class="uk-navbar-right">
 						<ul class="uk-navbar-nav">
@@ -1006,7 +1013,7 @@ $('#tbldoc').append(`<thead>
 			<div class="left-logo uk-flex uk-flex-middle content-box-dark">
 			<!--<a class="uk-logo" href="#"><img class="custom-logo" src="img/logo.png" alt="">АСУ геоданими</a>-->
 			<a class="uk-link-reset" href="index.html">
-				<img class="custom-logo uk-margin-small-right" src="" alt=""><span class="uk-text-bold citytitle "></span>
+				<img class="custom-logo" src="" alt=""><span class="uk-text-bold citytitle "></span>
 			</a>
 			</div>
 			
@@ -1057,7 +1064,7 @@ $('#tbldoc').append(`<thead>
 						<a href="register.html" class="uk-icon-link" data-uk-icon="icon: settings" title="Налаштування" data-uk-tooltip></a>
 					</li>
 					<li>
-						<a href="#myaccount.html" class="uk-icon-link" data-uk-icon="icon: user"  title="Обліковий запис" data-uk-tooltip></a>
+						<a href="myaccount.html" class="uk-icon-link" data-uk-icon="icon: user"  title="Обліковий запис" data-uk-tooltip></a>
 					</li>
 					
 					<li>

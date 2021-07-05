@@ -231,7 +231,7 @@ function dis(value, div) {
             return dd;
         }
         function getdate2(dateString) {
-        var date = new Date(dateString*1000);
+        var date = new Date(dateString);
         var dd = ("00" + (date.getDate())).slice(-2) + "." +
           ("00" + (date.getMonth() + 1)).slice(-2) + "." +
           date.getFullYear();
@@ -453,7 +453,7 @@ function dis(value, div) {
 						UIkit.notification({ message: 'Збережено', status: 'success' });
 						break;
 					  default:
-						UIkit.notification({ message: data , status: 'success' });
+						UIkit.notification({ message: 'Збережено' , status: 'success' });
 						break;
 					}
 					after();
@@ -521,11 +521,12 @@ function dis(value, div) {
 						UIkit.notification({ message: 'Збережено', status: 'success' });
 						break;
 					  default:
-						UIkit.notification({ message: data , status: 'success' });
+						UIkit.notification({ message: 'Збережено' , status: 'success' });
 						break;
 					}
-					after();
 					location.href = "#close";
+					after();
+					
                 },
 				 error: function (data) {
 					 GETERROR(data);
