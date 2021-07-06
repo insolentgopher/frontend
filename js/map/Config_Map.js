@@ -75,6 +75,11 @@ var CONFIG_MAP = {
         // maxExtent: [35.0, 49.0, 38.0, 50.5],
         center: [30.541, 50.465],
         maxExtent: [22.031, 44.091, 40.323, 52.5],        
+        view:{
+            minZoom:8,
+            maxZoom:21,
+            initZoom:9,
+        },
         feature:{
             extentDelta:{
                 'Point': 50,

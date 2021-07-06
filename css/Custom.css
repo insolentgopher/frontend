@@ -215,3 +215,6 @@ right: 5px !important}
 *,*:focus,*:hover{
     outline:none;
 }
+.tabulator-row.tabulator-selected {
+    background-color: #d6d6d6 !important;
+}

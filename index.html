@@ -442,7 +442,9 @@
 	async function getDocumentAddress(id)
 	{
 	try{
-		let a = await axios.get(MainURL + getCity()+ "/address/"  +id + "/document");
+		let a = await axios.get((MainURL + getCity()+ "/address/"  +id + "/document"), {
+				headers: {token: localStorage.getItem('token')}
+			  });
 		paintDocument(a.data);
 		Document.data = a.data;
 		Document.isStreet = false;
@@ -456,7 +458,9 @@
 	async function getDocumentStreet(id)
 	{
 	try{
-			let a = await axios.get(MainURL + getCity()+ "/street/"  +id + "/document");
+			let a = await axios.get((MainURL + getCity()+ "/street/"  +id + "/document"), {
+				headers: {token: localStorage.getItem('token')}
+			  });
 			paintDocument(a.data);
 			Document.data = a.data;
 			Document.isStreet = true;
@@ -472,6 +476,8 @@
 	function paintDocument(data){
 		$("#tbodyDocument").empty();
 		data.forEach(function (Item) {
+							
+							
 							
 		$('#tbodyDocument').append(`<tr>
 		<td>${DocumentType.find(a=> a.id ==Item.documentTypeId) ?  DocumentType.find(a=> a.id ==Item.documentTypeId).typeName : ""} ${Authority.find(a=> a.id ==Item.authorityId) ?  Authority.find(a=> a.id ==Item.authorityId).name : ""} № ${Item.number} від ${getdate2(Item.issued)}р.</td>
@@ -558,10 +564,12 @@
 		$('#info').empty();
 		location.href = '#load';
 			let st = Address.data.find(a=> a.id == id);
-			let a = await axios.get(MainURL + getCity()+ "/address/"  +id + "/document");
+			let a = await axios.get(MainURL + getCity()+ "/address/"  +id + "/document", {
+				headers: {token: localStorage.getItem('token')}
+			  });
 			$('#info').append(`<div class="uk-card uk-card-default uk-margin-top uk-width-1-1">
     <div class="uk-card-header">
-       <div class="uk-card-badge uk-label">${STATUSES.find(a=> a.id == st.status).name}</div>
+       <div class="uk-card-badge ${(st.status==0 || st.status==3) ?  'uk-label-success' : ((st.status==1) ?  'uk-label-warning' : ((st.status==2) ?  'uk-label-danger' : (uk-label-success)))} uk-label">${STATUSES.find(a=> a.id == st.status).name}</div>
 	   
         <div class="uk-grid-small uk-flex-middle" uk-grid>
             
@@ -628,12 +636,14 @@ $('#tbldoc').append(`<thead>
 		location.href = '#load';
 			let st = Street.data.find(a=> a.id == id);
 			
-			let a = await axios.get(MainURL + getCity()+ "/street/"  +id + "/document");
+			let a = await axios.get(MainURL + getCity()+ "/street/"  +id + "/document", {
+				headers: {token: localStorage.getItem('token')}
+			  });
 			
 			
 			$('#info').append(`<div class="uk-card uk-card-default uk-margin-top uk-width-1-1">
     <div class="uk-card-header">
-       <div class="uk-card-badge uk-label">${STATUSES.find(a=> a.id == st.status).name}</div>
+       <div class="uk-card-badge uk-label ${(st.status==0 || st.status==3) ?  'uk-label-success' : ((st.status==1) ?  'uk-label-warning' : ((st.status==2) ?  'uk-label-danger' : (uk-label-success)))} ">${STATUSES.find(a=> a.id == st.status).name}</div>
         <div class="uk-grid-small uk-flex-middle" uk-grid>
             
             <div class="uk-width-expand">

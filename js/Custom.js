@@ -360,12 +360,12 @@ function dis(value, div) {
         }
         function openIcon(value) {
             if (value.getColumn().getDefinition().field == 'Видалити')
-                return '<a  class="uk-icon-button" uk-icon="trash"></a>'
+                return '<a  class="uk-icon" uk-icon="trash"></a>'
             if (value.getColumn().getDefinition().field == 'Редагувати')
-                return '<a   class="uk-icon-button" uk-icon="pencil" ></a>'
+                return '<a   class="uk-icon" uk-icon="pencil" ></a>'
 			
 			if (value.getColumn().getDefinition().field == 'Завантажити')
-                return '<a  class="uk-icon-button" uk-icon="download" ></a>'
+                return '<a  class="uk-icon" uk-icon="download" ></a>'
 			
 
              if (value.getColumn().getDefinition().field == 'arrayservices')
