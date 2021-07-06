@@ -232,3 +232,12 @@ var STATUSES = [{id: 0 , name : 'Дійсний' },{id: 1 , name : 'Анульо
 			OpenDocModal();
 			location.href = '#close';
 		}
+		
+		
+		function transferal(namediv){
+			
+			let content = $('#divattDoc').detach();
+			content.appendTo('#'+namediv);
+		
+		}
+		

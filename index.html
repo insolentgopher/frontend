@@ -35,6 +35,13 @@
 		<script src="https://unpkg.com/axios/dist/axios.js"></script>
 		<link rel="stylesheet" href="css/Custom.css" type="text/css">		
 		<script src="https://cdn.jsdelivr.net/npm/sweetalert2@10"></script>
+			<link href="https://cdnjs.cloudflare.com/ajax/libs/tabulator/4.9.1/css/materialize/tabulator_materialize.css" rel="stylesheet">
+		<script type="text/javascript" src="https://unpkg.com/tabulator-tables@4.8/dist/js/tabulator.min.js"></script>
+		<link href="https://cdnjs.cloudflare.com/ajax/libs/tabulator/4.9.1/css/materialize/tabulator_materialize.css" rel="stylesheet">
+		
+		<script src="js/Docs.js"></script>
+		
+		
 		<script type="text/javascript">
 		$(function () {
 		UIkit.offcanvas(document.getElementById("offcanvas-usage")).show();
@@ -79,6 +86,8 @@
 		URLDELETE: "/address"
 		};
 		getAdditionalyDataStatic(function after(){getAdditionalyData();});
+		
+		_tableDocument = gettabulator('', columnsDocument, true, null, '#tableSelectDoc');
 		
 		$('#Fileupload').on("change", function(){
 		$('#file').text($('#Fileupload').val());
@@ -259,10 +268,10 @@
 										<td class="uk-text-nowrap uk-preserve-width"><a onclick=' getInfoStreet(${Item.id})' class="uk-margin-small-right uk-invisible-hover" uk-icon="info"></a><a onclick=' getStreet(${Item.id})' class="uk-margin-small-right uk-invisible-hover" uk-icon="pencil"></a>
 										</td></tr>`);
             });
-			if(data.length ==0){
-			$('#tbodyStreet').append(`<tr><td>Не знайдено</td>
-										<td></td></tr>`);
-			}
+			<!--if(data.length ==0){-->
+			<!--$('#tbodyStreet').append(`<tr><td>Не знайдено</td>-->
+										<!--<td></td></tr>`);-->
+			<!--}-->
 			location.href="#close";
 		}
 		
@@ -342,6 +351,7 @@
 		c.leftBottomLatitude = r[1];
 		c.leftBottomLongitude = r[0];
 		c.status = c.Streetstatus;
+		c.linksToDo = getlinksunlinks();
 		let id = Street.CARD.id;
 		let token = localStorage.getItem('token');
 			if(id == 0)
@@ -367,6 +377,7 @@
 		}
         if (c) {
 		let id = Address.CARD.id;
+		c.linksToDo = getlinksunlinks();
 		let token = localStorage.getItem('token');
 			if(id == 0)
 		{
@@ -395,11 +406,14 @@
 			}
 		}
 		function getStreet(id) {
-		
+			transferal('gridStreet');
+			GETDOCUMENTFROMDB('street', id);
+			
         emptyformbyclass("Street");
         Street.CARD = Object.assign({}, Street.CARDempty);
         Street.CARD.id = id;
-		GETDOCUMENTFROMDB('street', id);
+		
+		
 		
         if (Street.CARD.id != 0) {
 			forEachClassName("delstreet", i => i.classList.remove("uk-hidden"));
@@ -416,6 +430,8 @@
 		
     }
 		function getAddress(id) {
+		transferal('gridAddress');
+		GETDOCUMENTFROMDB('address', id);
 		
         emptyformbyclass("Address");
         Address.CARD = Object.assign({}, Address.CARDempty);
@@ -928,8 +944,9 @@ $('#tbldoc').append(`<thead>
 	   <textarea class="uk-textarea Address" rows='2'  id="description"></textarea>
       </div>
      </div>-->
-	 
-     
+	  
+     <div id='gridAddress' class="uk-width-1-1">
+	  </div>
      
      <div class="uk-width-1-1">
      <p class="uk-text-right">
@@ -953,7 +970,7 @@ $('#tbldoc').append(`<thead>
 			
             <div class="uk-width-1-2@s uk-padding-large">
                 <h1 class="uk-legend uk-heading-bullet" id="h2modalStreet"></h1>
-    <div class="uk-grid-small uk-grid-match uk-flex-top uk-margin" uk-grid>
+    <div class="uk-grid-small uk-grid-match uk-flex-top uk-margin" uk-grid >
      <div class="uk-width-2-3@m">
       <label class="uk-form-label required_uk">Назва</label>
       <div class="uk-form-controls">
@@ -986,8 +1003,8 @@ $('#tbldoc').append(`<thead>
       </div>
      </div>-->
 	 
-	 
-	 
+	 <div class="uk-width-1-1" id='gridStreet'>
+	  <div class="uk-width-1-1" id='divattDoc'>
 	 <h4 class="uk-legend uk-heading-bullet uk-padding-small uk-padding-remove-top uk-padding-remove-bottom">Документи <a class="uk-margin-small-left " onclick="OpenDocModal();" uk-tooltip="title: Додати документ; delay: 500" uk-icon="plus"></a></h4>
             <div class="uk-width-1-1"><table class="uk-table uk-table-middle uk-table-divider uk-table-small" >
 											<thead>
@@ -1000,8 +1017,9 @@ $('#tbldoc').append(`<thead>
 																							
 											</tbody>
 										</table>
+			</div>		
 			</div>			
-			
+			</div>	
 			
 			
      <div class="uk-width-1-1">
