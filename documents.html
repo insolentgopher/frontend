@@ -56,6 +56,23 @@
 						return filterTabulator(headerValue, (rowData ? rowData.toString() : ''), DocumentType.map(function (a) { return { id: a.id, name: a.typeName }; }));
 					}
             },
+			{
+                    title: 'Видавник',
+					minWidth: 100,
+                    field: 'authorityId',
+                    sorter: "string",
+                    formatter: function(value){
+						return Authority.find(a => a.id == value.getData().authorityId) ? Authority.find(a => a.id == value.getData().authorityId).name : '' ;
+					},
+					headerFilter:true,
+                    headerFilterPlaceholder: 'Пошук...',
+                    sorter: function (a, b) {
+                    return sortTabulator(a, b, Authority.map(function (a) { return { id: a.id, name: a.name }; }));
+					},
+					headerFilterFunc: function (headerValue, rowData) {
+						return filterTabulator(headerValue, (rowData ? rowData.toString() : ''), Authority.map(function (a) { return { id: a.id, name: a.name }; }));
+					}
+            },
              {
                     title: 'Номер',
 					minWidth: 100,
@@ -85,35 +102,8 @@
                     headerFilter:true,
                 headerFilterPlaceholder: 'Пошук...',
             },
-            {
-                    title: 'Видавник',
-					minWidth: 100,
-                    field: 'authorityId',
-                    sorter: "string",
-                    formatter: function(value){
-						return Authority.find(a => a.id == value.getData().authorityId) ? Authority.find(a => a.id == value.getData().authorityId).name : '' ;
-					},
-					headerFilter:true,
-                    headerFilterPlaceholder: 'Пошук...',
-                    sorter: function (a, b) {
-                    return sortTabulator(a, b, Authority.map(function (a) { return { id: a.id, name: a.name }; }));
-					},
-					headerFilterFunc: function (headerValue, rowData) {
-						return filterTabulator(headerValue, (rowData ? rowData.toString() : ''), Authority.map(function (a) { return { id: a.id, name: a.name }; }));
-					}
-            },
-			{
-                    title: 'Заявник',
-					minWidth: 100,
-                    field: 'applicantName',
-                    sorter: "string",
-					headerFilter:true,
-                    headerFilterPlaceholder: 'Пошук...',
-                    formatter: function(value){
-						return value.getData().applicantName +'<br> ' +  value.getData().applicantCode;
-					},
-					
-            },
+            
+			
             {
                     title: 'Статус',
 					minWidth: 100,
@@ -440,12 +430,12 @@
       <select class="uk-select necessarilyselect uk-width-1-1 Document"  id="status"></select>                       
       </div>
      </div>
-	  <div class="uk-width-1-1">
+	  <!--<div class="uk-width-1-1">
       <label class="uk-form-label required_uk">Повна назва</label>
       <div class="uk-form-controls">
        <input class="uk-input necessarilytext Document" type="text" autocomplete="off" id="title">
       </div>
-     </div>
+     </div>-->
 	 <div class="uk-width-1-1">
 	 <label class="uk-form-label">Заголовок</label>
       <div class="uk-form-controls">
@@ -461,13 +451,13 @@
       </div>
      </div>-->
 	 <div class="uk-width-1-1">
-      <label class="uk-form-label">ПІБ заявника</label>
+      <label class="uk-form-label">Назва або ПІБ заявника</label>
       <div class="uk-form-controls">
        <input class="uk-input Document" type="text" autocomplete="off" id="applicantName">
       </div>
      </div>
 	 <div class="uk-width-1-1">
-      <label class="uk-form-label">ЄДРПОУ заявника</label>
+      <label class="uk-form-label">ЄДРПОУ або ІНН заявника</label>
       <div class="uk-form-controls">
        <input class="uk-input Document" type="text" autocomplete="off" id="applicantCode">
       </div>

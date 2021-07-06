@@ -213,7 +213,7 @@ var STATUSES = [{id: 0 , name : 'Дійсний' },{id: 1 , name : 'Анульо
 		function getlinksunlinks(){
 			let arr = [];
 			oldDocument.forEach(function (Item) { arr.push({action: 1, documentId: Item});});
-			newDocument.forEach(function (Item) { arr.push({action: 0, documentId: Item});  });
+			newDocument.forEach(function (Item) { arr.push({action: 0, documentId: Item});});
 			return arr;
 		}
 		

@@ -179,7 +179,7 @@
 				location.href="#load";
 				
 				const x = await axios.get(MainURL + getCity()+"/street");
-                Street.data = x.data;
+                Street.data = x.data.filter(a=> a.id);
 				Street.data.forEach(function (i) { i.fullname = i.name + ", " + i.shortTypeName});
 				
 				fillSelect('streetId', Street.data, "id", "fullname");
@@ -235,16 +235,19 @@
 			if(search.length > 2){
 			let arrayOfStrings = search.split(" ");
 			let obj = {...Street.data};
+		
 			arrayOfStrings.forEach(function (Item) {
 				obj = Object.values(obj).filter(a => (a.name + " " + a.aliasOne+" " + a.aliasTwo).toUpperCase().indexOf(Item.toUpperCase())>-1);
 				});
 				paintStreet(obj);
-				document.getElementById("search").focus();
+				$('#CountStreet').text('знайдено ' + obj.length);
 			}
 			if(search.length==0)
 			{
-				paintStreet(Street.data);
+			    $('#CountStreet').text('100 з ' + Street.data.length);
+				paintStreet(Street.data.slice(0, 100));
 			}
+			document.getElementById("search").focus();
 			location.href="#close";
 		}
 		function paintStreet(data){
@@ -396,6 +399,8 @@
         emptyformbyclass("Street");
         Street.CARD = Object.assign({}, Street.CARDempty);
         Street.CARD.id = id;
+		GETDOCUMENTFROMDB('street', id);
+		
         if (Street.CARD.id != 0) {
 			forEachClassName("delstreet", i => i.classList.remove("uk-hidden"));
             $('#h2modalStreet').text('Редагувати вулицю');
@@ -576,8 +581,7 @@
             <div class="uk-width-expand">
                 <h3 class="uk-card-title uk-margin-remove-bottom">${getFullAdr(st)}</h3>
 				<p class="uk-text-meta uk-margin-remove-top">зареєстровано ${getdate2(st.createdAt)}р.</p>
-                <!--<p class="uk-text-meta uk-margin-remove-top">зареєстровано 03.04.2019</p>-->
-				
+                <p class="uk-text-meta uk-margin-remove-top">обліковий номер ${st.id}</p>
             </div>
         </div>
     </div>
@@ -648,6 +652,7 @@ $('#tbldoc').append(`<thead>
             
             <div class="uk-width-expand">
                 <h3 class="uk-card-title uk-margin-remove-bottom">${StreetType.find(a=> a.id == st.typeId).typeName} ${st.name}</h3>
+				<p class="uk-text-meta uk-margin-remove-top">обліковий номер ${st.id}</p>
                 <p class="uk-text-meta uk-margin-remove-top">зареєстровано ${getdate2(st.createdAt)}р.</p>
             </div>
         </div>
@@ -720,6 +725,21 @@ $('#tbldoc').append(`<thead>
 		</script>
 	</head>
 	<body>
+	
+	
+	
+ <div id="modalCardGETDOC" bg-close="false" class="uk-modal-container uk-flex-top" uk-modal="stack: true" uk-modal>
+    <div class="uk-modal-dialog l uk-modal-body uk-margin-auto-vertical">
+        <button class="uk-modal-close-full uk-close-large" type="button" uk-close></button>
+        <div class="uk-text-center">
+            <div class="uk-overflow-auto">
+							<div id="tableSelectDoc">
+							</div>
+						</div>
+            <button class="uk-button uk-button-primary " onclick="SELECTDOC()" type="button">Обрати</button>
+        </div>
+    </div>
+</div>
 <div id="load" class="modalDialog " style="padding-left:calc(50% - 100px); padding-top:calc(50vh - 100px); overflow-y:auto; z-index:2000;position: fixed">
  <span uk-spinner="ratio: 7"></span>
 		</div>
@@ -965,6 +985,25 @@ $('#tbldoc').append(`<thead>
        <textarea class="uk-textarea Street" rows='2'  id="aliasTwo"></textarea>
       </div>
      </div>-->
+	 
+	 
+	 
+	 <h4 class="uk-legend uk-heading-bullet uk-padding-small uk-padding-remove-top uk-padding-remove-bottom">Документи <a class="uk-margin-small-left " onclick="OpenDocModal();" uk-tooltip="title: Додати документ; delay: 500" uk-icon="plus"></a></h4>
+            <div class="uk-width-1-1"><table class="uk-table uk-table-middle uk-table-divider uk-table-small" >
+											<thead>
+												<tr>
+													<th class="uk-width-expand"></th>
+													<th></th>
+												</tr>
+											</thead>
+											<tbody id="tbodyDocuments">
+																							
+											</tbody>
+										</table>
+			</div>			
+			
+			
+			
      <div class="uk-width-1-1">
      <p class="uk-text-right">
     <button class="uk-button uk-button-default delstreet" onclick="deleteStreet()" type="button">Видалити</button>
@@ -1100,7 +1139,7 @@ $('#tbldoc').append(`<thead>
 		<div class="uk-width-expand">
 		<form class="uk-search uk-search-default uk-width-1-1">
 		<!--<span uk-search-icon></span>-->
-		<input class="uk-search-input" type="search" autocomplete="off" oninput='hideShowIconSearch(this.value); searchStreet(this.value)' id='search' placeholder="Пошук вулиці">
+		<input class="uk-search-input" type="text" autocomplete="off" oninput='hideShowIconSearch(this.value); searchStreet(this.value)' id='search' placeholder="Пошук вулиці">
 		
 		<a class="uk-form-icon uk-form-icon-flip uk-hidden" id='iconClose' onclick="hideShowIconSearch(''); $('#search').val('').trigger('oninput')" uk-icon="icon: close"></a>
 		<a class="uk-form-icon uk-form-icon-flip" id='iconSearch' uk-icon="icon: search"></a>
@@ -1112,12 +1151,16 @@ $('#tbldoc').append(`<thead>
 		<div>
 			<a class="uk-margin-small-left " id='addAdr' onclick="getStreet(0)" uk-tooltip="title: Додати вулицю; delay: 500" uk-icon="plus"></a>
 		</div>
+		<div class='uk-width-1-1 uk-text-right'>
+		<span id='CountStreet' class='uk-text-meta'></span>
+		</div>
         </div>
-<div id="container333" class="uk-height-large uk-margin-small aside-second-first" style=" position:relative; top:0; bottom:0;"> 
+		
+<div id="container333" class="uk-height-large uk-margin-small aside-second-first uk-margin-remove-top" style=" position:relative; top:0; bottom:0;"> 
 
 	
 <table class="uk-table uk-width-1-1 uk-table-small ">
-    <thead>
+    <thead class='uk-hidden'>
         <tr>
             <th class='uk-width-expand'></th>
             <th class='uk-preserve-auto'></th>
