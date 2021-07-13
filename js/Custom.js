@@ -1,3 +1,24 @@
+
+$(function () {
+		if($(window).width()<=960)
+		{
+		 if (document.getElementById('left-col') !=null) 
+			document.getElementById('left-col').toggleAttribute('hidden');
+		}
+		window.addEventListener("resize", () => {
+		if($(window).width()>960)
+		{
+		if (document.getElementById('left-col') !=null) 
+			document.getElementById('left-col').removeAttribute("hidden"); 
+		}
+		else{
+			if (document.getElementById('left-col') !=null) 
+			document.getElementById('left-col').setAttribute("hidden", true); 
+		}
+		});
+});
+
+
 function dis(value, div) {
 
              if (value) {
@@ -360,13 +381,14 @@ function dis(value, div) {
         }
         function openIcon(value) {
             if (value.getColumn().getDefinition().field == 'Видалити')
-                return '<a  class="uk-icon" uk-icon="trash"></a>'
+                return '<a  class="uk-icon superRootRole" uk-icon="trash"></a>'
             if (value.getColumn().getDefinition().field == 'Редагувати')
                 return '<a   class="uk-icon" uk-icon="pencil" ></a>'
 			
 			if (value.getColumn().getDefinition().field == 'Завантажити')
                 return '<a  class="uk-icon" uk-icon="download" ></a>'
-			
+			if (value.getColumn().getDefinition().field == 'Інформація')
+                return '<a   class="uk-icon" uk-icon="info" ></a>'
 
              if (value.getColumn().getDefinition().field == 'arrayservices')
                 return  value.getData().fileType==3 ? '<a  class="uk-icon-link" uk-icon="star" ></a>' : ''
@@ -388,9 +410,9 @@ function dis(value, div) {
             if (value.getColumn().getDefinition().field == 'status')
                 return value.getData().status == 2 ? 'Виконано' : (value.getData().status == 1 ? 'В роботі' : "Очікуємо")
         }
-        function deleteobject(urldelete, data, token, before, after) {
-            buttonconfirm("Увага!", "Видалити без можливості відновлення?", async function func() {
-            location.href = "#load";
+        function deleteobject(urldelete, data, token, before, after, textadd) {
+            buttonconfirm("Увага!", (textadd ? textadd : "") + "Видалити без можливості відновлення?", async function func() {
+            $('#load').removeClass("hide-loader");
             $.ajax({
                 url: urldelete,
                    type: "DELETE",
@@ -407,19 +429,43 @@ function dis(value, div) {
                         before();
                     if (after)
                         after();
-					location.href = "#close";
+					$('#load').addClass("hide-loader");
                      UIkit.notification({ message: 'Видалено', status: 'success' });
                 },
 				error: function (data) {
+					if(data)
 					 GETERROR(data);
-					location.href = "#close";
+					$('#load').addClass("hide-loader");
 					
 				},
             });
         });
         }
 		function getCity(){
-			return "kharkiv";
+			try{
+				//Для локального
+				if(window.location.protocol != "https:" && window.location.protocol != "http:"){
+					//let s = window.location.substring(0, window.location.lastIndexOf('/'));
+					//return s.substring(s.lastIndexOf('/')+1);
+					return 'kharkiv';
+				}			
+			
+			if(window.location.pathname.length > 0)
+			{
+				let t = window.location.pathname.substring(1, window.location.pathname.lastIndexOf('/'));
+				if(t==null || t==undefined || t=="" || t=="/" || t.indexOf("/") !=-1){
+					$(location).attr('href',window.location.origin + '/cities.html');
+				}
+				else{
+					return t;
+				}
+			}
+			else 
+				$(location).attr('href',window.location.origin + '/cities.html');
+			}
+			catch{
+				$(location).attr('href',window.location.origin + '/cities.html');
+			}
 		}
 		
 		function DataObjToFormData(obj) {
@@ -433,7 +479,7 @@ function dis(value, div) {
 		
 		
 		 function saveobjectFORMDATA(urlsave, data, token,type, before, after){
-			 location.href = "#load";
+			 $('#load').removeClass("hide-loader");
     $.ajax({
             type: type,
             enctype: 'multipart/form-data',
@@ -448,20 +494,33 @@ function dis(value, div) {
             },
             success: function (data) {
 					before();
-					switch (data) {
+					
+						if(data.token){
+							removetoken();
+							addtoken(data.token);
+						}
+						if(data.url)
+						{
+							let city = data.substring(data.url.lastIndexOf('/')+1); 
+							$(location).attr('href',window.location.origin + '/'+ city+ '/index.html');
+						}
+						switch (data) {
 					  case "OK":
 						UIkit.notification({ message: 'Збережено', status: 'success' });
 						break;
 					  default:
+						let city = data.substring(data.lastIndexOf('/')+1); 
+						$(location).attr('href',window.location.origin + '/'+ city+ '/index.html');
 						UIkit.notification({ message: 'Збережено' , status: 'success' });
 						break;
 					}
 					after();
-					location.href = "#close";
+					$('#load').addClass("hide-loader");
                 },
 				 error: function (data) {
+					 if(data)
 					 GETERROR(data);
-					location.href = "#close";
+					$('#load').addClass("hide-loader");
 					
 				},
         });
@@ -469,7 +528,7 @@ function dis(value, div) {
 		
 		
 		function GETobjectDATA(url, data, token, before, after) {
-            location.href = "#load";
+            $('#load').removeClass("hide-loader");
             $.ajax({
                 url: urlsave,
                     type: 'GET',
@@ -491,19 +550,20 @@ function dis(value, div) {
 						break;
 					}
 					after();
-					location.href = "#close";
+					$('#load').addClass("hide-loader");
 					return data;
                 },
 				 error: function (data) {
+					 if(data)
 					 GETERROR(data);
-					location.href = "#close";
+					$('#load').addClass("hide-loader");
 					return null;
 				},
             });
         }
 		
         function saveobject(urlsave, data, token, type, before, after) {
-            location.href = "#load";
+            $('#load').removeClass("hide-loader");
             $.ajax({
                 url: urlsave,
                     type: type,
@@ -524,13 +584,14 @@ function dis(value, div) {
 						UIkit.notification({ message: 'Збережено' , status: 'success' });
 						break;
 					}
-					location.href = "#close";
+					$('#load').addClass("hide-loader");
 					after();
 					
                 },
 				 error: function (data) {
+					 if(data)
 					 GETERROR(data);
-					location.href = "#close";
+					$('#load').addClass("hide-loader");
 					
 				},
             });
@@ -549,8 +610,15 @@ function dis(value, div) {
 		}
 		
 		function GETERROR(data){
-			if(data && data.responseJSON && data.responseJSON.errorCode){
-			switch (data.responseJSON.errorCode) {
+			try{
+			if(data==undefined){
+				UIkit.notification({ message: 'Невизначена помилка', status: 'danger'});
+				 $('#load').addClass("hide-loader");
+				return;
+			}
+			let err = (data && data.responseJSON && data.responseJSON.errorCode) ? data.responseJSON.errorCode : ((data && data.response.data && data.response.data.errorCode) ? data.response.data.errorCode: '');
+
+			switch (err) {
 					  case "INVALID_TOKEN":
 						document.location.href = "login.html";
 						break;
@@ -584,8 +652,8 @@ function dis(value, div) {
 					case "LONGITUDE OUT OF UKRAINE BOUNDARIES" :
 						UIkit.notification({ message: 'Координата довготи знаходиться за межами України', status: 'danger'});
 						break;
-					case "LOGIN LESS 8 SYMBOLS":
-						UIkit.notification({ message: 'Логін складається меньше ніж з 8-ми символів', status: 'danger'});
+					case "LOGIN LESS 4 SYMBOLS":
+						UIkit.notification({ message: 'Логін складається меньше ніж з 4-х символів', status: 'danger'});
 						break;
 					case "PASSWORD LESS 8 SYMBOLS":
 						UIkit.notification({ message: 'Пароль складається меньше ніж з 8-ми символів', status: 'danger'});
@@ -644,33 +712,107 @@ function dis(value, div) {
 					case "EMPTY CITY NAME":
 						UIkit.notification({ message: 'Порожня назва міста', status: 'danger'});
 						break;
-						case "CANNOT SAVE FILE":
+					case "CANNOT SAVE FILE":
 						UIkit.notification({ message: 'Помилка при збереженні документу', status: 'danger'});
 						break;
-						case "LOGO_IS_NOT_IMAGE":
+					case "LOGO_IS_NOT_IMAGE":
 						UIkit.notification({ message: 'Завантажений логотип не є рисунком', status: 'danger'});
 						break;
-						case "CITY REGISTER ALREADY EXISTS":
+					case "CITY REGISTER ALREADY EXISTS":
 						UIkit.notification({ message: 'Реєстр зазначеного міста вже існує', status: 'danger'});
 						break;
-						case "TRYING TO DELETE YOURSELF":
+					case "TRYING TO DELETE YOURSELF":
 						UIkit.notification({ message: 'Для видалення свого облікового запису зверніться до техпідтримки', status: 'danger'});
 						break;
+					case "LOGO IS NOT IMAGE":
+						UIkit.notification({ message: 'Логотип не є картинкої або тип картинки не підпримується', status: 'danger'});
+						break;
+					case "FILE STORAGE ERROR":
+						UIkit.notification({ message: 'Помилка внутрішнього сховища', status: 'danger'});
+						break;
+					case "FILE NOT FOUND AT FILE STORAGE":
+						UIkit.notification({ message: 'Файл не існує', status: 'danger'});
+						break;
+					case "EMPTY DOCUMENT TYPE NAME":
+						UIkit.notification({ message: 'Документ не має типу', status: 'danger'});
+						break;
+					case "EMPTY DOCUMENT NUMBER":
+						UIkit.notification({ message: 'Документ не має номер', status: 'danger'});
+						break;
+					case "EMPTY DOCUMENT TITLE":
+						UIkit.notification({ message: 'Користувач не існує', status: 'danger'});
+						break;
+					case "DOCUMENT NOT FOUND":
+						UIkit.notification({ message: 'Документ не існує', status: 'danger'});
+						break;
+					case "INCORRECT URL PART":
+						UIkit.notification({ message: 'Помилка у частині URL-адреси', status: 'danger'});
+						break;
+					case "INCORRECT LINK ACTION":
+						UIkit.notification({ message: "Виникла помилка при прив'язці документу", status: 'danger'});
+						break;
+					case "NCORRECT LINKED ENTITY":
+						UIkit.notification({ message: "Виникла помилка при прив'язці документу", status: 'danger'});
+						break;
+					case "DOCUMENT IS ALREADY LINKED":
+						UIkit.notification({ message: "Документ вже привёязаний", status: 'danger'});
+						break;
+					case "DOCUMENT HAS_NO LINKS":
+						UIkit.notification({ message: "Документ не має зв'язків", status: 'danger'});
+						break;
+					case "USER ID NOT FOUND":
+						UIkit.notification({ message: 'Користувач не існує', status: 'danger'});
+						break;
+					case "STREET ID NOT FOUND":
+						UIkit.notification({ message: 'Вулиця не існує', status: 'danger'});
+						break;
+					case "STREET_TYPE ID NOT FOUND":
+						UIkit.notification({ message: 'ТИп вулиці не існує', status: 'danger'});
+						break;
+					case "DISTRICT ID NOT FOUND":
+						UIkit.notification({ message: 'Район  не існує', status: 'danger'});
+						break;	
+					case "ADDRESS ID NOT FOUND":
+						UIkit.notification({ message: 'Адреса не існує', status: 'danger'});
+						break;
+					case "AUTHORITY ID NOT FOUND":
+						UIkit.notification({ message: 'Орган  не існує', status: 'danger'});
+						break;
+					case "DOCUMENT TYPE ID NOT FOUND":
+						UIkit.notification({ message: 'Тит документу не існує', status: 'danger'});
+						break;
+					case "NO SUFFICIENT PRIVILEGES":
+						UIkit.notification({ message: 'Немає прав на виконання цієї операції', status: 'danger'});
+						break;
+	
 					  default:
-						UIkit.notification({ message: data.responseJSON.error , status: 'danger'});
+						UIkit.notification({ message: 'Невизначена помилка', status: 'danger'});
 						break;
 					}
+					
 			}
-			else{
+			catch{
 				UIkit.notification({ message: 'Невизначена помилка', status: 'danger'});
-				return;
+				 $('#load').addClass("hide-loader");
 			}
-					return;
+			return;
+		}
+		
+		function removetoken()
+		{
+			localStorage.removeItem('token');
+		}
+		
+		function addtoken(token){
+			localStorage.setItem('token', token);
+		}
+		function gettoken(){
+			return localStorage.getItem('token');
 		}
 		
 		
         function getobject(urlget, id, before, after, setcard) {
-                location.href = "#load";
+                $('#load').removeClass("hide-loader");
                 $.ajax({
                     url: urlget,
                     dataType: "json",
@@ -697,11 +839,12 @@ function dis(value, div) {
                         if (setcard)
                             CARD = data;
 						if(after) after();
-                        location.href = "#close";
+                        $('#load').addClass("hide-loader");
                     },
 					error: function (data) {
+						if(data)
 					 GETERROR(data);
-					location.href = "#close";
+					$('#load').addClass("hide-loader");
 					
 				},
                 });
@@ -732,14 +875,14 @@ function dis(value, div) {
         }
 
         function getobject2(urlget, id, before, setcard) {
-                location.href = "#load";
+                $('#load').removeClass("hide-loader");
                 $.ajax({
                     url: urlget,
                     dataType: "json",
                     traditional: true,
                     data: { id: id },
                     success: function (data) {
-                        location.href = "#close";
+                        $('#load').addClass("hide-loader");
                         if (data == "ERRORDATA" || data == "ERROR") {
                             UIkit.notification({ message: 'Помилка', status: 'danger' });
                             return;

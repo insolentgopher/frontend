@@ -6,37 +6,39 @@
 		<meta charset="utf-8">
 		<meta name="viewport" content="width=device-width, initial-scale=1">
 		<title>Автоматизована система управління геоданими - Модуль адресний реєстр</title>
-		<link rel="icon" href="img/favicon/favicon.ico" type="image/x-icon">
+		<link rel="icon" href="http://10.0.16.8/img/favicon/favicon.ico" type="image/x-icon">
 		<!-- CSS FILES -->
 		<link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/uikit@latest/dist/css/uikit.min.css">
-		<link rel="stylesheet" type="text/css" href="css/dashboard.css">
-		<link rel="stylesheet" type="text/css" href="css/perfect-scrollbar.css">
+		<link rel="stylesheet" type="text/css" href="http://10.0.16.8/css/dashboard.css">
+		<link rel="stylesheet" type="text/css" href="http://10.0.16.8/css/perfect-scrollbar.css">
 		
         <!--Map CSS------------------>
-        <link rel="stylesheet" href="lib/ol/ol.css" type="text/css">
-        <link rel="stylesheet" href="lib/ol-layerswitcher/ol-layerswitcher.css" type="text/css">
+        <link rel="stylesheet" href="http://10.0.16.8/lib/ol/ol.css" type="text/css">
+        <link rel="stylesheet" href="http://10.0.16.8/lib/ol-layerswitcher/ol-layerswitcher.css" type="text/css">
 
 		<!-- Scrollbar JS FILES -->
-		<script src="js/perfect-scrollbar.js"></script>
+		<script src="http://10.0.16.8/js/perfect-scrollbar.js"></script>
 		
 		<!-- UIKIT JS FILES -->
 		<script src="https://cdn.jsdelivr.net/npm/uikit@latest/dist/js/uikit.min.js"></script>
 		<script src="https://cdn.jsdelivr.net/npm/uikit@latest/dist/js/uikit-icons.min.js"></script>
         <!--Map JS------------------>
-        <!-- <script src="lib/ol/ol.js" defer></script> -->
-        <script src="lib/ol/ol.js"></script>
+        <!-- <script src="http://10.0.16.8/lib/ol/ol.js" defer></script> -->
+        <script src="http://10.0.16.8/lib/ol/ol.js"></script>
         
         <!-- <script src="https://openlayers.org/en/v5.3.0/build/ol.js"></script> -->
-        <script src="lib/ol-layerswitcher/ol-layerswitcher.js"></script>		
+        <script src="http://10.0.16.8/lib/ol-layerswitcher/ol-layerswitcher.js"></script>		
 		
 		 <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.1.1/jquery.min.js"></script>
-		 <script src="js/Custom.js"></script>
+		 <script src="http://10.0.16.8/js/User.js"></script>
+		 <script src="http://10.0.16.8/js/Custom.js"></script>
 		 
-		 <link rel="stylesheet" href="css/select2.min.css" type="text/css">
-		<script src="js/select2.min.js"></script>
+		 <link rel="stylesheet" href="http://10.0.16.8/css/select2.min.css" type="text/css">
+		<script src="http://10.0.16.8/js/select2.min.js"></script>
 		<script src="https://unpkg.com/axios/dist/axios.js"></script>
-		<link rel="stylesheet" href="css/Custom.css" type="text/css">		
+		<link rel="stylesheet" href="http://10.0.16.8/css/Custom.css" type="text/css">		
 		<script src="https://cdn.jsdelivr.net/npm/sweetalert2@10"></script>
+		
 		
 		
 		<meta http-equiv="Cache-Control" content="no-cache"> 
@@ -47,9 +49,12 @@
 		
 		
 		$(function () {
+		if(visView(["superRootRole"]) == false)
+			return;
+			
 		UIkit.offcanvas(document.getElementById("offcanvas-usage")).show();
 		<!--UIkit.tooltip(document.getElementById("addAdr")).show();-->
-		location.href="#close";
+		 $('#load').addClass("hide-loader");
 		MainURL = "http://10.0.16.13:2023/portal/api/v1/register/";
 
 		Register = {
@@ -94,19 +99,24 @@
 		
 		async function getAdditionalyDataStatic() {
            
-				location.href="#load";
-				const main = await axios.get(MainURL + getCity());
+				 $('#load').removeClass("hide-loader");
+				const main = await axios.get(MainURL + getCity()).catch(error => {GETERROR(error); $('#load').addClass("hide-loader");});
 				Register.CARD = main.data;
 				getobject_ByData(main.data);
-				caches.delete(main.data.logoUrl).then(function(response) {
-
-  }); try {
+				try {
                 if(main.data)
 				{
+				let logourl = main.data.logoUrl.replace('/1/', `/${Math.floor(Math.random() * 100)}/` );
 					forEachClassName("citytitle", i => i.textContent= main.data.cityName);
 					forEachClassName("maintitle", i => i.textContent= main.data.title);
-					forEachClassName("custom-logo", i => i.setAttribute('src', main.data.logoUrl));
-					forEachClassName("logo", i => i.setAttribute('data-src', main.data.logoUrl));
+					forEachClassName("custom-logo", i => i.setAttribute('src', logourl));
+					forEachClassName("logo", i => i.setAttribute('data-src', logourl));
+					
+					
+					$('#countStreettext').text(' - ' + main.data.streetCount);
+				$('#countStreet').val(main.data.streetCount);
+				$('#countAddresstext').text(' - ' + main.data.addressCount);
+				$('#countAddress').val(main.data.addressCount);
 				}
 
 				APP_MAP.selectStreet({rightTopLatitude:  main.data.rtLatitude ,
@@ -120,14 +130,14 @@
             catch {
                 UIkit.notification({ message: 'Помилка! Дані не були завантажені', status: 'danger' });
             }
-location.href="#close";
+ $('#load').addClass("hide-loader");
         }
 			async function updateRegister(){
 	var c = getCardData(Register.CARD);
 		
         if (c) {
 		let id = Register.CARD.id;
-		let token = localStorage.getItem('token');
+		let token = gettoken();
 		
 		var FD = new FormData();
         FD.append("cityName", c.cityName);
@@ -154,7 +164,8 @@ location.href="#close";
 	}
 		</script>
 	</head>
-	<body>
+	
+<body class='uk-invisible'>
 <div id="load" class="modalDialog " style="padding-left:calc(50% - 100px); padding-top:calc(50vh - 100px); overflow-y:auto; z-index:2000;position: fixed">
  <span uk-spinner="ratio: 7"></span>
 		</div>
@@ -162,43 +173,28 @@ location.href="#close";
 		<!--HEADER-->
 		<header id="top-head" class="uk-position-fixed">
 			<div class="uk-container uk-container-expand uk-background-default topbar">
-				<nav class="uk-navbar uk-dark" data-uk-navbar="mode:click; duration: 250">
-					<div class="uk-navbar-left">
-					
-						<div class="uk-navbar-item uk-hidden@m">
-							<a class="uk-link-reset" href="index.html">
-									<span class="uk-text-bold maintitle "></span>
-							</a>
+				<nav class="uk-navbar uk-dark" data-uk-navbar="mode:click; duration: 250" style='height: 64px'>
+				
+					<div class="uk-navbar-left  uk-text-nowrap uk-text-truncate">
+						<div class="   uk-text-truncate">
+						<a class="uk-icon-button uk-hidden@m"  onclick="document.getElementById('left-col').toggleAttribute('hidden'); " data-uk-icon="icon: menu" title="Меню"></a>
+						
+						 <span class="uk-text-bold maintitle uk-margin-small-left "></span>
+						
 						</div>
-						<span class="uk-text-bold maintitle "></span>
-					</div>
-					<div class="uk-navbar-right">
-						<ul class="uk-navbar-nav">
-							<li>
-								<a href="#" data-uk-icon="icon:user" title="Ваш обліковий запис" data-uk-tooltip></a>
-								<div class="uk-navbar-dropdown">
-									<ul class="uk-nav uk-navbar-dropdown-nav">
-										<li class="uk-nav-header">Обліковий запис</li>
-										<li><a href="#"><span data-uk-icon="icon: info"></span> Загальне</a></li>
-										<li><a href="#"><span data-uk-icon="icon: refresh"></span> Редагувати</a></li>
-										<li><a href="#"><span data-uk-icon="icon: settings"></span> Налаштування</a></li>
-										<li class="uk-nav-divider"></li>
-										<li><a href="#"><span data-uk-icon="icon: image"></span> Ваші данні</a></li>
-										<!--<li class="uk-nav-divider"></li>
-										<li><a href="#"><span data-uk-icon="icon: sign-out"></span> Вийти</a></li>-->
-									</ul>
-								</div>								
-							</li>
-							<li><a href="login.html" data-uk-icon="icon:  sign-out" title="Вийти" data-uk-tooltip></a></li>
-							<li><a class="uk-navbar-toggle" data-uk-toggle data-uk-navbar-toggle-icon href="#offcanvas-nav" title="Додаткове меню" data-uk-tooltip></a></li>
-						</ul>
-					</div>
+					</div>				
+				<div class="uk-navbar-right  uk-text-nowrap uk-text-truncate">
+						<div class="uk-text-truncate">
+						<a class="uk-link" uk-tooltip="title: Оберіть місто" href='cities.html'><span uk-icon="icon: location;"></span><span class="citytitle "></span></a>
+						</div>
+					</div>		
+					
 				</nav>
 			</div>
 		</header>
 		<!--/HEADER-->
 		<!-- LEFT BAR -->
-		<aside id="left-col" class="uk-light uk-visible@m">
+		<aside id="left-col" class="uk-light  ">
 			<div class="left-logo uk-flex uk-flex-middle content-box-dark">
 			<!--<a class="uk-logo" href="#"><img class="custom-logo" src="img/logo.png" alt="">АСУ геоданими</a>-->
 			<a class="uk-link-reset" href="index.html">
@@ -211,18 +207,15 @@ location.href="#close";
 				<ul class="uk-nav uk-nav-default uk-nav-parent-icon" data-uk-nav>
 					<li class="uk-nav-header uk-heading-bullet">Адресний реєстр</li>
 					<li><a href="index.html"><span data-uk-icon="icon: search" class="uk-margin-small-right"></span>Пошук</a></li>
-					<li><a href="audit.html"><span data-uk-icon="icon: file-edit" class="uk-margin-small-right"></span>Аудит</a></li>
-					<li><a href="dictionaries.html"><span data-uk-icon="icon: thumbnails" class="uk-margin-small-right"></span>Довідники</a></li>
-					<li><a href="documents.html"><span data-uk-icon="icon: album" class="uk-margin-small-right"></span>Архів</a></li>
+					<li   class='auditRole'><a href="audit.html"><span data-uk-icon="icon: file-edit" class="uk-margin-small-right"></span>Аудит</a></li>
+					<li class='dictionaryRole'><a href="dictionaries.html"><span data-uk-icon="icon: thumbnails" class="uk-margin-small-right"></span>Довідники</a></li>
+					<li   class='registryRole'><a href="documents.html"><span data-uk-icon="icon: album" class="uk-margin-small-right"></span>Документи</a></li>
 					
-					<li ><a href="users.html"><span data-uk-icon="icon: users" class="uk-margin-small-right"></span>Користувачі</a></li>
-					<li><a href="#"><span data-uk-icon="icon: history" class="uk-margin-small-right"></span>Історія</a></li>
-					<li><a href="#"><span data-uk-icon="icon: cloud-upload" class="uk-margin-small-right"></span>Імпорт</a></li>
-					<li><a href="export.html"><span data-uk-icon="icon: cloud-download" class="uk-margin-small-right"></span>Експорт</a></li>
+					<li class='userRole'><a href="users.html"><span data-uk-icon="icon: users" class="uk-margin-small-right"></span>Користувачі</a></li>
+					<!--<li  class='registryRole uk-disabled'><a href="#"><span data-uk-icon="icon: history" class="uk-margin-small-right"></span>Історія</a></li>-->
+					<!--<li class='superRootRole uk-disabled'><a href="#"><span data-uk-icon="icon: cloud-upload" class="uk-margin-small-right"></span>Імпорт</a></li>-->
+					<li class='exportImportRole'><a href="export.html"><span data-uk-icon="icon: cloud-download" class="uk-margin-small-right"></span>Експорт</a></li>
 
-					<li class="uk-nav-header uk-heading-bullet">Модуль 2</li>
-					<li><a href="#"><span data-uk-icon="icon: search" class="uk-margin-small-right"></span>Розділ 1</a></li>
-					<li><a href="#"><span data-uk-icon="icon: users" class="uk-margin-small-right"></span>Розділ 2</a></li>
 				</ul>
 				
 				<div class="left-content-box uk-margin-top">
@@ -232,36 +225,36 @@ location.href="#close";
 							<span class="uk-text-small">Кількість вулиць <small id='countStreettext'></small></span>
 							<progress class="uk-progress" value="0" id='countStreet' max="5000"></progress>
 						</div>
-						<!--<div>
-							<span class="uk-text-small">Додано нових за тиждень <small>(+78)</small></span>
-							<progress class="uk-progress success" value="78" max="100"></progress>
-						</div>-->
-						<!--<div>
-							<span class="uk-text-small">Feedback <small>(-12)</small></span>
-							<progress class="uk-progress warning" value="12" max="100"></progress>
-						</div>-->
+						<div>
+							<span class="uk-text-small">Кількість адрес <small id='countAddresstext'></small></span>
+							<progress class="uk-progress success" value="0" id='countAddress' max="150000"></progress>
+						</div>
 					
 				</div>
 				
 			</div>
 			<div class="bar-bottom">
 				<ul class="uk-subnav uk-flex uk-flex-center uk-child-width-1-5" data-uk-grid>
-					<li>
-						<a href="/index" class="uk-icon-link" data-uk-icon="icon: home" title="Головна" data-uk-tooltip></a>
+					<li class='alluser'>
+						<a href="index.html" class="uk-icon-link" data-uk-icon="icon: home" title="Головна" data-uk-tooltip></a>
 					</li>
-					<li class='uk-active'>
-						<a class="uk-icon-link" href="register.html" data-uk-icon="icon: settings" title="Налаштування" data-uk-tooltip></a>
+					<li class='superRootRole uk-active'>
+						<a href="register.html" class="uk-icon-link" data-uk-icon="icon: settings" title="Налаштування" data-uk-tooltip></a>
 					</li>
-					<li>
-						<a href="myaccount.html" class="uk-icon-link" data-uk-icon="icon: user"  title="Обліковий запис" data-uk-tooltip></a>
+					<li class='alluser'>
+						<a href="myaccount.html" class="uk-icon-link" data-uk-icon="icon: user" id='iam'  uk-tooltip="Обліковий запис" data-uk-tooltip></a>
 					</li>
 					
-					<li>
-						<a href="login.html" class="uk-icon-link" data-uk-tooltip="Вийти" data-uk-icon="icon: sign-out"></a>
+					<li class='alluser'>
+						<a onclick="removetoken(); $(location).attr('href','index.html');" class="uk-icon-link" data-uk-tooltip="Вийти" data-uk-icon="icon: sign-out"></a>
+					</li>
+					<li class='user'>
+						<a href="login.html" class="uk-icon-link" data-uk-tooltip="Авторизація" data-uk-icon="icon: sign-in"></a>
 					</li>
 				</ul>
 			</div>
 		</aside>
+		
 		<!-- /LEFT BAR -->
 				
 	
@@ -365,7 +358,7 @@ location.href="#close";
 
      <div class="uk-width-1-1">
      <p class="uk-text-right">
-    <button class="uk-button uk-button-primary" onclick="updateRegister()" type="button">Зберегти</button>
+    <button class="uk-button uk-button-primary superRootRole" onclick="updateRegister()" type="button">Зберегти</button>
    </p>
     </div>
 	
@@ -382,10 +375,10 @@ location.href="#close";
 
 				
 
-				<script src="js/map/editPanel_Map.js"></script>
-				<script src="js/map/Config_Map.js"></script>
-				<script src="js/map/Map.js"></script>
-				<script src="js/map/Start_Map.js"></script>  
+				<script src="http://10.0.16.8/js/map/editPanel_Map.js"></script>
+				<script src="http://10.0.16.8/js/map/Config_Map.js"></script>
+				<script src="http://10.0.16.8/js/map/Map.js"></script>
+				<script src="http://10.0.16.8/js/map/Start_Map.js"></script>  
 
 				<script type="text/javascript">
 				//проверка тестовых функций карты
@@ -450,32 +443,5 @@ location.href="#close";
 			</div>
 		<!-- /CONTENT -->
 		<!-- OFFCANVAS -->
-		<div id="offcanvas-nav" data-uk-offcanvas="flip: true; overlay: true">
-			<div class="uk-offcanvas-bar uk-offcanvas-bar-animation uk-offcanvas-slide">
-				<button class="uk-offcanvas-close uk-close uk-icon" type="button" data-uk-close></button>
-				<ul class="uk-nav uk-nav-default">
-					<li class="uk-active"><a href="#">Active</a></li>
-					<li class="uk-parent">
-						<a href="#">Parent</a>
-						<ul class="uk-nav-sub"> 
-							<li><a href="#">Sub item</a></li>
-							<li><a href="#">Sub item</a></li>
-						</ul>
-					</li>
-					<li class="uk-nav-header">Header</li>
-					<li><a href="#js-options"><span class="uk-margin-small-right uk-icon" data-uk-icon="icon: table"></span> Item</a></li>
-					<li><a href="#"><span class="uk-margin-small-right uk-icon" data-uk-icon="icon: thumbnails"></span> Item</a></li>
-					<li class="uk-nav-divider"></li>
-					<li><a href="#"><span class="uk-margin-small-right uk-icon" data-uk-icon="icon: trash"></span> Item</a></li>
-				</ul>
-				<h3>Title</h3>
-				<p>Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.</p>
-			</div>
-		</div>
+		
 		<!-- /OFFCANVAS -->
-	    <script>
-    new PerfectScrollbar('#left-col');
-    </script>	
-
-	</body>
-</html>

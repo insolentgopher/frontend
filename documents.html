@@ -4,37 +4,43 @@
 		<meta charset="utf-8">
 		<meta name="viewport" content="width=device-width, initial-scale=1">
 		<title>Автоматизована система управління геоданими - Модуль адресний реєстр</title>
-		<link rel="icon" href="img/favicon/favicon.ico" type="image/x-icon">
+		<link rel="icon" href="http://10.0.16.8/img/favicon/favicon.ico" type="image/x-icon">
 		<!-- CSS FILES -->
 		<link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/uikit@latest/dist/css/uikit.min.css">
-		<link rel="stylesheet" type="text/css" href="css/dashboard.css">
+		<link rel="stylesheet" type="text/css" href="http://10.0.16.8/css/dashboard.css">
 		
         <!--Map CSS------------------>
-        <link rel="stylesheet" href="lib/ol/ol.css" type="text/css">
-        <link rel="stylesheet" href="lib/ol-layerswitcher/ol-layerswitcher.css" type="text/css">
+        <link rel="stylesheet" href="http://10.0.16.8/lib/ol/ol.css" type="text/css">
+        <link rel="stylesheet" href="http://10.0.16.8/lib/ol-layerswitcher/ol-layerswitcher.css" type="text/css">
 
 		<!-- UIKIT JS FILES -->
 		<script src="https://cdn.jsdelivr.net/npm/uikit@latest/dist/js/uikit.min.js"></script>
 		<script src="https://cdn.jsdelivr.net/npm/uikit@latest/dist/js/uikit-icons.min.js"></script>
         <!--Map JS------------------>
-        <!-- <script src="lib/ol/ol.js" defer></script> -->
-        <script src="lib/ol/ol.js"></script>
+        <!-- <script src="http://10.0.16.8/lib/ol/ol.js" defer></script> -->
+        <script src="http://10.0.16.8/lib/ol/ol.js"></script>
         
         <!-- <script src="https://openlayers.org/en/v5.3.0/build/ol.js"></script> -->
-        <script src="lib/ol-layerswitcher/ol-layerswitcher.js"></script>
+        <script src="http://10.0.16.8/lib/ol-layerswitcher/ol-layerswitcher.js"></script>
 		 <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.1.1/jquery.min.js"></script>
-		
-		<script src="js/Custom.js"></script>
+		<script src="http://10.0.16.8/js/User.js"></script>
+		<script src="http://10.0.16.8/js/Custom.js"></script>
 		<script src="https://unpkg.com/axios/dist/axios.js"></script>
-		<link rel="stylesheet" href="css/Custom.css" type="text/css">		
+		<link rel="stylesheet" href="http://10.0.16.8/css/Custom.css" type="text/css">		
 		<script src="https://cdn.jsdelivr.net/npm/sweetalert2@10"></script>
 		
 		
 		<link href="https://cdnjs.cloudflare.com/ajax/libs/tabulator/4.9.1/css/materialize/tabulator_materialize.css" rel="stylesheet">
 		<script type="text/javascript" src="https://unpkg.com/tabulator-tables@4.8/dist/js/tabulator.min.js"></script>
 		<link href="https://cdnjs.cloudflare.com/ajax/libs/tabulator/4.9.1/css/materialize/tabulator_materialize.css" rel="stylesheet">
-		 <link rel="stylesheet" href="css/select2.min.css" type="text/css">
+		 <link rel="stylesheet" href="http://10.0.16.8/css/select2.min.css" type="text/css">
 		<script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
+	
+	
+	
+	<script src="http://10.0.16.8/js/Docs.js"></script>
+	
+	
 	
 		<script type="text/javascript">
 		var _table;
@@ -90,14 +96,14 @@
                     headerFilter:true,
                 headerFilterPlaceholder: 'Пошук...',
 				formatter: function(value){
-						return getdate2(value.getData().issued / 1000);
+						return getdate2(value.getData().issued);
 					},
 				
             },
 			{
                     title: 'Заголовок',
 					minWidth: 100,
-                    field: 'title',
+                    field: 'comment',
                     sorter: "string",
                     headerFilter:true,
                 headerFilterPlaceholder: 'Пошук...',
@@ -121,6 +127,20 @@
 						return filterTabulator(headerValue, (rowData ? rowData.toString() : ''), STATUSES.map(function (a) { return { id: a.id, name: a.name }; }));
 					}
             },
+			{
+                    title: '',
+                    field: 'Інформація',
+                    sortable:false,
+                    formatter: openIcon,
+                    headerSort:false,
+                    resizable:false,
+                    width: 50,
+                    align:"center",
+                    cellClick: function (e, cell) {
+                      getInfoDoc(cell.getData().id);
+                }
+            },
+			
 			{
                     title: '',
                     field: 'Завантажити',
@@ -163,7 +183,13 @@
                 },
         ];
 		$(function () {
-		location.href="#close";
+		
+		
+		if(visView(["registryRole"]) == false)
+			return;
+			
+			
+		 $('#load').addClass("hide-loader");
 		MainURL = "http://10.0.16.13:2023/portal/api/v1/register/";
 		STATUSES = [{id: 0 , name : 'Дійсний' },{id: 1 , name : 'Анульований' },{id: 2 , name : 'Зі змінами' }];
 		DocumentType = [], Authority = [];
@@ -177,6 +203,10 @@
 		URLPUT: "/document",
 		URLDELETE: "/document"
 		};
+		
+		_tableDocument = gettabulator('', columnsDocument, true, null, '#tableSelectDoc');
+		
+		
 		_table = gettabulator('', columns, false);
 		getAdditionalyDataStatic();
 		
@@ -187,20 +217,25 @@
 		});
 		async function getAdditionalyDataStatic() {
 		try {
-		location.href="#load";
-		const main = await axios.get(MainURL + getCity());
+		 $('#load').removeClass("hide-loader");
+		const main = await axios.get(MainURL + getCity()).catch(error => {GETERROR(error); $('#load').addClass("hide-loader");});
                 if(main.data)
 				{
 					forEachClassName("citytitle", i => i.textContent= main.data.cityName);
 					forEachClassName("maintitle", i => i.textContent= main.data.title);
 					forEachClassName("custom-logo", i => i.setAttribute('src', main.data.logoUrl));
+					
+					$('#countStreettext').text(' - ' + main.data.streetCount);
+				$('#countStreet').val(main.data.streetCount);
+				$('#countAddresstext').text(' - ' + main.data.addressCount);
+				$('#countAddress').val(main.data.addressCount);
 				}
 				
-				const yy = await axios.get(MainURL + getCity()+"/documenttype");
+				const yy = await axios.get(MainURL + getCity()+"/documenttype").catch(error => {GETERROR(error); $('#load').addClass("hide-loader");});
 				DocumentType =  yy.data;
 				fillSelect('documentTypeId', yy.data, "id", "typeName");
 				
-				const zz = await axios.get(MainURL + getCity()+"/authority");
+				const zz = await axios.get(MainURL + getCity()+"/authority").catch(error => {GETERROR(error); $('#load').addClass("hide-loader");});
 				Authority= zz.data;
 				fillSelect('authorityId', zz.data, "id", "name");
 				
@@ -211,13 +246,13 @@
 				catch {
                 UIkit.notification({ message: 'Помилка! Дані не були завантажені', status: 'danger' });
             }
-			location.href="#close";
+			 $('#load').addClass("hide-loader");
 		}
 		async function getAdditionalyData() {
             try {
-				location.href="#load";
+				 $('#load').removeClass("hide-loader");
 				
-                const x = await axios.get(MainURL + getCity()+Document.URLGET);
+                const x = await axios.get(MainURL + getCity()+Document.URLGET).catch(error => {GETERROR(error); $('#load').addClass("hide-loader");});
                 Document.data = x.data;
 				
 				_table.replaceData(Document.data); 
@@ -225,7 +260,7 @@
             catch {
                 UIkit.notification({ message: 'Помилка! Дані не були завантажені', status: 'danger' });
             }
-			location.href="#close";
+			 $('#load').addClass("hide-loader");
 
         }
 		function getFullAdr(adr){
@@ -233,7 +268,8 @@
 		return (adr.street.shortTypeName + " " +  adr.street.name+ ", " + adr.addressNumber + (adr.block !='' ? (" корп." + adr.block) : ""));
 		}
 		async function getDocument(id){
-		location.href="#load";
+		GETDOCUMENTFROMDB('document', id);
+		 ('#load').removeClass("hide-loader");
 		$('#dod').empty();
 		emptyformbyclass("Document");
 		$('#Fileupload').val('');
@@ -242,24 +278,9 @@
         if (Document.CARD.id != 0) {
 		$('#file').text('Замінити файл');
             $('#h2modalDocument').text('Редагувати документ');
-			let d = await axios.get(MainURL + getCity()+Document.URLGET+'/'+id);
+			let d = await axios.get(MainURL + getCity()+Document.URLGET+'/'+id).catch(error => {GETERROR(error); $('#load').addClass("hide-loader");});
 			<!--Document.CARD = Document.data.find(a=> a.id == id);-->
-			if(d.data.linkedDistricts || d.data.linkedStreets || d.data.linkedAddresses || d.data.linkedDocuments){
-				$('#dod').append(`<h4 class="uk-legend uk-heading-bullet">Зв'язки</h4>`);
-				
-				if(d.data.linkedDistricts)
-					$('#dod').append(`<p><span class = 'uk-text-secondary'>Райони:</span> ${Array.from(new Set(d.data.linkedDistricts.map((item) => item.name))).join(', ')}</p>`);
-					
-				if(d.data.linkedStreets)
-					$('#dod').append(`<p><span class = 'uk-text-secondary'>Вулиці:</span> ${Array.from(new Set(d.data.linkedStreets.map((item) => (item.shortTypeName + ' ' + item.name)))).join(', ')}</p>`);
-
-				if(d.data.linkedAddresses)
-					$('#dod').append(`<p><span class = 'uk-text-secondary'>Адреси:</span> ${Array.from(new Set(d.data.linkedAddresses.map((item) => getFullAdr(item)))).join(', ')}</p>`);
-
-				if(d.data.linkedDocuments)
-					$('#dod').append(`<p><span class = 'uk-text-secondary'>Документи:</span> ${Array.from(new Set(d.data.linkedDocuments.map((item) => (DocumentType.find(a=> a.id ==item.documentTypeId) ?  DocumentType.find(a=> a.id ==item.documentTypeId).typeName : "" ) +' '+ (Authority.find(a=> a.id ==item.authorityId) ?  Authority.find(a=> a.id ==item.authorityId).nameInGenitiveCase : "") + " №" + item.number +' від '+ getdate2(item.issued/1000) +'р.'))).join(', ')}</p>`);					
-					
-			}
+			
             getobject_ByData(d.data, function before(){}, function after(){showModal('modalCardAddDocument')});
 			
         }
@@ -268,13 +289,22 @@
         $('#h2modalDocument').text('Додати документ');
 		showModal('modalCardAddDocument');
         }
-		location.href="#close";
+		 $('#load').addClass("hide-loader");
 		}
 		
-	function deleteDocument(id){
-	let token = localStorage.getItem('token');
-	deleteobject(MainURL + getCity()+Document.URLDELETE + "/" + id, null, token, function func(){ getAdditionalyData();});
+	async function deleteDocument(id){
+	
+	let d = await axios.get(MainURL + getCity()+Document.URLGET+'/'+id).catch(error => {GETERROR(error); $('#load').addClass("hide-loader");});
+	
+	let token = gettoken();
+	deleteobject(MainURL + getCity()+Document.URLDELETE + "/" + id, null, token, function func(){ getAdditionalyData();} ,function func(){}, (d.data.linkedDistricts || d.data.linkedStreets || d.data.linkedAddresses || d.data.linkedDocuments) ? "Документ має зв'язки. " : "");
 	}
+	
+	
+	
+	
+	
+	
 	
 	async function updateDocument(){
 	var c = getCardData(Document.CARD, "Document");
@@ -284,7 +314,7 @@
 		}
         if (c) {
 		let id = Document.CARD.id;
-		let token = localStorage.getItem('token');
+		let token = gettoken();
 		
 		var FD = new FormData();
         FD.append("authorityId", c.authorityId);
@@ -296,6 +326,8 @@
 		FD.append("applicantCode", c.applicantCode);
 		FD.append("status", c.status);
 		FD.append("issued", c.issued);
+		FD.append("linksToDo", getlinksunlinkswithSeparator());
+		
 		if(document.getElementById('Fileupload').files[0] != undefined)
 			FD.append("blob", $("#Fileupload").prop('files')[0]);
 			
@@ -314,84 +346,206 @@
             
         }
 	}
+	
+	
+		async function getInfoDoc(id){
+		try{
+		$('#info').empty();
+		$('#load').removeClass("hide-loader");
+	
+			let d = await axios.get(MainURL + getCity()+Document.URLGET+'/'+id).catch(error => {GETERROR(error); $('#load').addClass("hide-loader");});
+			<!--Document.CARD = Document.data.find(a=> a.id == id);-->
+			
+			
+	
+	
+			$('#info').append(`<div class="uk-card uk-card-default uk-margin-top uk-width-1-1">
+				<div class="uk-card-header">
+					<div class="uk-grid-small uk-flex-middle" uk-grid>
+						
+						<div class="uk-width-expand">
+							<h3 class="uk-card-title uk-margin-remove-bottom">${DocumentType.find(a=> a.id ==d.data.documentTypeId) ?  DocumentType.find(a=> a.id ==d.data.documentTypeId).typeName : ""} ${Authority.find(a=> a.id ==d.data.authorityId) ?  Authority.find(a=> a.id ==d.data.authorityId).nameInGenitiveCase : ""} № ${d.data.number} від ${getdate2(d.data.issued)}р.</h3>
+							<p class="uk-text-meta uk-margin-remove-top">${d.data.comment}</p>
+							
+							<p class="">Заявник: ${d.data.applicantName} ${d.data.applicantCode}</p>
+						</div>
+					</div>
+				</div>
+				<div class="uk-card-body" id='dod'>
+
+				</div>
+			</div>`);
+			
+			if(d.data.parentDocuments){
+				$('#dod').append(`<h4 class="uk-legend uk-heading-bullet">Зміни</h4><table class="uk-table uk-table-middle uk-table-divider uk-table-small" id='tbldoc'><thead>
+												<tr>
+													<th class="uk-width-expand"></th>
+													<th></th>
+												</tr>
+											</thead>
+											<tbody id="tbodyDocumentPar"></tbody></table>`);
+				d.data.parentDocuments.forEach(function (Item) {
+				$('#tbodyDocumentPar').append(`<tr id=''>
+				<td>${DocumentType.find(a=> a.id ==Item.documentTypeId) ?  DocumentType.find(a=> a.id ==Item.documentTypeId).typeName : ""} ${Authority.find(a=> a.id ==Item.authorityId) ?  Authority.find(a=> a.id ==Item.authorityId).nameInGenitiveCase : ""} № ${Item.number} від ${getdate2(Item.issued)}р.</td>
+										<td class="uk-text-nowrap uk-preserve-width">
+										<a class="uk-margin-small-right" onclick="window.open('${Item.documentUrl}' , '_blank');" uk-icon="download"></a>
+										</td></tr>`);
+
+											});
+			}
+			else{
+			$('#dod').append(`<h4 class="uk-legend uk-heading-bullet">Зміни</h4><p class="">Немає</p>`);
+			}
+			if(d.data.linkedDistricts || d.data.linkedStreets || d.data.linkedAddresses || d.data.linkedDocuments){
+				$('#dod').append(`<h4 class="uk-legend uk-heading-bullet">Зв'язки</h4>`);
+				
+				if(d.data.linkedDistricts)
+					$('#dod').append(`<p><span class = 'uk-text-secondary'>Райони:</span> ${Array.from(new Set(d.data.linkedDistricts.map((item) => item.name))).join(', ')}</p>`);
+					
+				if(d.data.linkedStreets)
+					$('#dod').append(`<p><span class = 'uk-text-secondary'>Вулиці:</span> ${Array.from(new Set(d.data.linkedStreets.map((item) => (item.shortTypeName + ' ' + item.name)))).join(', ')}</p>`);
+
+				if(d.data.linkedAddresses)
+					$('#dod').append(`<p><span class = 'uk-text-secondary'>Адреси:</span> ${Array.from(new Set(d.data.linkedAddresses.map((item) => getFullAdr(item)))).join(', ')}</p>`);
+
+				if(d.data.linkedDocuments)
+					$('#dod').append(`<p><span class = 'uk-text-secondary'>Документи:</span> ${Array.from(new Set(d.data.linkedDocuments.map((item) => (DocumentType.find(a=> a.id ==item.documentTypeId) ?  DocumentType.find(a=> a.id ==item.documentTypeId).typeName : "" ) +' '+ (Authority.find(a=> a.id ==item.authorityId) ?  Authority.find(a=> a.id ==item.authorityId).nameInGenitiveCase : "") + " №" + item.number +' від '+ getdate2(item.issued/1000) +'р.'))).join(', ')}</p>`);					
+					
+			}
+			else
+			{
+			$('#dod').append(`<h4 class="uk-legend uk-heading-bullet">Зв'язки</h4><p class="">Немає</p>`);
+			}
+			
+			
+			
+			showModal('modalInfo');
+			}
+			catch{
+			UIkit.notification({ message: 'Помилка! Дані не були завантажені', status: 'danger' });
+			}
+			$('#load').addClass("hide-loader");
+	}
+	
+	
+	
 		</script>
 	</head>
-	<body>
+	<body class='uk-invisible'>
+	<div id="modalInfo" bg-close="false" class="uk-modal-container uk-flex-top" uk-modal="stack: true">
+    <div class="uk-modal-dialog m uk-modal-body uk-margin-auto-vertical" >
+        <button class="uk-modal-close-full uk-close-large" type="button" uk-close></button>
+        <div class="uk-grid-collapse  uk-flex-middle" uk-grid id='info'>
+            
+        </div>
+    </div>
+</div>
 <div id="load" class="modalDialog" style="padding-left:calc(50% - 100px); padding-top:200px; overflow-y:auto; z-index:2000;position: fixed">
 
         <span uk-spinner="ratio: 7"></span>
 		</div>
 		<!--HEADER-->
 		<header id="top-head" class="uk-position-fixed">
-			<div class="left-logo uk-flex uk-flex-middle content-box-dark">
-			<a class="uk-link-reset" href="index.html">
-				<span class="uk-text-bold maintitle "></span>
-			</a>
+			<div class="uk-container uk-container-expand uk-background-default topbar">
+				<nav class="uk-navbar uk-dark" data-uk-navbar="mode:click; duration: 250" style='height: 64px'>
+				
+					<div class="uk-navbar-left  uk-text-nowrap uk-text-truncate">
+						<div class="   uk-text-truncate">
+						<a class="uk-icon-button uk-hidden@m"  onclick="document.getElementById('left-col').toggleAttribute('hidden'); " data-uk-icon="icon: menu" title="Меню"></a>
+						
+						 <span class="uk-text-bold maintitle uk-margin-small-left "></span>
+						
+						</div>
+					</div>				
+				<div class="uk-navbar-right  uk-text-nowrap uk-text-truncate">
+						<div class="uk-text-truncate">
+						<a class="uk-link" uk-tooltip="title: Оберіть місто" href='cities.html'><span uk-icon="icon: location;"></span><span class="citytitle "></span></a>
+						</div>
+					</div>		
+					
+				</nav>
 			</div>
 		</header>
 		<!--/HEADER-->
 		<!-- LEFT BAR -->
-		<aside id="left-col" class="uk-light uk-visible@m">
+		<aside id="left-col" class="uk-light  ">
 			<div class="left-logo uk-flex uk-flex-middle content-box-dark">
+			<!--<a class="uk-logo" href="#"><img class="custom-logo" src="img/logo.png" alt="">АСУ геоданими</a>-->
 			<a class="uk-link-reset" href="index.html">
 				<img class="custom-logo" src="" alt=""><span class="uk-text-bold citytitle "></span>
 			</a>
 			</div>
+			
+		
 			<div class="left-nav-wrap">
 				<ul class="uk-nav uk-nav-default uk-nav-parent-icon" data-uk-nav>
 					<li class="uk-nav-header uk-heading-bullet">Адресний реєстр</li>
-					<li><a href="index.html"><span data-uk-icon="icon: search" class="uk-margin-small-right"></span>Пошук</a></li>
-					<li><a href="audit.html"><span data-uk-icon="icon: file-edit" class="uk-margin-small-right"></span>Аудит</a></li>
-					<li><a href="dictionaries.html"><span data-uk-icon="icon: thumbnails" class="uk-margin-small-right"></span>Довідники</a></li>
-					<li class='uk-active'><a href="documents.html"><span data-uk-icon="icon: album" class="uk-margin-small-right"></span>Архів</a></li>
-					<li><a href="users.html"><span data-uk-icon="icon: users" class="uk-margin-small-right"></span>Користувачі</a></li>
-					<li><a href="#"><span data-uk-icon="icon: history" class="uk-margin-small-right"></span>Історія</a></li>
-					<li><a href="#"><span data-uk-icon="icon: cloud-upload" class="uk-margin-small-right"></span>Імпорт</a></li>
-					<li><a href="export.html"><span data-uk-icon="icon: cloud-download" class="uk-margin-small-right"></span>Експорт</a></li>
+					<li class=''><a href="index.html"><span data-uk-icon="icon: search" class="uk-margin-small-right"></span>Пошук</a></li>
+					<li   class='auditRole'><a href="audit.html"><span data-uk-icon="icon: file-edit" class="uk-margin-small-right"></span>Аудит</a></li>
+					<li class='dictionaryRole'><a href="dictionaries.html"><span data-uk-icon="icon: thumbnails" class="uk-margin-small-right"></span>Довідники</a></li>
+					<li   class='registryRole uk-active'><a href="documents.html"><span data-uk-icon="icon: album" class="uk-margin-small-right"></span>Архів</a></li>
+					
+					<li class='userRole'><a href="users.html"><span data-uk-icon="icon: users" class="uk-margin-small-right"></span>Користувачі</a></li>
+					<!--<li  class='registryRole uk-disabled'><a href="#"><span data-uk-icon="icon: history" class="uk-margin-small-right"></span>Історія</a></li>-->
+					<!--<li class='superRootRole uk-disabled'><a href="#"><span data-uk-icon="icon: cloud-upload" class="uk-margin-small-right"></span>Імпорт</a></li>-->
+					<li class='exportImportRole'><a href="export.html"><span data-uk-icon="icon: cloud-download" class="uk-margin-small-right"></span>Експорт</a></li>
 
-					<li class="uk-nav-header uk-heading-bullet">Модуль 2</li>
-					<li><a href="#"><span data-uk-icon="icon: search" class="uk-margin-small-right"></span>Розділ 1</a></li>
-					<li><a href="#"><span data-uk-icon="icon: users" class="uk-margin-small-right"></span>Розділ 2</a></li>
 				</ul>
 				
 				<div class="left-content-box uk-margin-top">
 					
 						<h5>Статистика</h5>
 						<div>
-							<span class="uk-text-small">Кількість адрес <small>(+50)</small></span>
-							<progress class="uk-progress" value="50" max="100"></progress>
+							<span class="uk-text-small">Кількість вулиць <small id='countStreettext'></small></span>
+							<progress class="uk-progress" value="0" id='countStreet' max="5000"></progress>
 						</div>
 						<div>
-							<span class="uk-text-small">Додано нових за тиждень <small>(+78)</small></span>
-							<progress class="uk-progress success" value="78" max="100"></progress>
+							<span class="uk-text-small">Кількість адрес <small id='countAddresstext'></small></span>
+							<progress class="uk-progress success" value="0" id='countAddress' max="150000"></progress>
 						</div>
-						<!--<div>
-							<span class="uk-text-small">Feedback <small>(-12)</small></span>
-							<progress class="uk-progress warning" value="12" max="100"></progress>
-						</div>-->
 					
 				</div>
 				
 			</div>
 			<div class="bar-bottom">
 				<ul class="uk-subnav uk-flex uk-flex-center uk-child-width-1-5" data-uk-grid>
-					<li>
+					<li class='alluser'>
 						<a href="index.html" class="uk-icon-link" data-uk-icon="icon: home" title="Головна" data-uk-tooltip></a>
 					</li>
-					<li>
+					<li class='superRootRole'>
 						<a href="register.html" class="uk-icon-link" data-uk-icon="icon: settings" title="Налаштування" data-uk-tooltip></a>
 					</li>
-					<li>
-						<a href="myaccount.html" class="uk-icon-link" data-uk-icon="icon: user"  title="Обліковий запис" data-uk-tooltip></a>
+					<li class='alluser'>
+						<a href="myaccount.html" class="uk-icon-link" data-uk-icon="icon: user" id='iam'  uk-tooltip="Обліковий запис" data-uk-tooltip></a>
 					</li>
 					
-					<li>
-						<a href="login.html" class="uk-icon-link" data-uk-tooltip="Вийти" data-uk-icon="icon: sign-out"></a>
+					<li class='alluser'>
+						<a onclick="removetoken(); $(location).attr('href','index.html');" class="uk-icon-link" data-uk-tooltip="Вийти" data-uk-icon="icon: sign-out"></a>
+					</li>
+					<li class='user'>
+						<a href="login.html" class="uk-icon-link" data-uk-tooltip="Авторизація" data-uk-icon="icon: sign-in"></a>
 					</li>
 				</ul>
 			</div>
 		</aside>
+			
+		<!--/HEADER-->
+		<!-- LEFT BAR -->
+		
 		<div id="content" data-uk-height-viewport="expand: true">
+		 <div id="modalCardGETDOC" bg-close="false" class="uk-modal-container uk-flex-top" uk-modal="stack: true" uk-modal>
+    <div class="uk-modal-dialog l uk-modal-body uk-margin-auto-vertical">
+        <button class="uk-modal-close-full uk-close-large" type="button" uk-close></button>
+        <div class="uk-text-center">
+            <div class="uk-overflow-auto">
+							<div id="tableSelectDoc">
+							</div>
+						</div>
+            <button class="uk-button uk-button-primary " onclick="SELECTDOC()" type="button">Обрати</button>
+        </div>
+    </div>
+</div>
+
 		<div id="modalCardAddDocument" bg-close="false" class="uk-modal-container uk-flex-top" uk-modal="stack: true">
     <div class="uk-modal-dialog m uk-modal-body uk-margin-auto-vertical" >
         <button class="uk-modal-close-full uk-close-large" type="button" uk-close></button>
@@ -471,10 +625,23 @@
 																
                                                     </div>
 	</div>
-    </div> 
-     <div class="uk-width-1-1" id='dod'>
-	 
-    </div> 
+    </div>
+	 <div class="uk-width-1-1">
+<h4 class="uk-legend uk-heading-bullet uk-padding-small uk-padding-remove-top uk-padding-remove-bottom">Зміни <a class="uk-margin-small-left " onclick="OpenDocModal();" uk-tooltip="title: Додати документ; delay: 500" uk-icon="plus"></a></h4>
+            <div class="uk-width-1-1"><table class="uk-table uk-table-middle uk-table-divider uk-table-small" >
+											<thead>
+												<tr>
+													<th class="uk-width-expand"></th>
+													<th></th>
+												</tr>
+											</thead>
+											<tbody id="tbodyDocuments">
+																							
+											</tbody>
+										</table>
+			</div>			
+</div>
+
      <div class="uk-width-1-1">
      <p class="uk-text-right">
     <button class="uk-button uk-button-primary " onclick="updateDocument()" type="button">Зберегти</button>

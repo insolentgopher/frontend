@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="en">
+	<head>
+		<meta charset="utf-8">
+		<meta name="viewport" content="width=device-width, initial-scale=1">
+		<title>Реєстрація - Автоматизована система управління геоданими</title>
+		<link rel="icon" href="img/favicon/favicon.ico" type="image/x-icon">
+		<!-- CSS FILES -->
+		<link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/uikit@latest/dist/css/uikit.min.css">
+		<link rel="stylesheet" type="text/css" href="css/login-dark.css">
+		
+		<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.1.1/jquery.min.js"></script>
+		<script src="js/Custom.js"></script>
+		
+		<link rel="stylesheet" href="css/Custom.css" type="text/css">		
+		<script type="text/javascript">
+		$(function () {
+		location.href="#close";
+		});
+		function formSubmit()
+		{
+		if($('#login').val()!="" && $('#password').val()!="")
+		{
+			Login($('#login').val(), $('#password').val());
+		}
+		}
+		</script>
+		
+<script>
+  // particles
+  jQuery(function () {
+      var url = 'js/particles.min.js';
+      jQuery.getScript(url, function() {
+          particlesJS.load('particles-js', 'js/particles.json');
+      });
+  });
+</script>		
+		
+		
+		
+	</head>
+	<!--<body class="login uk-cover-container uk-background-secondary uk-flex uk-flex-center uk-flex-middle uk-height-viewport uk-overflow-hidden uk-light" data-uk-height-viewport>-->
+	<body>
+	<div id="load" class="modalDialog" style="padding-left:calc(50% - 100px); padding-top:200px; overflow-y:auto; z-index:2000;position: fixed">
+
+        <span uk-spinner="ratio: 7"></span>
+		</div>
+	<div class="uk-grid-collapse" uk-grid>
+	<div   class="uk-width-1-2 uk-visible@l">
+
+	<div class="login uk-cover-container uk-background-secondary uk-flex uk-flex-center uk-flex-middle uk-height-viewport uk-overflow-hidden uk-light" data-uk-height-viewport>
+	<div  id="particles-js" class="uk-position-cover uk-overlay-secondary"></div>
+		<div class="uk-width-xlarge uk-position-z-index">
+		<h1 class="">Автоматизована система управління геоданими</h1>
+		</div>
+	</div>
+
+	</div>
+	<div class="uk-width-1-2@l uk-width-1-1@m">
+	<div class="uk-flex uk-flex-center uk-flex-middle uk-height-viewport">
+			
+			<div class="uk-width-medium uk-padding-small" uk-scrollspy="cls: uk-animation-fade">
+			<!-- registration -->
+			<h1 class="uk-text-center uk-h3">Реєстрація</h1>
+			<form class="toggle-class">
+				<fieldset class="uk-fieldset">
+					<div class="uk-margin-small">
+						<div class="uk-inline uk-width-1-1">
+							<span class="uk-form-icon uk-form-icon-flip" data-uk-icon="icon: user"></span>
+							<input class="uk-input uk-border-pill" required placeholder="e-mail" id='login' type="text">
+						</div>
+					</div>
+					<div class="uk-margin-small">
+						<div class="uk-inline uk-width-1-1">
+							<span class="uk-form-icon uk-form-icon-flip" data-uk-icon="icon: lock"></span>
+							<input class="uk-input uk-border-pill" required placeholder="пароль" id='password' type="password">
+						</div>
+					</div>
+					<div class="uk-margin-small">
+						<div class="uk-inline uk-width-1-1">
+							<span class="uk-form-icon uk-form-icon-flip" data-uk-icon="icon: location"></span>
+							<input class="uk-input uk-border-pill" required placeholder="місто" type="text">
+						</div>
+					</div>		
+					<div class="uk-margin-small">
+						<div class="uk-inline uk-width-1-1">
+							<span class="uk-form-icon uk-form-icon-flip" data-uk-icon="icon: receiver"></span>
+							<input class="uk-input uk-border-pill" required placeholder="телефон" type="text">
+						</div>
+					</div>						
+					<div class="uk-margin-bottom">
+						<button type="" class="uk-button uk-button-primary uk-border-pill uk-width-1-1" >Зареєструватись</button>
+					</div>
+				</fieldset>
+			</form>
+			<!-- /registration -->
+
+		
+
+			</div>
+			</div>	
+	</div>	
+	</div>
+
+
+		<div class="uk-position-bottom-center uk-position-small uk-hidden@l uk-position-z-index">
+			<span class="uk-text-small uk-text-muted">© 2021 - Автоматизована система управління геоданими</span>
+		</div>
+
+		
+		<!-- JS FILES -->
+		<script src="https://cdn.jsdelivr.net/npm/uikit@latest/dist/js/uikit.min.js"></script>
+		<script src="https://cdn.jsdelivr.net/npm/uikit@latest/dist/js/uikit-icons.min.js"></script>
+	</body>
+</html>

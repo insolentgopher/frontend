@@ -38,7 +38,7 @@ var STATUSES = [{id: 0 , name : 'Дійсний' },{id: 1 , name : 'Анульо
                     headerFilter:true,
                 headerFilterPlaceholder: 'Пошук...',
 				formatter: function(value){
-						return getdate2(value.getData().issued / 1000);
+						return getdate2(value.getData().issued);
 					},
 				
             },
@@ -132,8 +132,8 @@ var STATUSES = [{id: 0 , name : 'Дійсний' },{id: 1 , name : 'Анульо
 			_tableDocument.replaceData(data); 
 		}
 		
-		function OpenDocModal(){
-			if(_tableDocument.getData().length == 0){
+		function OpenDocModal(x){
+			if(_tableDocument.getData().length==0 && !x){
 				LoadDataTableDoc();
 				return;
 			}
@@ -148,16 +148,16 @@ var STATUSES = [{id: 0 , name : 'Дійсний' },{id: 1 , name : 'Анульо
 			newDocument=[];
 			$('#tbodyDocuments').empty();
 			if(id > 0){
-			location.href='#load';
+			$('#load').removeClass("hide-loader");
 			let d = await axios.get(MainURL + getCity()+'/'+entity+'/'+id+'/document', {
-				headers: {token: localStorage.getItem('token')}
-			  });
+				headers: {token: gettoken()}
+			  }).catch(error => {GETERROR(error); $('#load').addClass("hide-loader");});
 			
 			if(!DocumentTypeDATA  || !AuthorityDATA){
-			const yy = await axios.get(MainURL + getCity()+"/documenttype");
+			const yy = await axios.get(MainURL + getCity()+"/documenttype").catch(error => {GETERROR(error); $('#load').addClass("hide-loader");});
 				DocumentTypeDATA =  yy.data;
 				
-			const zz = await axios.get(MainURL + getCity()+"/authority");
+			const zz = await axios.get(MainURL + getCity()+"/authority").catch(error => {GETERROR(error); $('#load').addClass("hide-loader");});
 			AuthorityDATA= zz.data;
 			}
 			let r = d.data;
@@ -170,7 +170,7 @@ var STATUSES = [{id: 0 , name : 'Дійсний' },{id: 1 , name : 'Анульо
 											<a class="uk-margin-small-right" onclick='addUnlinkDoc(${Item.id})' uk-icon="trash"></a>
 										</td></tr>`);
 			});
-			location.href='#close';
+			$('#load').addClass("hide-loader");
 		}
 		}
 		
@@ -216,21 +216,27 @@ var STATUSES = [{id: 0 , name : 'Дійсний' },{id: 1 , name : 'Анульо
 			newDocument.forEach(function (Item) { arr.push({action: 0, documentId: Item});});
 			return arr;
 		}
-		
+		function getlinksunlinkswithSeparator(){
+			let s = '';
+			oldDocument.forEach(function (Item) { s+= `1,${Item};`;});
+			newDocument.forEach(function (Item) { s+= `0,${Item};`;});
+			return s;
+		}
 		
 		async function LoadDataTableDoc(){
-			location.href = '#load';
+			$('#load').removeClass("hide-loader");
 			
-			const yy = await axios.get(MainURL + getCity()+"/documenttype");
-				DocumentTypeDATA =  yy.data;
+			const yy = await axios.get(MainURL + getCity()+"/documenttype").catch(error => {GETERROR(error); $('#load').addClass("hide-loader");});
+			DocumentTypeDATA =  yy.data;
 				
-			const zz = await axios.get(MainURL + getCity()+"/authority");
+			const zz = await axios.get(MainURL + getCity()+"/authority").catch(error => {GETERROR(error); $('#load').addClass("hide-loader");});
 			AuthorityDATA= zz.data;
 				
-			const x = await axios.get(MainURL + getCity() + '/document');
+			const x = await axios.get(MainURL + getCity() + '/document').catch(error => {GETERROR(error); $('#load').addClass("hide-loader");});
 			SETDataTableDoc(x.data);
-			OpenDocModal();
-			location.href = '#close';
+			
+			OpenDocModal(true);
+			$('#load').addClass("hide-loader");
 		}
 		
 		

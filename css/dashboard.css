@@ -153,6 +153,16 @@
 #top-head [class*="uk-navbar-dropdown-bottom"] {
 	margin-top: 0;
 }
+@media screen and (max-width: 960px){
+  #left-col {
+    /* equal to left-col width */
+    padding-top: 64px;
+	width: 270px
+  }
+#left-col .bar-bottom{
+	width: 270px
+  }
+}
 
 /* Search nav */
 .search-field {

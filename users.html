@@ -4,39 +4,45 @@
 		<meta charset="utf-8">
 		<meta name="viewport" content="width=device-width, initial-scale=1">
 		<title>Автоматизована система управління геоданими - Модуль адресний реєстр</title>
-		<link rel="icon" href="img/favicon/favicon.ico" type="image/x-icon">
+		<link rel="icon" href="http://10.0.16.8/img/favicon/favicon.ico" type="image/x-icon">
 		<!-- CSS FILES -->
 		<link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/uikit@latest/dist/css/uikit.min.css">
-		<link rel="stylesheet" type="text/css" href="css/dashboard.css">
+		<link rel="stylesheet" type="text/css" href="http://10.0.16.8/css/dashboard.css">
 		
         <!--Map CSS------------------>
-        <link rel="stylesheet" href="lib/ol/ol.css" type="text/css">
-        <link rel="stylesheet" href="lib/ol-layerswitcher/ol-layerswitcher.css" type="text/css">
+        <link rel="stylesheet" href="http://10.0.16.8/lib/ol/ol.css" type="text/css">
+        <link rel="stylesheet" href="http://10.0.16.8/lib/ol-layerswitcher/ol-layerswitcher.css" type="text/css">
 
 		<!-- UIKIT JS FILES -->
 		<script src="https://cdn.jsdelivr.net/npm/uikit@latest/dist/js/uikit.min.js"></script>
 		<script src="https://cdn.jsdelivr.net/npm/uikit@latest/dist/js/uikit-icons.min.js"></script>
         <!--Map JS------------------>
-        <!-- <script src="lib/ol/ol.js" defer></script> -->
-        <script src="lib/ol/ol.js"></script>
+        <!-- <script src="http://10.0.16.8/lib/ol/ol.js" defer></script> -->
+        <script src="http://10.0.16.8/lib/ol/ol.js"></script>
         
         <!-- <script src="https://openlayers.org/en/v5.3.0/build/ol.js"></script> -->
-        <script src="lib/ol-layerswitcher/ol-layerswitcher.js"></script>
+        <script src="http://10.0.16.8/lib/ol-layerswitcher/ol-layerswitcher.js"></script>
 		 <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.1.1/jquery.min.js"></script>
 		
-		<script src="js/Custom.js"></script>
+		<script src="http://10.0.16.8/js/User.js"></script>
+		
+		<script src="http://10.0.16.8/js/Custom.js"></script>
 		<script src="https://unpkg.com/axios/dist/axios.js"></script>
-		<link rel="stylesheet" href="css/Custom.css" type="text/css">		
+		<link rel="stylesheet" href="http://10.0.16.8/css/Custom.css" type="text/css">		
 		<script src="https://cdn.jsdelivr.net/npm/sweetalert2@10"></script>
 		<script type="text/javascript">
 		$(function () {
-		location.href="#close";
+		
+		if(visView(["userRole"]) == false)
+			return;
+			
+		 $('#load').addClass("hide-loader");
 		MainURL = "http://10.0.16.13:2023/portal/api/v1/register/";
 		
 		User = {
 		data: null,
-		CARD : {id: 0, comment: "", email: "", login: "", password: ""},
-		CARDempty : {id: 0, comment: "", email: "", login: "", password: ""},
+		CARD : {id: 0, comment: "", email: "", login: "", password: "", superRootRole: false, dictionaryRole: false, auditRole: false, userRole: false, exportImportRole: false, registryRole: false},
+		CARDempty : {id: 0, comment: "", email: "", login: "", password: "", superRootRole: false, dictionaryRole: false, auditRole: false, userRole: false, exportImportRole: false, registryRole: false},
 		URLGET: "/user",
 		URLGETS: "/user",
 		URLPOST: "/user",
@@ -45,36 +51,74 @@
 		};
 		getAdditionalyDataStatic();
 		getAdditionalyData();
+		
+		$('#superRootRole').on('change', function(){
+		
+		if ($('#superRootRole').prop("checked"))
+		{
+			$('#dictionaryRole').prop("checked", true);
+			$('#auditRole').prop("checked", true);
+			$('#userRole').prop("checked", true);
+			$('#exportImportRole').prop("checked", true);
+			$('#registryRole').prop("checked", true);
+			
+			$('#dictionaryRole').prop("disabled", true);
+			$('#auditRole').prop("disabled", true);
+			$('#userRole').prop("disabled", true);
+			$('#exportImportRole').prop("disabled", true);
+			$('#registryRole').prop("disabled", true);
+		}
+		else
+		{
+			$('#dictionaryRole').prop("checked", false);
+			$('#auditRole').prop("checked", false);
+			$('#userRole').prop("checked", false);
+			$('#exportImportRole').prop("checked", false);
+			$('#registryRole').prop("checked", false);
+			
+			$('#dictionaryRole').prop("disabled", false);
+			$('#auditRole').prop("disabled", false);
+			$('#userRole').prop("disabled", false);
+			$('#exportImportRole').prop("disabled", false);
+			$('#registryRole').prop("disabled", false);
+		}
+		});
+		
+		
 		});
 		async function getAdditionalyDataStatic() {
 		try {
-		location.href="#load";
-		const main = await axios.get(MainURL + getCity());
+		 $('#load').removeClass("hide-loader");
+		const main = await axios.get(MainURL + getCity()).catch(error => {GETERROR(error); $('#load').addClass("hide-loader");});
                 if(main.data)
 				{
 					forEachClassName("citytitle", i => i.textContent= main.data.cityName);
 					forEachClassName("maintitle", i => i.textContent= main.data.title);
 					forEachClassName("custom-logo", i => i.setAttribute('src', main.data.logoUrl));
+					$('#countStreettext').text(' - ' + main.data.streetCount);
+				$('#countStreet').val(main.data.streetCount);
+				$('#countAddresstext').text(' - ' + main.data.addressCount);
+				$('#countAddress').val(main.data.addressCount);
 				}
 				}
 
 				catch {
                 UIkit.notification({ message: 'Помилка! Дані не були завантажені', status: 'danger' });
             }
-			location.href="#close";
+			 $('#load').addClass("hide-loader");
 		}
 		async function getAdditionalyData() {
             try {
-				location.href="#load";
+				 $('#load').removeClass("hide-loader");
 				
-                const x = await axios.get(MainURL + getCity()+User.URLGET);
-                User.data = x.data;
+                const x = await axios.get(MainURL + getCity()+User.URLGET).catch(error => {GETERROR(error); $('#load').addClass("hide-loader");});
+                User.data = x.data.sort((a,b)=> (a.login > b.login) ? 1 : ((b.login > a.login) ? -1 : 0));;
 				paintUser();
             }
             catch {
                 UIkit.notification({ message: 'Помилка! Дані не були завантажені', status: 'danger' });
             }
-			location.href="#close";
+			 $('#load').addClass("hide-loader");
 
         }
 		
@@ -82,14 +126,18 @@
 		$("#tbodyUser").empty();
 		User.data.forEach(function (Item) {
 		$('#tbodyUser').append(`<tr><td>${Item.login}</td><td>${Item.email}</td><td>${Item.comment? Item.comment : ""}</td>
-										<td class="uk-text-nowrap"><a onclick='getUser(${Item.id})' class="uk-icon-button uk-margin-small-right" uk-icon="pencil"></a>
-											<a class="uk-icon-button uk-margin-small-right" onclick='deleteUser(${Item.id})' uk-icon="trash"></a>
+										<td class="uk-text-nowrap userRole"><a onclick='getUser(${Item.id})' class="uk-icon-button uk-margin-small-right" uk-icon="pencil"></a>
+											<a class="uk-icon-button uk-margin-small-right superRootRole" onclick='deleteUser(${Item.id})' uk-icon="trash"></a>
 										</td></tr>`);
             });
+			removeelement(['superRootRole'], 'superRootRole');
+			removeelement(['userRole'], 'userRole');
 		}
 		
 		function getUser(id) {
-		location.href="#load";
+		$('#superRootRole').prop("checked", false).trigger('change');
+		$('#password').val('');
+		 $('#load').removeClass("hide-loader");
         emptyformbyclass("User");
         User.CARD = Object.assign({}, User.CARDempty);
         User.CARD.id = id;
@@ -106,19 +154,39 @@
             $('#h2modalCardAddUser').text('Додати');
             showModal('modalCardAddUser');
         }
-		location.href="#close";
+		 $('#load').addClass("hide-loader");
     }
 		
 	function deleteUser(id){
-	let token = localStorage.getItem('token');
+	let token = gettoken();
 	deleteobject(MainURL + getCity()+User.URLDELETE + "/" + id, null, token, function func(){ getAdditionalyData();});
 	}
 	
 	async function updateUser(){
 	var c = getCardData(User.CARD, "User");
-        if (c) {
+	        if (c) {
+	
+	if(c.login.length < 4 ){
+	UIkit.notification({ message: 'Логін складається меньше ніж з 4-х символів', status: 'danger'});
+		return;
+	}
+	if((User.CARD.id == 0  && c.login.password < 8) || (User.CARD.id > 0 && c.login.length > 0 && c.login.password < 8 ))
+	{
+		UIkit.notification({ message: 'Пароль складається меньше ніж з 8-ми символів', status: 'danger'});
+		return;
+	}
+	
+
 		let id = User.CARD.id;
-		let token = localStorage.getItem('token');
+		c.password = $('#password').val();
+		c.superRootRole = +c.superRootRole;
+		c.dictionaryRole = +c.dictionaryRole;
+		c.auditRole = +c.auditRole;
+		c.userRole = +c.userRole;
+		c.exportImportRole = +c.exportImportRole;
+		c.registryRole = +c.registryRole;
+		
+		let token = gettoken();
 			if(id == 0)
 		{
 			await saveobject(MainURL + getCity()+User.URLPOST, c, token, "POST", function before(){
@@ -135,77 +203,91 @@
 	}
 		</script>
 	</head>
-	<body>
+	<body  class='uk-invisible'>
 <div id="load" class="modalDialog" style="padding-left:calc(50% - 100px); padding-top:200px; overflow-y:auto; z-index:2000;position: fixed">
 
         <span uk-spinner="ratio: 7"></span>
 		</div>
 		<!--HEADER-->
 		<header id="top-head" class="uk-position-fixed">
-			<div class="left-logo uk-flex uk-flex-middle content-box-dark">
-			<a class="uk-link-reset" href="index.html">
-				<span class="uk-text-bold maintitle "></span>
-			</a>
+			<div class="uk-container uk-container-expand uk-background-default topbar">
+				<nav class="uk-navbar uk-dark" data-uk-navbar="mode:click; duration: 250" style='height: 64px'>
+				
+					<div class="uk-navbar-left  uk-text-nowrap uk-text-truncate">
+						<div class="   uk-text-truncate">
+						<a class="uk-icon-button uk-hidden@m"  onclick="document.getElementById('left-col').toggleAttribute('hidden'); " data-uk-icon="icon: menu" title="Меню"></a>
+						
+						 <span class="uk-text-bold maintitle uk-margin-small-left "></span>
+						
+						</div>
+					</div>				
+				<div class="uk-navbar-right  uk-text-nowrap uk-text-truncate">
+						<div class="uk-text-truncate">
+						<a class="uk-link" uk-tooltip="title: Оберіть місто" href='cities.html'><span uk-icon="icon: location;"></span><span class="citytitle "></span></a>
+						</div>
+					</div>		
+					
+				</nav>
 			</div>
 		</header>
 		<!--/HEADER-->
 		<!-- LEFT BAR -->
-		<aside id="left-col" class="uk-light uk-visible@m">
+		<aside id="left-col" class="uk-light  ">
 			<div class="left-logo uk-flex uk-flex-middle content-box-dark">
+			<!--<a class="uk-logo" href="#"><img class="custom-logo" src="img/logo.png" alt="">АСУ геоданими</a>-->
 			<a class="uk-link-reset" href="index.html">
 				<img class="custom-logo" src="" alt=""><span class="uk-text-bold citytitle "></span>
 			</a>
 			</div>
+			
+		
 			<div class="left-nav-wrap">
 				<ul class="uk-nav uk-nav-default uk-nav-parent-icon" data-uk-nav>
 					<li class="uk-nav-header uk-heading-bullet">Адресний реєстр</li>
-					<li><a href="index.html"><span data-uk-icon="icon: search" class="uk-margin-small-right"></span>Пошук</a></li>
-					<li><a href="audit.html"><span data-uk-icon="icon: file-edit" class="uk-margin-small-right"></span>Аудит</a></li>
-					<li><a href="dictionaries.html"><span data-uk-icon="icon: thumbnails" class="uk-margin-small-right"></span>Довідники</a></li>
-					<li><a href="documents.html"><span data-uk-icon="icon: album" class="uk-margin-small-right"></span>Архів</a></li>
-					<li class='uk-active'><a href="users.html"><span data-uk-icon="icon: users" class="uk-margin-small-right"></span>Користувачі</a></li>
-					<li><a href="#"><span data-uk-icon="icon: history" class="uk-margin-small-right"></span>Історія</a></li>
-					<li><a href="#"><span data-uk-icon="icon: cloud-upload" class="uk-margin-small-right"></span>Імпорт</a></li>
-					<li><a href="export.html"><span data-uk-icon="icon: cloud-download" class="uk-margin-small-right"></span>Експорт</a></li>
+					<li class=''><a href="index.html"><span data-uk-icon="icon: search" class="uk-margin-small-right"></span>Пошук</a></li>
+					<li   class='auditRole'><a href="audit.html"><span data-uk-icon="icon: file-edit" class="uk-margin-small-right"></span>Аудит</a></li>
+					<li class='dictionaryRole'><a href="dictionaries.html"><span data-uk-icon="icon: thumbnails" class="uk-margin-small-right"></span>Довідники</a></li>
+					<li   class='registryRole'><a href="documents.html"><span data-uk-icon="icon: album" class="uk-margin-small-right"></span>Документи</a></li>
+					
+					<li class='userRole uk-active'><a href="users.html"><span data-uk-icon="icon: users" class="uk-margin-small-right"></span>Користувачі</a></li>
+					<!--<li  class='registryRole uk-disabled'><a href="#"><span data-uk-icon="icon: history" class="uk-margin-small-right"></span>Історія</a></li>-->
+					<!--<li class='superRootRole uk-disabled'><a href="#"><span data-uk-icon="icon: cloud-upload" class="uk-margin-small-right"></span>Імпорт</a></li>-->
+					<li class='exportImportRole'><a href="export.html"><span data-uk-icon="icon: cloud-download" class="uk-margin-small-right"></span>Експорт</a></li>
 
-					<li class="uk-nav-header uk-heading-bullet">Модуль 2</li>
-					<li><a href="#"><span data-uk-icon="icon: search" class="uk-margin-small-right"></span>Розділ 1</a></li>
-					<li><a href="#"><span data-uk-icon="icon: users" class="uk-margin-small-right"></span>Розділ 2</a></li>
 				</ul>
 				
 				<div class="left-content-box uk-margin-top">
 					
 						<h5>Статистика</h5>
 						<div>
-							<span class="uk-text-small">Кількість адрес <small>(+50)</small></span>
-							<progress class="uk-progress" value="50" max="100"></progress>
+							<span class="uk-text-small">Кількість вулиць <small id='countStreettext'></small></span>
+							<progress class="uk-progress" value="0" id='countStreet' max="5000"></progress>
 						</div>
 						<div>
-							<span class="uk-text-small">Додано нових за тиждень <small>(+78)</small></span>
-							<progress class="uk-progress success" value="78" max="100"></progress>
+							<span class="uk-text-small">Кількість адрес <small id='countAddresstext'></small></span>
+							<progress class="uk-progress success" value="0" id='countAddress' max="150000"></progress>
 						</div>
-						<!--<div>
-							<span class="uk-text-small">Feedback <small>(-12)</small></span>
-							<progress class="uk-progress warning" value="12" max="100"></progress>
-						</div>-->
 					
 				</div>
 				
 			</div>
 			<div class="bar-bottom">
 				<ul class="uk-subnav uk-flex uk-flex-center uk-child-width-1-5" data-uk-grid>
-					<li>
+					<li class='alluser'>
 						<a href="index.html" class="uk-icon-link" data-uk-icon="icon: home" title="Головна" data-uk-tooltip></a>
 					</li>
-					<li>
+					<li class='superRootRole'>
 						<a href="register.html" class="uk-icon-link" data-uk-icon="icon: settings" title="Налаштування" data-uk-tooltip></a>
 					</li>
-					<li>
-						<a href="myaccount.html" class="uk-icon-link" data-uk-icon="icon: user"  title="Обліковий запис" data-uk-tooltip></a>
+					<li class='alluser'>
+						<a href="myaccount.html" class="uk-icon-link" data-uk-icon="icon: user" id='iam'  uk-tooltip="Обліковий запис" data-uk-tooltip></a>
 					</li>
 					
-					<li>
-						<a href="login.html" class="uk-icon-link" data-uk-tooltip="Вийти" data-uk-icon="icon: sign-out"></a>
+					<li class='alluser'>
+						<a onclick="removetoken(); $(location).attr('href','index.html');" class="uk-icon-link" data-uk-tooltip="Вийти" data-uk-icon="icon: sign-out"></a>
+					</li>
+					<li class='user'>
+						<a href="login.html" class="uk-icon-link" data-uk-tooltip="Авторизація" data-uk-icon="icon: sign-in"></a>
 					</li>
 				</ul>
 			</div>
@@ -235,10 +317,46 @@
                         <input class="uk-input necessarilytext User" type="text" autocomplete="off" id="email">
                     </div>
                 </div>
-				<div class="uk-width-1-1">
+				<div class="uk-width-1-3@s superRootRole" uk-tooltip="title: Адміністратор реєстру з повним переліком прав; delay: 500" > 
+                    <label class="uk-form-label">Адміністратор</label>
+                    <div class="uk-form-controls">
+                        <input class="uk-checkbox User" type="checkbox" id="superRootRole">
+                    </div>
+                </div>
+				<div class="uk-width-1-3@s"  uk-tooltip="title: Редагування та додавання даних у довідники: органи, райони, типи вулиць, типи документів; delay: 500">
+                    <label class="uk-form-label">Робота з довідниками</label>
+                    <div class="uk-form-controls">
+                        <input class="uk-checkbox User" type="checkbox" id="dictionaryRole">
+                    </div>
+                </div>
+				<div class="uk-width-1-3@s"  uk-tooltip="title: Перегляд аудиту користувачів; delay: 500">
+                    <label class="uk-form-label">Перегляд аудиту</label>
+                    <div class="uk-form-controls">
+                        <input class="uk-checkbox User" type="checkbox" id="auditRole">
+                    </div>
+                </div>
+				<div class="uk-width-1-3@s"   uk-tooltip="title: Редагування та додавання користувачів реєстру; delay: 500">
+                    <label class="uk-form-label">Робота з користувачами</label>
+                    <div class="uk-form-controls">
+                        <input class="uk-checkbox User" type="checkbox" id="userRole">
+                    </div>
+                </div>
+				<div class="uk-width-1-3@s"   uk-tooltip="title: Експорт даних інформації з бази даних; delay: 500">
+                    <label class="uk-form-label">Експорт</label>
+                    <div class="uk-form-controls">
+                        <input class="uk-checkbox User" type="checkbox" id="exportImportRole">
+                    </div>
+                </div>
+				<div class="uk-width-1-3@s"   uk-tooltip="title: Редагування та додавання адрес, вулиць та документів; delay: 500">
+                    <label class="uk-form-label">Реєстратор</label>
+                    <div class="uk-form-controls">
+                        <input class="uk-checkbox User" type="checkbox" id="registryRole">
+                    </div>
+                </div>
+				<div class="uk-width-1-1" >
                     <label class="uk-form-label">Додаткова інформація</label>
                     <div class="uk-form-controls">
-                        <textarea class="uk-textarea User" rows='3'  id="comment"></textarea>
+                        <textarea class="uk-textarea User" rows='2'  id="comment"></textarea>
                     </div>
                 </div>
             </div>
@@ -246,7 +364,7 @@
 
         <p class="uk-text-right">
             <button class="uk-button uk-button-default uk-modal-close" type="button">Відмінити</button>
-            <button class="uk-button uk-button-primary" onclick="updateUser()" type="button">Зберегти</button>
+            <button class="uk-button uk-button-primary userRole" onclick="updateUser()" type="button">Зберегти</button>
         </p>
     </div>
 </div>
@@ -255,7 +373,7 @@
 				<h3 class="uk-heading-bullet">Користувачі</h3>
 					<div class="uk-card-body uk-card-small uk-card-default">		
 						<p uk-margin>
-							<a class="uk-button uk-button-default" uk-tooltip="Додати нового користувача" onclick='getUser(0)'>Додати</a>
+							<a class="uk-button uk-button-default userRole" uk-tooltip="Додати нового користувача" onclick='getUser(0)'>Додати</a>
 						</p>
 						<div class="uk-overflow-auto">										
 							<table class="uk-table uk-table-middle uk-table-divider uk-table-small" >

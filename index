@@ -1203,7 +1203,7 @@ $('#tbldoc').append(`<thead>
 		<div class="uk-width-expand">
 		<form class="uk-search uk-search-default uk-width-1-1" uk-tooltip="title: Для пошуку потрібно ввести не менше трьох символів назви вулиці; delay: 500; pos: right" >
 		<!--<span uk-search-icon></span>-->
-		<input class="uk-search-input" type="text" autocomplete="off" oninput='hideShowIconSearch(this.value); searchStreet(this.value)' id='search'  placeholder="Пошук вулиці">
+		<input class="uk-input" type="text" autocomplete="off" oninput='hideShowIconSearch(this.value); searchStreet(this.value)' id='search'  placeholder="Пошук вулиці">
 		
 		<a class="uk-form-icon uk-form-icon-flip uk-hidden" id='iconClose' onclick="hideShowIconSearch(''); $('#search').val('').trigger('oninput')" uk-icon="icon: close"></a>
 		<a class="uk-form-icon uk-form-icon-flip" id='iconSearch' uk-icon="icon: search"></a>
@@ -1220,7 +1220,7 @@ $('#tbldoc').append(`<thead>
 		</div>
         </div>
 		
-<div id="container333" class="uk-height-large uk-margin-small aside-second-first uk-margin-top" style=" position:relative; top:0; bottom:0"> 
+<div id="container333" class="uk-height-large uk-margin-small aside-second-first uk-margin-remove-top" style=" position:relative; top:0; bottom:0;"> 
 
 	
 <table class="uk-table uk-width-1-1 uk-table-small ">

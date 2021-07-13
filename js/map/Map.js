@@ -284,9 +284,10 @@ var APP_MAP = (function(){
         view = new ol.View({
             center: ol.proj.transform(CONFIG_MAP.Map.center, "EPSG:4326", "EPSG:3857"),
             extent: ol.proj.transformExtent(CONFIG_MAP.Map.maxExtent, 'EPSG:4326', 'EPSG:3857'),
-            zoom:9,
-            maxZoom: 21,
-            minZoom: 9,
+            zoom:CONFIG_MAP.Map.view.initZoom,
+            maxZoom: CONFIG_MAP.Map.view.maxZoom,
+            minZoom: CONFIG_MAP.Map.view.minZoom,
+            //zoomFactor: 2,
         });  
 
         //chek extent during change resolution
@@ -301,7 +302,7 @@ var APP_MAP = (function(){
             target: CONFIG_MAP.Map.tagId,
             layers: layers,
             view: view,
-            overlays: [overlay],
+            overlays: [overlay],            
         });
 
         //клик по карте
@@ -358,15 +359,26 @@ var APP_MAP = (function(){
     }
 
     // - extent -------------------------------------------------------------------------
-    function _zoomToExtent(extent){
-        map.getView().fit(extent, map.getSize());
+    function _zoomToExtent(extent){        
+        map.getView().fit(extent,map.getSize());
+        //console.log(extent);        
     }
 
     function _getCurrentMapExtent(){
-        return map.getView().calculateExtent(map.getSize());
-        
+        var extent = map.getView().calculateExtent(map.getSize());
+       // console.log(extent);               
+        return extent;
     }
 
+    // - zoom -----------------------------------------------------------------------
+    function _getCurrentMapZoom(){
+        return map.getView().getZoom();
+    }
+
+    function _setMapZoom(zoom){
+        return map.getView().setZoom(zoom);
+    }
+    
     // EVENTS-----------------------------------------------------------------------------------
     //createEvent
     function _createEvent(eventName, data){
@@ -561,6 +573,7 @@ var APP_MAP = (function(){
             var geometryExtent = [properties[fields.leftX],properties[fields.bottomY],properties[fields.rightX],properties[fields.topY]];
             extent = ol.proj.transformExtent([geometryExtent[0], geometryExtent[1], geometryExtent[2], geometryExtent[3]], ol.proj.get('EPSG:4326'), ol.proj.get('EPSG:3857'));
             outExtent = [extent[0]-delta, extent[1]-delta,extent[2]+delta,extent[3]+delta];
+            //outExtent = [extent[0], extent[1],extent[2],extent[3]];
         }     
         return outExtent
     }   
@@ -629,7 +642,9 @@ var APP_MAP = (function(){
         _closePopup()
         _clearDrawLayer();
         _updateStyleForDrawLayer('Point');
-        _zoomToExtent(_createExtentByProperties(street));               
+        _zoomToExtent(_createExtentByProperties(street));   
+        //костиль из-за непоняток с екстентом
+        _setMapZoom(_getCurrentMapZoom()+1);          
     }
 
     function createAddress(){

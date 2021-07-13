@@ -4,29 +4,56 @@
 		<meta charset="utf-8">
 		<meta name="viewport" content="width=device-width, initial-scale=1">
 		<title>Авторизація - Автоматизована система управління геоданими</title>
-		<link rel="icon" href="img/favicon/favicon.ico" type="image/x-icon">
+		<link rel="icon" href="http://10.0.16.8/img/favicon/favicon.ico" type="image/x-icon">
 		<!-- CSS FILES -->
 		<link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/uikit@latest/dist/css/uikit.min.css">
-		<link rel="stylesheet" type="text/css" href="css/login-dark.css">
+		<link rel="stylesheet" type="text/css" href="http://10.0.16.8/css/login-dark.css">
 		
 		<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.1.1/jquery.min.js"></script>
-		<script src="js/Custom.js"></script>
-		
-		<link rel="stylesheet" href="css/Custom.css" type="text/css">		
+		<script src="http://10.0.16.8/js/Custom.js"></script>
+		<link rel="stylesheet" href="http://10.0.16.8/css/select2.min.css" type="text/css">
+		<script src="http://10.0.16.8/js/select2.min.js"></script>
+		<link rel="stylesheet" href="http://10.0.16.8/css/Custom.css" type="text/css">		
+		<script src="https://unpkg.com/axios/dist/axios.js"></script>
 		<script type="text/javascript">
 		$(function () {
-		location.href="#close";
-		localStorage.removeItem('token');
-		
+		 $('#load').addClass("hide-loader");
+		MainURL = "http://10.0.16.13:2023/portal/api/v1/register/";
+		removetoken();
+		getAdditionalyData();
 		
 		});
+		
+		
+		async function getAdditionalyData() {
+            try {
+				 $('#load').removeClass("hide-loader");
+				
+                const x = await axios.get(MainURL).catch(error => {GETERROR(error); $('#load').addClass("hide-loader");});
+				fillSelect('city', x.data, 'englCityName', 'cityName');
+				
+            }
+            catch {
+                UIkit.notification({ message: 'Помилка! Дані не були завантажені', status: 'danger' });
+            }
+			 $('#load').addClass("hide-loader");
+
+        }
+		
+		
 		function Login()
 		{
+			if($('#city').val()=="" || $('#city').val()==null){
+				UIkit.notification({ message: 'Оберіть місто', status: 'warning' });
+				return;
+			}
+		
+		
 		if($('#login').val()!="" && $('#password').val()!="")
 		{
-			location.href = "#load";
+			$('#load').removeClass("hide-loader");
             $.ajax({
-                url: `http://10.0.16.13:2023/portal/api/v1/register/${getCity()}/login`,
+                url: `http://10.0.16.13:2023/portal/api/v1/register/${$('#city').val()}/login`,
                    type: "GET",
                     data: {
 						"login": $('#login').val(),
@@ -35,18 +62,22 @@
 					},
                 success: function (data) {
 					if(data.token){
-						localStorage.removeItem('token');
-						localStorage.setItem('token', data.token);
-						$(location).attr('href','index.html');
+						removetoken();
+						addtoken( data.token);
+						$(location).attr('href', window.location.origin + '/' + $('#city').val()+'/index.html');
 					}
                 },
 				error: function (data) {
 					 GETERROR(data);
-					location.href = "#close";
+					$('#load').addClass("hide-loader");
 					
 				},
             });
 		}
+		}
+		function Reg()
+		{
+		$(location).attr('href',window.location.origin + '/registration.html');
 		}
 		</script>
 	</head>
@@ -84,7 +115,16 @@
 					<div class="uk-margin-small">
 						<div class="uk-inline uk-width-1-1">
 							<span class="uk-form-icon uk-form-icon-flip" data-uk-icon="icon: lock"></span>
+							
 							<input class="uk-input uk-border-pill" required placeholder="пароль" id='password' type="password">
+							
+						</div>
+					</div>
+					<div class="uk-margin-small">
+						<div class="uk-inline uk-width-1-1">
+						<div id="select-city">
+							<select id="city" class='uk-select'></select>
+							</div>
 						</div>
 					</div>
 					<div class="uk-margin-small">
@@ -92,6 +132,9 @@
 					</div>
 					<div class="uk-margin-bottom">
 						<button type="button" class="uk-button uk-button-primary uk-border-pill uk-width-1-1" onclick='Login()'>Увійти</button>
+						</div>
+						<div class="uk-margin-bottom uk-text-center">
+						<a class="uk-link-reset uk-text-small" onclick="Reg()">Зареєструватись</a>
 					</div>
 				</fieldset>
 			</form>
