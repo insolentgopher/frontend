@@ -36,7 +36,7 @@
 		<script type="text/javascript" src="https://unpkg.com/tabulator-tables@4.8/dist/js/tabulator.min.js"></script>
 		<link href="https://cdnjs.cloudflare.com/ajax/libs/tabulator/4.9.1/css/materialize/tabulator_materialize.css" rel="stylesheet">
 		
-		
+		<script src="http://10.0.16.8/js/Main.js"></script>
 		<script type="text/javascript">
 		$(function () {
 		
@@ -54,6 +54,16 @@
 		URLPOST: "/documenttype",
 		URLPUT: "/documenttype",
 		URLDELETE: "/documenttype"
+		};
+		SecondaryAddressType= {
+		data: null,
+		CARD : {id: 0, SecondaryAddressTypetypeName:""},
+		CARDempty : {id: 0, SecondaryAddressTypetypeName:"" },
+		URLGET: "/secondaryaddresstype",
+		URLGETS: "/secondaryaddresstype",
+		URLPOST: "/secondaryaddresstype",
+		URLPUT: "/secondaryaddresstype",
+		URLDELETE: "/secondaryaddresstype"
 		};
 		TypeStreet = {
 		data: null,
@@ -86,7 +96,7 @@
 		URLDELETE: "/authority"
 		};
 		
-		_tableDocument = gettabulator('', columnsDocument, true, null, '#tableSelectDoc');
+		_tableDocument = gettabulator('', columnsDocument, true, null, '#tableSelectDoc',10);
 		
 		getAdditionalyDataStatic();
 		getAdditionalyData();
@@ -95,17 +105,7 @@
 		try {
 		 $('#load').removeClass("hide-loader");
 		const main = await axios.get(MainURL + getCity()).catch(error => {GETERROR(error); $('#load').addClass("hide-loader");});
-                if(main.data)
-				{
-					forEachClassName("citytitle", i => i.textContent= main.data.cityName);
-					forEachClassName("maintitle", i => i.textContent= main.data.title);
-					forEachClassName("custom-logo", i => i.setAttribute('src', main.data.logoUrl));
-					
-					$('#countStreettext').text(' - ' + main.data.streetCount);
-				$('#countStreet').val(main.data.streetCount);
-				$('#countAddresstext').text(' - ' + main.data.addressCount);
-				$('#countAddress').val(main.data.addressCount);
-				}
+                paintMain(main.data);
 				}
 				catch {
                 UIkit.notification({ message: 'Помилка! Дані не були завантажені', status: 'danger' });
@@ -129,6 +129,11 @@
                 Authority.data = z.data.sort((a,b)=> (a.name > b.name) ? 1 : ((b.name > a.name) ? -1 : 0));
 				paintAuthority();
 				
+				const b = await axios.get(MainURL + getCity()+SecondaryAddressType.URLGET).catch(error => {GETERROR(error); $('#load').addClass("hide-loader");});
+                SecondaryAddressType.data = b.data.sort((a,b)=> (a.typeName > b.typeName) ? 1 : ((b.typeName > a.typeName) ? -1 : 0));
+				paintSecondaryAddressType();
+				
+				
             }
             catch {
                 UIkit.notification({ message: 'Помилка! Дані не були завантажені', status: 'danger' });
@@ -136,6 +141,19 @@
 			 $('#load').addClass("hide-loader");
 
         }
+		
+		function paintSecondaryAddressType(){
+		$("#tbodySecondaryAddressType").empty();
+		SecondaryAddressType.data.forEach(function (Item) {
+		$('#tbodySecondaryAddressType').append(`<tr><td>${Item.typeName}</td>
+										<td class="uk-text-nowrap"><a onclick='getSecondaryAddressType(${Item.id})' class="uk-icon-button uk-margin-small-right" uk-icon="pencil"></a>
+											<a class="uk-icon-button uk-margin-small-right superRootRole" onclick='deleteSecondaryAddressType(${Item.id})' uk-icon="trash"></a>
+										</td></tr>`);
+            });
+			
+			removeelement(['superRootRole'], 'superRootRole');
+		}
+		
 		
 		function paintTypeDocument(){
 		$("#tbodyTypeDocument").empty();
@@ -178,15 +196,30 @@
             });
 			removeelement(['superRootRole'], 'superRootRole');
 		}
-		
-		
+		function getSecondaryAddressType(id) {
+		 $('#load').removeClass("hide-loader");
+        emptyformbyclass("SecondaryAddressType");
+        SecondaryAddressType.CARD = Object.assign({}, SecondaryAddressType.CARDempty);
+        SecondaryAddressType.CARD.id = id;
+        if (SecondaryAddressType.CARD.id != 0) {
+            $('#h2modalCardAddSecondaryAddressType').text('Редагувати');
+			SecondaryAddressType.CARD = SecondaryAddressType.data.find(a=> a.id == id);
+			SecondaryAddressType.CARD.SecondaryAddressTypetypeName = SecondaryAddressType.CARD.typeName;
+            getobject_ByData(SecondaryAddressType.CARD, function before(){}, function after(){showModal('modalCardAddSecondaryAddressType')});
+        }
+        else {
+            $('#h2modalCardAddSecondaryAddressType').text('Додати');
+            showModal('modalCardAddSecondaryAddressType');
+        }
+		 $('#load').addClass("hide-loader");
+    }
 		function getTypeDocument(id) {
 		 $('#load').removeClass("hide-loader");
         emptyformbyclass("TypeDocument");
         TypeDocument.CARD = Object.assign({}, TypeDocument.CARDempty);
         TypeDocument.CARD.id = id;
         if (TypeDocument.CARD.id != 0) {
-            $('#h2modalCardAddAuthority').text('Редагувати');
+            $('#h2modalCardAddTypeDocument').text('Редагувати');
 			TypeDocument.CARD = TypeDocument.data.find(a=> a.id == id);
 			TypeDocument.CARD.TypeDocumenttypeName = TypeDocument.CARD.typeName;
             getobject_ByData(TypeDocument.CARD, function before(){}, function after(){showModal('modalCardAddTypeDocument')});
@@ -250,6 +283,10 @@
 		 $('#load').addClass("hide-loader");
     }
 	
+	function deleteSecondaryAddressType(id){
+	let token = gettoken();
+	deleteobject(MainURL + getCity()+SecondaryAddressType.URLDELETE + "/" + id, null, token, function func(){ getAdditionalyData();});
+	}
 	function deleteTypeDocument(id){
 	let token = gettoken();
 	deleteobject(MainURL + getCity()+TypeDocument.URLDELETE + "/" + id, null, token, function func(){ getAdditionalyData();});
@@ -266,6 +303,31 @@
 	let token = gettoken();
 	deleteobject(MainURL + getCity()+TypeStreet.URLDELETE + "/" + id, null, token, function func(){ getAdditionalyData();});
 	}
+	
+	
+	
+	
+	async function updateSecondaryAddressType(){
+	var c = getCardData(SecondaryAddressType.CARD, "SecondaryAddressType");
+        if (c) {
+		let id = SecondaryAddressType.CARD.id;
+		c.typeName = c.SecondaryAddressTypetypeName;
+		let token = gettoken();
+			if(id == 0)
+		{
+			await saveobject(MainURL + getCity()+SecondaryAddressType.URLPOST, c, token, "POST", function before(){
+			}, function after() {getAdditionalyData(); hideModal('modalCardAddSecondaryAddressType')});
+		}
+		else{
+		
+			await saveobject(MainURL + getCity()+SecondaryAddressType.URLPUT + "/" + id, c, token, "PUT", function before(){},
+			 function after() {getAdditionalyData();hideModal('modalCardAddSecondaryAddressType')});
+		}
+		
+            
+        }
+	}
+	
 	
 	async function updateTypeDocument(){
 	var c = getCardData(TypeDocument.CARD, "TypeDocument");
@@ -409,11 +471,15 @@
 						<h5>Статистика</h5>
 						<div>
 							<span class="uk-text-small">Кількість вулиць <small id='countStreettext'></small></span>
-							<progress class="uk-progress" value="0" id='countStreet' max="5000"></progress>
+							<progress class="uk-progress warning" value="0" id='countStreet' max="5000"></progress>
 						</div>
 						<div>
 							<span class="uk-text-small">Кількість адрес <small id='countAddresstext'></small></span>
 							<progress class="uk-progress success" value="0" id='countAddress' max="150000"></progress>
+						</div>
+						<div>
+							<span class="uk-text-small">Кількість вторинних адрес <small id='countSecondaryAddresstext'></small></span>
+							<progress class="uk-progress" value="0" id='countSecondaryAddress' max="150000000"></progress>
 						</div>
 					
 				</div>
@@ -441,6 +507,30 @@
 			</div>
 		</aside>
 		<div id="content" data-uk-height-viewport="expand: true">
+		
+		
+		<div id="modalCardAddSecondaryAddressType" bg-close="false" class="uk-modal-container uk-flex-top" uk-modal>
+    <div class="uk-modal-dialog m uk-modal-body uk-margin-auto-vertical">
+        <form class="uk-form-stacked">
+            <legend class="uk-legend uk-heading-bullet uk-padding-small uk-padding-remove-top uk-padding-remove-bottom" id="h2modalCardAddSecondaryAddressType"></legend>
+            <div class="uk-grid uk-grid-small uk-grid-match uk-flex-top uk-margin" uk-grid>
+
+                <div class="uk-width-1-1">
+                    <label class="uk-form-label required_uk">Назва</label>
+                    <div class="uk-form-controls">
+                        <input class="uk-input necessarilytext SecondaryAddressType" type="text" autocomplete="off" id="SecondaryAddressTypetypeName">
+                    </div>
+                </div>
+				
+            </div>
+        </form>
+
+        <p class="uk-text-right">
+            <button class="uk-button uk-button-default uk-modal-close" type="button">Відмінити</button>
+            <button class="uk-button uk-button-primary dictionaryRole" onclick="updateSecondaryAddressType()" type="button">Зберегти</button>
+        </p>
+    </div>
+</div>
 		
 		<div id="modalCardAddTypeDocument" bg-close="false" class="uk-modal-container uk-flex-top" uk-modal>
     <div class="uk-modal-dialog m uk-modal-body uk-margin-auto-vertical">
@@ -589,6 +679,8 @@
 									<li><a href="#">Райони</a></li>
 									<li><a href="#">Органи</a></li>
 									<li><a href="#">Типи документів</a></li>
+									<li><a href="#">Типи вторинних адрес</a></li>
+									
 								</ul>
 
 								<ul class="uk-switcher uk-margin">
@@ -661,6 +753,26 @@
 												</tr>
 											</thead>
 											<tbody id="tbodyTypeDocument">
+																							
+											</tbody>
+										</table>	
+									</div>										
+									</li>
+									
+									
+									<li>
+									<div class="uk-card-body uk-card uk-card-default uk-card-small">
+										<p uk-margin>
+											<a class="uk-button uk-button-default" uk-tooltip="Додати новий тип вторинних адрес" onclick='getSecondaryAddressType(0)'>Додати</a>
+										</p>									
+										<table class="uk-table uk-table-middle uk-table-divider uk-table-small" >
+											<thead>
+												<tr>
+													<th class="uk-width-expand"></th>
+													<th></th>
+												</tr>
+											</thead>
+											<tbody id="tbodySecondaryAddressType">
 																							
 											</tbody>
 										</table>	

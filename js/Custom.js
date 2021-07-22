@@ -281,6 +281,115 @@ function dis(value, div) {
             return date;
         }
 
+function minMaxFilterEditor (cell, onRendered, success, cancel, editorParams){
+
+    var end;
+
+    var container = document.createElement("span");
+
+    //create and style inputs
+    var start = document.createElement("input");
+    start.setAttribute("type", "date");
+	start.classList.add("uk-input");
+    start.setAttribute("placeholder", "Від (включно)");
+    start.style.padding = "4px";
+    start.style.width = "50%";
+    start.style.boxSizing = "border-box";
+
+    start.value = cell.getValue();
+
+    function buildValues(){
+        success({
+            start:start.value,
+            end:end.value,
+        });
+    }
+
+    function keypress(e){
+        if(e.keyCode == 13){
+            buildValues();
+        }
+
+        if(e.keyCode == 27){
+            cancel();
+        }
+    }
+
+    end = start.cloneNode();
+    end.setAttribute("placeholder", "До (включно)");
+
+    start.addEventListener("change", buildValues);
+    start.addEventListener("blur", buildValues);
+    start.addEventListener("keydown", keypress);
+
+    end.addEventListener("change", buildValues);
+    end.addEventListener("blur", buildValues);
+    end.addEventListener("keydown", keypress);
+
+
+    container.appendChild(start);
+    container.appendChild(end);
+
+    return container;
+ }
+function minMaxFilterFunction(headerValue, rowValue, rowData, filterParams){
+    //headerValue - the value of the header filter element
+    //rowValue - the value of the column in this row
+    //rowData - the data for the row being filtered
+    //filterParams - params object passed to the headerFilterFuncParams property
+
+    //convert strings into dates
+let start='', end='', val='';
+    if(headerValue.start != ""){
+        start = new Date(headerValue.start);
+    } 
+    if(headerValue.end != ""){
+       end = new Date(headerValue.end );
+    }
+    
+    //compare dates
+    if(rowValue){
+        val = new Date(rowValue);
+
+        if(start != ""){
+            if(end != ""){
+                return val >= start && val <= end;
+            }else{
+                return val >= start;
+            }
+        }else{
+            if(end != ""){
+                return val <= end;
+            }
+        }
+    }
+
+    return true; //must return a boolean, true if it passes the filter.
+}
+
+
+function validate(str, type){
+	if(str == "")
+		return false;
+	switch (type){
+		case 'email':
+			var pattern = /^(([^<>()[\]\\.,;:\s@\"]+(\.[^<>()[\]\\.,;:\s@\"]+)*)|(\".+\"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/; 
+			break;
+		case 'login' :
+			var pattern = /^[а-яА-Яa-zA-Z0-9ЇїІіЄєҐґ]{4,}$/; 
+			break;
+		case 'password':
+			var pattern = /^[а-яА-Яa-zA-Z0-9ЇїІіЄєҐґ]{8,}$/; 
+			break;
+		default:
+			return false;
+		}
+	return pattern.test(str);
+        
+}
+
+
+
         function regE(text, type) {
             while (text.indexOf("  ", " ") != -1) {
                 text = text.replace("  ", " ");
@@ -311,7 +420,11 @@ function dis(value, div) {
             return pattern.test(text);
         }
         function sortTabulator(a, b, dictionary) {
-            return getArrayStringForId(a,dictionary).localeCompare(getArrayStringForId(b,dictionary));
+            //return getArrayStringForId(a,dictionary).localeCompare(getArrayStringForId(b,dictionary));
+			let myMap = new Map(dictionary.map(obj => [ obj.id, obj.name ]));
+			let aa = myMap.get(a);
+			let bb = myMap.get(b);
+			return (aa > bb) ? 1 : ((bb > aa) ? -1 : 0);
         };
 
         function getArrayStringForId(stringarrayid, dictionary) {
@@ -324,7 +437,7 @@ function dis(value, div) {
             return false;
         }
 
-        function gettabulator(urlload, columns, select, rowformatter, idcontainer) {
+        function gettabulator(urlload, columns, select, rowformatter, idcontainer, paginationSize) {
             try {
                 table = new Tabulator((idcontainer ? idcontainer : "#tableobj"), {
                     ajaxURL: urlload,
@@ -337,8 +450,8 @@ function dis(value, div) {
                     rowFormatter: rowformatter,
                     columns: columns,
                     pagination: "local",
-                    paginationSize: 20,
-                    paginationSizeSelector: [20, 50, 100, 200],
+                    paginationSize: paginationSize ? paginationSize : 20,
+                    paginationSizeSelector: [10, 20, 50, 100, 200],
                     selectable: select,
                     height:"100%",
                     tooltipsHeader: true,
@@ -501,7 +614,7 @@ function dis(value, div) {
 						}
 						if(data.url)
 						{
-							let city = data.substring(data.url.lastIndexOf('/')+1); 
+							let city = data.url.substring(data.url.lastIndexOf('/')+1); 
 							$(location).attr('href',window.location.origin + '/'+ city+ '/index.html');
 						}
 						switch (data) {
@@ -685,6 +798,7 @@ function dis(value, div) {
 					case "EMPTY STREET TYPE NAME":
 						UIkit.notification({ message: 'Порожній тип вулиці', status: 'danger'});
 						break;
+					
 					case "EMPTY SHORT STREET TYPE NAME":
 						UIkit.notification({ message: 'Порожній скорочений тип вулиці', status: 'danger'});
 						break;
@@ -751,7 +865,7 @@ function dis(value, div) {
 					case "INCORRECT LINK ACTION":
 						UIkit.notification({ message: "Виникла помилка при прив'язці документу", status: 'danger'});
 						break;
-					case "NCORRECT LINKED ENTITY":
+					case "INCORRECT LINKED ENTITY":
 						UIkit.notification({ message: "Виникла помилка при прив'язці документу", status: 'danger'});
 						break;
 					case "DOCUMENT IS ALREADY LINKED":
@@ -784,8 +898,46 @@ function dis(value, div) {
 					case "NO SUFFICIENT PRIVILEGES":
 						UIkit.notification({ message: 'Немає прав на виконання цієї операції', status: 'danger'});
 						break;
-	
-					  default:
+					case "There is no an user with such id":
+						UIkit.notification({ message: 'Користувача з таким ідентифікатором немає', status: 'danger'});
+						break;
+					case "INVALID DOCUMENT LINKS STR":
+						UIkit.notification({ message: "Помилка прив'язки", status: 'danger'});
+						break;
+					case "IMPORT ERROR":
+						UIkit.notification({ message: 'Помилка при імпорті', status: 'danger'});
+						break;
+					case "STREET TYPE HAS LINKED STREETS":
+						UIkit.notification({ message: 'Даний тип вулиці використовується у вулиць', status: 'danger'});
+						break;
+					case "DISTRICT HAS LINKED ADDRESSES":
+						UIkit.notification({ message: 'Даний район використовується у адресах', status: 'danger'});
+						break;
+					case "DOCUMENT TYPE HAS LINKED DOCUMENTS":
+						UIkit.notification({ message: 'Даний тип документу використовується у документах', status: 'danger'});
+						break;
+					case "AUTHORITY HAS LINKED DOCUMENTS":
+						UIkit.notification({ message: 'Орган використовується у документах', status: 'danger'});
+						break;
+					case "REGISTER ID NOT FOUND":
+						UIkit.notification({ message: 'Реєстр не існує', status: 'danger'});
+						break;
+					case "STREET HAS LINKED ADDRESSES":
+						UIkit.notification({ message: 'Дана вулиця використовується у адресах', status: 'danger'});
+						break;
+					case "SECONDARY ADDRESS TYPE HAS LINKED SECONDARY ADDRESSES":
+						UIkit.notification({ message: 'Даний тип використовується у вторинних адресах', status: 'danger'});
+						break;
+					case "ADDRESS HAS LINKED SECONDARY ADDRESSES":
+						UIkit.notification({ message: 'Дана адреса використовується у вторинних адресах', status: 'danger'});
+						break;
+					case "EMPTY SECONDARY ADDRESS TYPE NAME":
+						UIkit.notification({ message: 'Порожня назва типу вторинної адреси', status: 'danger'});
+						break;
+					case "EMPTY SECONDARY ADDRESS NUMBER":
+						UIkit.notification({ message: 'Порожній номер вторинної адреси', status: 'danger'});
+						break;
+					default:
 						UIkit.notification({ message: 'Невизначена помилка', status: 'danger'});
 						break;
 					}
@@ -985,6 +1137,29 @@ function dis(value, div) {
             let isError = false;
 
             forEachClassName('uk-form-danger ' + classname, i => i.classList.remove("uk-form-danger"));
+			
+			 forEachClassName('email ' + classname, i => {
+                if (!validate(i.value, "email")) {
+                    i.className += ' uk-form-danger';
+                    isError = true;
+					UIkit.notification({ message: 'Email повинен відповідати формі xxxxxx@xxxxx.xxxx', status: 'danger' });
+                }
+            });
+			forEachClassName('login ' + classname, i => {
+                if (!validate(i.value, "login")) {
+                    i.className += ' uk-form-danger';
+                    isError = true;
+					UIkit.notification({ message: 'Логін повинен містити мінімум 4 символи (кирилицю, латиницю та цифри)', status: 'danger' });
+                }
+            });
+			forEachClassName('password ' + classname, i => {
+                if (i.value !='' && !validate(i.value, "password")) {
+                    i.className += ' uk-form-danger';
+                    isError = true;
+					UIkit.notification({ message: 'Пароль повинен містити мінімум 8 символів (кирилицю, латиницю та цифри)', status: 'danger' });
+                }
+            });
+			
             forEachClassName('necessarilytext ' + classname, i => {
                 if (i.value === 0 || i.value === '') {
                     i.className += ' uk-form-danger';

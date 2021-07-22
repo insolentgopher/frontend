@@ -26,7 +26,11 @@
 		
 		<script src="http://10.0.16.8/js/User.js"></script>
 		
+		
 		<script src="http://10.0.16.8/js/Custom.js"></script>
+		
+		<script src="http://10.0.16.8/js/Main.js"></script>
+		
 		<script src="https://unpkg.com/axios/dist/axios.js"></script>
 		<link rel="stylesheet" href="http://10.0.16.8/css/Custom.css" type="text/css">		
 		<script src="https://cdn.jsdelivr.net/npm/sweetalert2@10"></script>
@@ -90,16 +94,7 @@
 		try {
 		 $('#load').removeClass("hide-loader");
 		const main = await axios.get(MainURL + getCity()).catch(error => {GETERROR(error); $('#load').addClass("hide-loader");});
-                if(main.data)
-				{
-					forEachClassName("citytitle", i => i.textContent= main.data.cityName);
-					forEachClassName("maintitle", i => i.textContent= main.data.title);
-					forEachClassName("custom-logo", i => i.setAttribute('src', main.data.logoUrl));
-					$('#countStreettext').text(' - ' + main.data.streetCount);
-				$('#countStreet').val(main.data.streetCount);
-				$('#countAddresstext').text(' - ' + main.data.addressCount);
-				$('#countAddress').val(main.data.addressCount);
-				}
+               paintMain(main.data);
 				}
 
 				catch {
@@ -141,6 +136,8 @@
         emptyformbyclass("User");
         User.CARD = Object.assign({}, User.CARDempty);
         User.CARD.id = id;
+		User.CARD.password = '';
+		
         if (User.CARD.id != 0) {
 			$('#password').removeClass("necessarilytext");
 			$('#labelpassword').removeClass("required_uk");
@@ -166,19 +163,8 @@
 	var c = getCardData(User.CARD, "User");
 	        if (c) {
 	
-	if(c.login.length < 4 ){
-	UIkit.notification({ message: 'Логін складається меньше ніж з 4-х символів', status: 'danger'});
-		return;
-	}
-	if((User.CARD.id == 0  && c.login.password < 8) || (User.CARD.id > 0 && c.login.length > 0 && c.login.password < 8 ))
-	{
-		UIkit.notification({ message: 'Пароль складається меньше ніж з 8-ми символів', status: 'danger'});
-		return;
-	}
-	
-
 		let id = User.CARD.id;
-		c.password = $('#password').val();
+		
 		c.superRootRole = +c.superRootRole;
 		c.dictionaryRole = +c.dictionaryRole;
 		c.auditRole = +c.auditRole;
@@ -261,11 +247,15 @@
 						<h5>Статистика</h5>
 						<div>
 							<span class="uk-text-small">Кількість вулиць <small id='countStreettext'></small></span>
-							<progress class="uk-progress" value="0" id='countStreet' max="5000"></progress>
+							<progress class="uk-progress warning" value="0" id='countStreet' max="5000"></progress>
 						</div>
 						<div>
 							<span class="uk-text-small">Кількість адрес <small id='countAddresstext'></small></span>
 							<progress class="uk-progress success" value="0" id='countAddress' max="150000"></progress>
+						</div>
+						<div>
+							<span class="uk-text-small">Кількість вторинних адрес <small id='countSecondaryAddresstext'></small></span>
+							<progress class="uk-progress" value="0" id='countSecondaryAddress' max="150000000"></progress>
 						</div>
 					
 				</div>
@@ -302,19 +292,19 @@
                 <div class="uk-width-1-2@s">
                     <label class="uk-form-label required_uk">Логін</label>
                     <div class="uk-form-controls">
-                        <input class="uk-input necessarilytext User" type="text" autocomplete="off" id="login">
+                        <input class="uk-input necessarilytext login User" type="text" autocomplete="off" id="login">
                     </div>
                 </div>
 				<div class="uk-width-1-2@s">
                     <label class="uk-form-label" id='labelpassword'>Пароль</label>
                     <div class="uk-form-controls">
-                        <input class="uk-input User" type="password" id="password">
+                        <input class="uk-input password User" type="password" id="password">
                     </div>
                 </div>
 				<div class="uk-width-1-1">
                     <label class="uk-form-label required_uk">Електрона адреса</label>
                     <div class="uk-form-controls">
-                        <input class="uk-input necessarilytext User" type="text" autocomplete="off" id="email">
+                        <input class="uk-input necessarilytext email User" type="text" autocomplete="off" id="email">
                     </div>
                 </div>
 				<div class="uk-width-1-3@s superRootRole" uk-tooltip="title: Адміністратор реєстру з повним переліком прав; delay: 500" > 

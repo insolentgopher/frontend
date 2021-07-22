@@ -207,6 +207,8 @@ input::-webkit-inner-spin-button {
 }
 .tabulator-header-filter input{
 	height: 40px;
+	font-weight: 400;
+border: 1px solid rgb(133, 133, 133);
 }
 
 .tabulator .tabulator-header .tabulator-col .tabulator-col-content{
@@ -240,4 +242,8 @@ padding-right: 20px;
 
 #select-city .select2-selection__rendered{
 padding-left: 15px;
+}
+
+.uk-modal {
+    background: rgba(0,0,0,.45);
 }

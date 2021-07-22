@@ -6,6 +6,23 @@ $(function () {
 	getIam();
 });
 
+
+function notuser()
+{
+	CURRENTUSER == null;
+		forEachClassName("superRootRole", i => i.parentNode.removeChild(i));
+		forEachClassName("dictionaryRole", i => i.parentNode.removeChild(i));
+		forEachClassName("auditRole", i => i.parentNode.removeChild(i));
+		forEachClassName("userRole", i => i.parentNode.removeChild(i));
+		forEachClassName("exportImportRole", i => i.parentNode.removeChild(i));
+		forEachClassName("registryRole", i => i.parentNode.removeChild(i));
+		forEachClassName("alluser", i => i.parentNode.removeChild(i));
+	   $('#load').addClass("hide-loader");
+
+}
+
+
+
 async function getIam(){
 	
 	
@@ -20,8 +37,9 @@ async function getIam(){
 			).then(response => {CURRENTUSER = response.data;}).catch(error => {
 				if(error.response.data.errorCode=="INVALID_TOKEN")
 				{
-					removetoken();
-					getIam();
+					notuser();
+					//removetoken();
+					//getIam();
 				}
 					else{
 					GETERROR(error); 
@@ -31,6 +49,7 @@ async function getIam(){
 	}
 	
 	if(CURRENTUSER == null){
+		forEachClassName("superRootRole", i => i.parentNode.removeChild(i));
 		forEachClassName("dictionaryRole", i => i.parentNode.removeChild(i));
 		forEachClassName("auditRole", i => i.parentNode.removeChild(i));
 		forEachClassName("userRole", i => i.parentNode.removeChild(i));
@@ -60,6 +79,8 @@ async function getIam(){
 		if(+CURRENTUSER.registryRole == 0)
 			forEachClassName("registryRole", i => i.parentNode.removeChild(i));
 	}
+	
+	$('body').removeClass('uk-invisible');
 	}
 	else
 	{
@@ -72,8 +93,7 @@ async function getIam(){
 		
 		forEachClassName("alluser", i => i.parentNode.removeChild(i));
 	}
-		
-	$('body').removeClass('uk-invisible');
+	
 	$('#load').addClass("hide-loader");
 	
 	
@@ -89,8 +109,9 @@ async function visView(roles){
 			).then(response => {CURRENTUSER = response.data;}).catch(error => {
 				if(error.response.data.errorCode=="INVALID_TOKEN")
 				{
-					removetoken();
-					visView();
+					//removetoken();
+					//visView();
+					$(location).attr('href','login.html');
 				}
 					else{
 					GETERROR(error); 
@@ -139,8 +160,9 @@ async function removeelement(roles, classname){
 			).then(response => {CURRENTUSER = response.data;}).catch(error => {
 				if(error.response.data.errorCode=="INVALID_TOKEN")
 				{
-					removetoken();
-					viselement();
+					//removetoken();
+					//viselement();
+					forEachClassName(classname, i => i.parentNode.removeChild(i));
 				}
 					else{
 					GETERROR(error); 
@@ -177,8 +199,9 @@ async function viselement(roles, element){
 			).then(response => {CURRENTUSER = response.data;}).catch(error => {
 				if(error.response.data.errorCode=="INVALID_TOKEN")
 				{
-					removetoken();
-					viselement();
+					//removetoken();
+					//viselement();
+					return;
 				}
 					else{
 					GETERROR(error); 

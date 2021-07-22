@@ -8,7 +8,7 @@ var STATUSES = [{id: 0 , name : 'Дійсний' },{id: 1 , name : 'Анульо
                     title: 'Тип',
                     field: 'documentTypeId',
                     sorter: "string",
-					minWidth: 100,
+					minWidth: 60,
                    formatter: function(value){
 						return DocumentTypeDATA.find(a => a.id == value.getData().documentTypeId) ? DocumentTypeDATA.find(a => a.id == value.getData().documentTypeId).typeName : '' ;
 					},
@@ -18,12 +18,13 @@ var STATUSES = [{id: 0 , name : 'Дійсний' },{id: 1 , name : 'Анульо
                     return sortTabulator(a, b, DocumentTypeDATA.map(function (a) { return { id: a.id, name: a.typeName }; }));
 					},
 					headerFilterFunc: function (headerValue, rowData) {
-						return filterTabulator(headerValue, (rowData ? rowData.toString() : ''), DocumentTypeDATA.map(function (a) { return { id: a.id, name: a.typeName }; }));
+						return filterTabulator(headerValue, (rowData!=undefined && rowData!=null  ? rowData.toString() : ''), DocumentTypeDATA.map(function (a) { return { id: a.id, name: a.typeName }; }));
 					}
             },
              {
                     title: 'Номер',
 					minWidth: 100,
+					hozAlign:"center",
                     field: 'number',
                     sorter: "string",
                     headerFilter:true,
@@ -31,12 +32,16 @@ var STATUSES = [{id: 0 , name : 'Дійсний' },{id: 1 , name : 'Анульо
                 headerFilterPlaceholder: 'Пошук...',
             },
 			{
-                    title: 'Дата',
-					minWidth: 100,
+                    title: 'Дата ',
+					minWidth: 300,
+					hozAlign:"center",
                     field: 'issued',
                     sorter: "number",
-                    headerFilter:true,
-                headerFilterPlaceholder: 'Пошук...',
+					
+					headerFilter:minMaxFilterEditor, 
+					headerFilterFunc:minMaxFilterFunction, 
+					headerFilterLiveFilter:false,
+					
 				formatter: function(value){
 						return getdate2(value.getData().issued);
 					},
@@ -64,7 +69,7 @@ var STATUSES = [{id: 0 , name : 'Дійсний' },{id: 1 , name : 'Анульо
                     return sortTabulator(a, b, AuthorityDATA.map(function (a) { return { id: a.id, name: a.name }; }));
 					},
 					headerFilterFunc: function (headerValue, rowData) {
-						return filterTabulator(headerValue, (rowData ? rowData.toString() : ''), AuthorityDATA.map(function (a) { return { id: a.id, name: a.name }; }));
+						return filterTabulator(headerValue, (rowData!=undefined && rowData!=null  ? rowData.toString() : ''), AuthorityDATA.map(function (a) { return { id: a.id, name: a.name }; }));
 					}
             },
 			{
@@ -93,7 +98,7 @@ var STATUSES = [{id: 0 , name : 'Дійсний' },{id: 1 , name : 'Анульо
                     return sortTabulator(a, b, STATUSES.map(function (a) { return { id: a.id, name: a.name }; }));
 					},
 					headerFilterFunc: function (headerValue, rowData) {
-						return filterTabulator(headerValue, (rowData ? rowData.toString() : ''), STATUSES.map(function (a) { return { id: a.id, name: a.name }; }));
+						return filterTabulator(headerValue, (rowData!=undefined && rowData!=null  ? rowData.toString() : ''), STATUSES.map(function (a) { return { id: a.id, name: a.name }; }));
 					}
             },
 			{
@@ -149,9 +154,7 @@ var STATUSES = [{id: 0 , name : 'Дійсний' },{id: 1 , name : 'Анульо
 			$('#tbodyDocuments').empty();
 			if(id > 0){
 			$('#load').removeClass("hide-loader");
-			let d = await axios.get(MainURL + getCity()+'/'+entity+'/'+id+'/document', {
-				headers: {token: gettoken()}
-			  }).catch(error => {GETERROR(error); $('#load').addClass("hide-loader");});
+			let d = await axios.get(MainURL + getCity()+'/'+entity+'/'+id+'/document').catch(error => {GETERROR(error); $('#load').addClass("hide-loader");});
 			
 			if(!DocumentTypeDATA  || !AuthorityDATA){
 			const yy = await axios.get(MainURL + getCity()+"/documenttype").catch(error => {GETERROR(error); $('#load').addClass("hide-loader");});

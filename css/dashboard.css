@@ -111,12 +111,12 @@
 	/* navbar height */
 	height: 64px;
 	/*height: 52px;*/
-	line-height: 64px;
+	/*line-height: 64px;*/
 	/*line-height: 52px;*/
 	padding: 0 20px;
 }
 .custom-logo {
-	height: 32px;
+	height: 48px;
 }
 .profile-img {
 	width: 60px;
@@ -1051,3 +1051,4 @@
 .uk-offcanvas-aside {
     z-index: 1;
 }
+

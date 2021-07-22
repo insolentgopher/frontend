@@ -36,7 +36,7 @@
 		 <link rel="stylesheet" href="http://10.0.16.8/css/select2.min.css" type="text/css">
 		<script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
 	
-	
+	<script src="http://10.0.16.8/js/Main.js"></script>
 	
 	<script src="http://10.0.16.8/js/Docs.js"></script>
 	
@@ -48,8 +48,8 @@
 			{
                     title: 'Тип',
                     field: 'documentTypeId',
-                    sorter: "string",
-					minWidth: 100,
+					sorter: "string",
+					minWidth: 60,
                    formatter: function(value){
 						return DocumentType.find(a => a.id == value.getData().documentTypeId) ? DocumentType.find(a => a.id == value.getData().documentTypeId).typeName : '' ;
 					},
@@ -59,7 +59,7 @@
                     return sortTabulator(a, b, DocumentType.map(function (a) { return { id: a.id, name: a.typeName }; }));
 					},
 					headerFilterFunc: function (headerValue, rowData) {
-						return filterTabulator(headerValue, (rowData ? rowData.toString() : ''), DocumentType.map(function (a) { return { id: a.id, name: a.typeName }; }));
+						return filterTabulator(headerValue, (rowData!=undefined && rowData!=null  ? rowData.toString() : ''), DocumentType.map(function (a) { return { id: a.id, name: a.typeName }; }));
 					}
             },
 			{
@@ -76,25 +76,30 @@
                     return sortTabulator(a, b, Authority.map(function (a) { return { id: a.id, name: a.name }; }));
 					},
 					headerFilterFunc: function (headerValue, rowData) {
-						return filterTabulator(headerValue, (rowData ? rowData.toString() : ''), Authority.map(function (a) { return { id: a.id, name: a.name }; }));
+						return filterTabulator(headerValue, (rowData!=undefined && rowData!=null  ? rowData.toString() : ''), Authority.map(function (a) { return { id: a.id, name: a.name }; }));
 					}
             },
              {
                     title: 'Номер',
 					minWidth: 100,
                     field: 'number',
+					hozAlign:"center",
                     sorter: "string",
                     headerFilter:true,
 					
                 headerFilterPlaceholder: 'Пошук...',
             },
 			{
-                    title: 'Дата',
-					minWidth: 100,
+                    title: 'Дата затвердження',
+					minWidth: 300,
+					hozAlign:"center",
                     field: 'issued',
                     sorter: "number",
-                    headerFilter:true,
-                headerFilterPlaceholder: 'Пошук...',
+					
+					headerFilter:minMaxFilterEditor, 
+					headerFilterFunc:minMaxFilterFunction, 
+					headerFilterLiveFilter:false,
+					
 				formatter: function(value){
 						return getdate2(value.getData().issued);
 					},
@@ -103,7 +108,7 @@
 			{
                     title: 'Заголовок',
 					minWidth: 100,
-                    field: 'comment',
+                    field: 'title',
                     sorter: "string",
                     headerFilter:true,
                 headerFilterPlaceholder: 'Пошук...',
@@ -124,7 +129,7 @@
                     return sortTabulator(a, b, STATUSES.map(function (a) { return { id: a.id, name: a.name }; }));
 					},
 					headerFilterFunc: function (headerValue, rowData) {
-						return filterTabulator(headerValue, (rowData ? rowData.toString() : ''), STATUSES.map(function (a) { return { id: a.id, name: a.name }; }));
+						return filterTabulator(headerValue, (rowData!=undefined && rowData!=null  ? rowData.toString() : ''), STATUSES.map(function (a) { return { id: a.id, name: a.name }; }));
 					}
             },
 			{
@@ -158,7 +163,7 @@
                     title: '',
                     field: 'Редагувати',
                     sortable:false,
-                    formatter: openIcon,
+                    formatter: function(){ return "<a class='uk-icon registryRole' uk-icon='pencil' ></a>"},
                     headerSort:false,
                     resizable:false,
                     width: 50,
@@ -182,6 +187,10 @@
 
                 },
         ];
+		
+		
+ 
+ 
 		$(function () {
 		
 		
@@ -192,7 +201,7 @@
 		 $('#load').addClass("hide-loader");
 		MainURL = "http://10.0.16.13:2023/portal/api/v1/register/";
 		STATUSES = [{id: 0 , name : 'Дійсний' },{id: 1 , name : 'Анульований' },{id: 2 , name : 'Зі змінами' }];
-		DocumentType = [], Authority = [];
+		DocumentType = [], Authority = [], SecondaryAddressType=[];
 		Document = {
 		data: null,
 		CARD : {id:0, documentTypeId: null, authorityId: null, status: null, number: '', issued: '', title: '', applicantName: '', applicantCode: '', documentUrl: '', comment: '', blob: null},
@@ -204,7 +213,7 @@
 		URLDELETE: "/document"
 		};
 		
-		_tableDocument = gettabulator('', columnsDocument, true, null, '#tableSelectDoc');
+		_tableDocument = gettabulator('', columnsDocument, true, null, '#tableSelectDoc', 10);
 		
 		
 		_table = gettabulator('', columns, false);
@@ -219,17 +228,7 @@
 		try {
 		 $('#load').removeClass("hide-loader");
 		const main = await axios.get(MainURL + getCity()).catch(error => {GETERROR(error); $('#load').addClass("hide-loader");});
-                if(main.data)
-				{
-					forEachClassName("citytitle", i => i.textContent= main.data.cityName);
-					forEachClassName("maintitle", i => i.textContent= main.data.title);
-					forEachClassName("custom-logo", i => i.setAttribute('src', main.data.logoUrl));
-					
-					$('#countStreettext').text(' - ' + main.data.streetCount);
-				$('#countStreet').val(main.data.streetCount);
-				$('#countAddresstext').text(' - ' + main.data.addressCount);
-				$('#countAddress').val(main.data.addressCount);
-				}
+                paintMain(main.data);
 				
 				const yy = await axios.get(MainURL + getCity()+"/documenttype").catch(error => {GETERROR(error); $('#load').addClass("hide-loader");});
 				DocumentType =  yy.data;
@@ -238,6 +237,9 @@
 				const zz = await axios.get(MainURL + getCity()+"/authority").catch(error => {GETERROR(error); $('#load').addClass("hide-loader");});
 				Authority= zz.data;
 				fillSelect('authorityId', zz.data, "id", "name");
+				
+				const zzz = await axios.get(MainURL + getCity()+"/secondaryaddresstype").catch(error => {GETERROR(error); $('#load').addClass("hide-loader");});
+				SecondaryAddressType= zzz.data;
 				
 				fillSelect('status', STATUSES, "id", "name");
 				getAdditionalyData();
@@ -256,6 +258,8 @@
                 Document.data = x.data;
 				
 				_table.replaceData(Document.data); 
+				removeelement(['superRootRole'], 'superRootRole');
+				removeelement(['registryRole'], 'registryRole');
             }
             catch {
                 UIkit.notification({ message: 'Помилка! Дані не були завантажені', status: 'danger' });
@@ -269,7 +273,7 @@
 		}
 		async function getDocument(id){
 		GETDOCUMENTFROMDB('document', id);
-		 ('#load').removeClass("hide-loader");
+		$('#load').removeClass("hide-loader");
 		$('#dod').empty();
 		emptyformbyclass("Document");
 		$('#Fileupload').val('');
@@ -351,21 +355,41 @@
 		async function getInfoDoc(id){
 		try{
 		$('#info').empty();
+		$('#info').attr('uk-overflow-auto', false);
+		$('#info').css('max-height', '100%'); 
+		
+		
+		
 		$('#load').removeClass("hide-loader");
 	
 			let d = await axios.get(MainURL + getCity()+Document.URLGET+'/'+id).catch(error => {GETERROR(error); $('#load').addClass("hide-loader");});
 			<!--Document.CARD = Document.data.find(a=> a.id == id);-->
 			
-			
 	
-	
+					var xhr = new XMLHttpRequest();
+				// load `document` from `cache`
+				xhr.open("GET", Document.data.find(a=> a.id == d.data.id).documentUrl, true); 
+				xhr.responseType = "blob";
+				xhr.onload = function (e) {
+					if (this.status === 200) {
+						// `blob` response
+						console.log(this.response);
+						var file = window.URL.createObjectURL(this.response);
+						document.querySelector("iframe").src = file;
+
+					}
+				};
+				xhr.send();
+
+
+
 			$('#info').append(`<div class="uk-card uk-card-default uk-margin-top uk-width-1-1">
 				<div class="uk-card-header">
 					<div class="uk-grid-small uk-flex-middle" uk-grid>
 						
 						<div class="uk-width-expand">
 							<h3 class="uk-card-title uk-margin-remove-bottom">${DocumentType.find(a=> a.id ==d.data.documentTypeId) ?  DocumentType.find(a=> a.id ==d.data.documentTypeId).typeName : ""} ${Authority.find(a=> a.id ==d.data.authorityId) ?  Authority.find(a=> a.id ==d.data.authorityId).nameInGenitiveCase : ""} № ${d.data.number} від ${getdate2(d.data.issued)}р.</h3>
-							<p class="uk-text-meta uk-margin-remove-top">${d.data.comment}</p>
+							<p class="uk-text-meta uk-margin-remove-top">${d.data.title}</p>
 							
 							<p class="">Заявник: ${d.data.applicantName} ${d.data.applicantCode}</p>
 						</div>
@@ -396,7 +420,7 @@
 			else{
 			$('#dod').append(`<h4 class="uk-legend uk-heading-bullet">Зміни</h4><p class="">Немає</p>`);
 			}
-			if(d.data.linkedDistricts || d.data.linkedStreets || d.data.linkedAddresses || d.data.linkedDocuments){
+			if(d.data.linkedDistricts || d.data.linkedStreets || d.data.linkedAddresses || d.data.linkedDocuments || d.data.linkedSecondaryAddresses){
 				$('#dod').append(`<h4 class="uk-legend uk-heading-bullet">Зв'язки</h4>`);
 				
 				if(d.data.linkedDistricts)
@@ -407,6 +431,11 @@
 
 				if(d.data.linkedAddresses)
 					$('#dod').append(`<p><span class = 'uk-text-secondary'>Адреси:</span> ${Array.from(new Set(d.data.linkedAddresses.map((item) => getFullAdr(item)))).join(', ')}</p>`);
+				
+				if(d.data.linkedSecondaryAddresses)
+					$('#dod').append(`<p><span class = 'uk-text-secondary'>Вторинні адреси:</span> ${Array.from(new Set(d.data.linkedSecondaryAddresses.map((item) => getFullAdr(item.address) + ", "  + SecondaryAddressType.find(a=> a.id == item.typeId).typeName + " " + item.addressNumber))).join(', ')}</p>`);
+
+
 
 				if(d.data.linkedDocuments)
 					$('#dod').append(`<p><span class = 'uk-text-secondary'>Документи:</span> ${Array.from(new Set(d.data.linkedDocuments.map((item) => (DocumentType.find(a=> a.id ==item.documentTypeId) ?  DocumentType.find(a=> a.id ==item.documentTypeId).typeName : "" ) +' '+ (Authority.find(a=> a.id ==item.authorityId) ?  Authority.find(a=> a.id ==item.authorityId).nameInGenitiveCase : "") + " №" + item.number +' від '+ getdate2(item.issued/1000) +'р.'))).join(', ')}</p>`);					
@@ -417,7 +446,7 @@
 			$('#dod').append(`<h4 class="uk-legend uk-heading-bullet">Зв'язки</h4><p class="">Немає</p>`);
 			}
 			
-			
+			$('#info').attr('uk-overflow-auto', true);
 			
 			showModal('modalInfo');
 			}
@@ -432,14 +461,40 @@
 		</script>
 	</head>
 	<body class='uk-invisible'>
-	<div id="modalInfo" bg-close="false" class="uk-modal-container uk-flex-top" uk-modal="stack: true">
-    <div class="uk-modal-dialog m uk-modal-body uk-margin-auto-vertical" >
+	
+	
+	
+	
+	
+	
+	
+	<div id="modalInfo" class="uk-modal-full"  uk-modal="stack: true">
+    <div class="uk-modal-dialog">
         <button class="uk-modal-close-full uk-close-large" type="button" uk-close></button>
-        <div class="uk-grid-collapse  uk-flex-middle" uk-grid id='info'>
+	
+        <div class="uk-grid-collapse  uk-flex-middle" uk-grid>
+
+		<div class="uk-width-1-2@m uk-flex   uk-padding-large  uk-flex-last@m">
+			<div class="uk-grid-collapse   " uk-grid id='info' >
             
-        </div>
-    </div>
-</div>
+			</div>
+		</div>
+	    <div class="uk-width-1-2@m  uk-flex-first@m" uk-height-viewport="offset-top: true"> <iframe id='iframeFile' uk-height-viewport="offset-top: true" width="100%"></iframe>
+		</div>		
+		
+		 
+		</div>
+	
+		
+		</div>
+		</div>
+               
+	
+	
+	
+	
+	
+	
 <div id="load" class="modalDialog" style="padding-left:calc(50% - 100px); padding-top:200px; overflow-y:auto; z-index:2000;position: fixed">
 
         <span uk-spinner="ratio: 7"></span>
@@ -483,7 +538,7 @@
 					<li class=''><a href="index.html"><span data-uk-icon="icon: search" class="uk-margin-small-right"></span>Пошук</a></li>
 					<li   class='auditRole'><a href="audit.html"><span data-uk-icon="icon: file-edit" class="uk-margin-small-right"></span>Аудит</a></li>
 					<li class='dictionaryRole'><a href="dictionaries.html"><span data-uk-icon="icon: thumbnails" class="uk-margin-small-right"></span>Довідники</a></li>
-					<li   class='registryRole uk-active'><a href="documents.html"><span data-uk-icon="icon: album" class="uk-margin-small-right"></span>Архів</a></li>
+					<li   class='registryRole uk-active'><a href="documents.html"><span data-uk-icon="icon: album" class="uk-margin-small-right"></span>Документи</a></li>
 					
 					<li class='userRole'><a href="users.html"><span data-uk-icon="icon: users" class="uk-margin-small-right"></span>Користувачі</a></li>
 					<!--<li  class='registryRole uk-disabled'><a href="#"><span data-uk-icon="icon: history" class="uk-margin-small-right"></span>Історія</a></li>-->
@@ -497,11 +552,15 @@
 						<h5>Статистика</h5>
 						<div>
 							<span class="uk-text-small">Кількість вулиць <small id='countStreettext'></small></span>
-							<progress class="uk-progress" value="0" id='countStreet' max="5000"></progress>
+							<progress class="uk-progress warning" value="0" id='countStreet' max="5000"></progress>
 						</div>
 						<div>
 							<span class="uk-text-small">Кількість адрес <small id='countAddresstext'></small></span>
 							<progress class="uk-progress success" value="0" id='countAddress' max="150000"></progress>
+						</div>
+						<div>
+							<span class="uk-text-small">Кількість вторинних адрес <small id='countSecondaryAddresstext'></small></span>
+							<progress class="uk-progress" value="0" id='countSecondaryAddress' max="150000000"></progress>
 						</div>
 					
 				</div>
@@ -573,7 +632,7 @@
       </div>
      </div>
 	 <div class="uk-width-1-4@m uk-width-1-2@s">
-      <label class="uk-form-label required_uk">Дата</label>
+      <label class="uk-form-label required_uk">Дата затвердження</label>
       <div class="uk-form-controls">
 	  <input class="necessarilytext uk-input Document" type="date" id="issued">
       </div>
@@ -593,7 +652,7 @@
 	 <div class="uk-width-1-1">
 	 <label class="uk-form-label">Заголовок</label>
       <div class="uk-form-controls">
-	   <textarea class="uk-textarea Document" rows='2'  id="comment"></textarea>
+	   <textarea class="uk-textarea Document" rows='2'  id="title"></textarea>
       </div>
      </div>
 	  

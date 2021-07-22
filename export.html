@@ -28,7 +28,7 @@
 		<script src="https://unpkg.com/axios/dist/axios.js"></script>
 		<link rel="stylesheet" href="http://10.0.16.8/css/Custom.css" type="text/css">		
 		
-	
+	<script src="http://10.0.16.8/js/Main.js"></script>
 		<script type="text/javascript">
 		 
 		$(function () {
@@ -43,17 +43,7 @@
 		try {
 		 $('#load').removeClass("hide-loader");
 		const main = await axios.get(MainURL + getCity()).catch(error => {GETERROR(error); $('#load').addClass("hide-loader");});
-                if(main.data)
-				{
-					forEachClassName("citytitle", i => i.textContent= main.data.cityName);
-					forEachClassName("maintitle", i => i.textContent= main.data.title);
-					forEachClassName("custom-logo", i => i.setAttribute('src', main.data.logoUrl));
-					
-					$('#countStreettext').text(' - ' + main.data.streetCount);
-				$('#countStreet').val(main.data.streetCount);
-				$('#countAddresstext').text(' - ' + main.data.addressCount);
-				$('#countAddress').val(main.data.addressCount);
-				}
+                paintMain(main.data);
 				}
 				catch {
                 UIkit.notification({ message: 'Помилка! Дані не були завантажені', status: 'danger' });
@@ -131,11 +121,15 @@
 						<h5>Статистика</h5>
 						<div>
 							<span class="uk-text-small">Кількість вулиць <small id='countStreettext'></small></span>
-							<progress class="uk-progress" value="0" id='countStreet' max="5000"></progress>
+							<progress class="uk-progress warning" value="0" id='countStreet' max="5000"></progress>
 						</div>
 						<div>
 							<span class="uk-text-small">Кількість адрес <small id='countAddresstext'></small></span>
 							<progress class="uk-progress success" value="0" id='countAddress' max="150000"></progress>
+						</div>
+						<div>
+							<span class="uk-text-small">Кількість вторинних адрес <small id='countSecondaryAddresstext'></small></span>
+							<progress class="uk-progress" value="0" id='countSecondaryAddress' max="150000000"></progress>
 						</div>
 					
 				</div>

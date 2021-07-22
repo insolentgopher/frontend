@@ -42,9 +42,13 @@
 		<link href="https://cdnjs.cloudflare.com/ajax/libs/tabulator/4.9.1/css/materialize/tabulator_materialize.css" rel="stylesheet">
 		
 		<script src="http://10.0.16.8/js/Docs.js"></script>
-		
+		<script src="http://10.0.16.8/js/Main.js"></script>
 		
 		<script type="text/javascript">
+		
+		var _tableSecondaryAddress;
+		
+		
 		$(function () {
 		
 		
@@ -52,7 +56,7 @@
 		<!--UIkit.tooltip(document.getElementById("addAdr")).show();-->
 		 $('#load').addClass("hide-loader");
 		MainURL = "http://10.0.16.13:2023/portal/api/v1/register/";
-		StreetType =[]; District = []; Authority=[]; DocumentType=[];
+		StreetType =[]; District = []; Authority=[]; DocumentType=[], SecondaryAddressType=[];
 		STATUSES = [{id: 0 , name : 'Чинна' },{id: 1 , name : 'Зі змінами' },{id: 2 , name : 'Скасована' },{id: 3 , name : 'Чинність відновлена' }];
 		STATUSESDOC = [{id: 0 , name : 'Дійсний' },{id: 1 , name : 'Анульований' },{id: 2 , name : 'Зі змінами' }];
 		
@@ -91,9 +95,23 @@
 		URLPUT: "/address",
 		URLDELETE: "/address"
 		};
+		
+		SecondaryAddress = {
+		data: null,
+	    addressId: null,
+		CARD : {id: 0, SecondaryAddressaddressNumber: "", SecondaryAddressstatus: 0, SecondaryAddresstypeId: 0},
+		CARDempty : {id: 0, SecondaryAddressaddressNumber: "", SecondaryAddressstatus: 0, SecondaryAddresstypeId: 0},
+		URLGET: "/secondaryaddress",
+		URLGETS: "/secondaryaddress",
+		URLPOST: "/secondaryaddress",
+		URLPUT: "/secondaryaddress",
+		URLDELETE: "/secondaryaddress"
+		};
+		
+		
 		getAdditionalyDataStatic(function after(){getAdditionalyData();});
 		
-		_tableDocument = gettabulator('', columnsDocument, true, null, '#tableSelectDoc');
+		_tableDocument = gettabulator('', columnsDocument, true, null, '#tableSelectDoc', 10);
 		
 		$('#Fileupload').on("change", function(){
 		$('#file').text($('#Fileupload').val());
@@ -141,6 +159,82 @@
     }
 });
 
+
+
+_tableSecondaryAddress = gettabulator('', [
+                   { title: 'Тип',
+                    field: 'typeId',
+                    sorter: "string",
+					minWidth: 100,
+                   formatter: function(value){
+						return SecondaryAddressType.find(a => a.id == value.getData().typeId) ? SecondaryAddressType.find(a => a.id == value.getData().typeId).typeName : '' ;
+					},
+					headerFilter:true,
+                    headerFilterPlaceholder: 'Пошук...',
+                    sorter: function (a, b) {
+                    return sortTabulator(a, b, SecondaryAddressType.map(function (a) { return { id: a.id, name: a.typeName }; }));
+					},
+					headerFilterFunc: function (headerValue, rowData) {
+						return filterTabulator(headerValue, (rowData!=undefined && rowData!=null  ? rowData.toString() : ''), SecondaryAddressType.map(function (a) { return { id: a.id, name: a.typeName }; }));
+					}
+            },
+			{
+                    title: 'Статус',
+                    field: 'status',
+                    sorter: "string",
+					minWidth: 100,
+                   formatter: function(value){
+						return STATUSES.find(a => a.id == value.getData().status) ? STATUSES.find(a => a.id == value.getData().status).name : '' ;
+					},
+					headerFilter:true,
+                    headerFilterPlaceholder: 'Пошук...',
+                    sorter: function (a, b) {
+                    return sortTabulator(a, b, STATUSES.map(function (a) { return { id: a.id, name: a.name }; }));
+					},
+					headerFilterFunc: function (headerValue, rowData) {
+						return filterTabulator(headerValue, (rowData!=undefined && rowData!=null  ? rowData.toString() : ''), STATUSES.map(function (a) { return { id: a.id, name: a.name }; }));
+					}
+            },
+			{
+                    title: 'Номер',
+                    field: 'addressNumber',
+					hozAlign:"center",
+                    sorter: "string",
+                    headerFilter:true,
+					headerFilterPlaceholder: 'Пошук...',
+					
+            },
+			{
+                    title: '',
+                    field: 'Інформація',
+                    sortable:false,
+                    formatter: openIcon,
+                    headerSort:false,
+                    resizable:false,
+                    width: 50,
+                    align:"center",
+                    cellClick: function (e, cell) {
+                      getInfoSecondaryAddress(cell.getData().id);
+                }
+            },
+			
+			{
+                    title: '',
+                    field: 'Редагувати',
+                    sortable:false,
+                    formatter: function(){ return "<a class='uk-icon registryRole' uk-icon='pencil' ></a>"},
+                    headerSort:false,
+                    resizable:false,
+                    width: 50,
+                    align:"center",
+                    cellClick: function (e, cell) {
+                      getSecondaryAddress(cell.getData().id);
+                }
+            },
+			], false, null, '#tableSecondaryAddress');
+
+
+
 		});
 		async function getAdditionalyDataStatic(after) {
             try {
@@ -148,18 +242,7 @@
 				let m  = await axios.get(MainURL + getCity()).catch(error => {GETERROR(error); $('#load').addClass("hide-loader");});
 				
 				main = m.data;
-                if(main)
-				{
-					forEachClassName("citytitle", i => i.textContent= main.cityName);
-					forEachClassName("maintitle", i => i.textContent= main.title);
-					forEachClassName("custom-logo", i => i.setAttribute('src', main.logoUrl));
-					
-					$('#countStreettext').text(' - ' + main.streetCount);
-				$('#countStreet').val(main.streetCount);
-				$('#countAddresstext').text(' - ' + main.addressCount);
-				$('#countAddress').val(main.addressCount);
-				}
-				
+                paintMain(main);
 				
 				APP_MAP.selectStreet({rightTopLatitude:  main.rtLatitude ,
 				rightTopLongitude:  main.rtLongitude ,
@@ -185,9 +268,16 @@
 				Authority= zz.data;
 				fillSelect('authorityId', zz.data, "id", "name");
 				
+				const zzz = await axios.get(MainURL + getCity()+"/secondaryaddresstype").catch(error => {GETERROR(error); $('#load').addClass("hide-loader");});
+				SecondaryAddressType= zzz.data;
+				fillSelect('SecondaryAddresstypeId', zzz.data, "id", "typeName");
+				
+				
+				
 				fillSelect('Documentstatus', STATUSESDOC, "id", "name");
 				fillSelect('Streetstatus', STATUSES, "id", "name");
 				fillSelect('status', STATUSES, "id", "name");
+				fillSelect('SecondaryAddressstatus', STATUSES, "id", "name");
 				
 				after();
             }
@@ -251,6 +341,53 @@
 			$('#iconClose').addClass('uk-hidden');
 		}
 		}
+		
+		
+		
+		function _findStreet(substr, streets){
+    const MAX_ITEMS = 10;
+    function _findSimilar(alpha, beta) {
+        const distance = [];
+        for (let i = 0; i < alpha.length + 1; i++) {
+            distance[i] = []
+            distance[i][0] = i;
+        }
+        for (let j = 0; j < beta.length + 1; j++) 
+            distance[0][j] = j;
+        for (let i = 1; i < alpha.length + 1; i++) {
+            for (let j = 1; j < beta.length + 1; j++) {
+                let cost = alpha.charAt(i - 1) == beta.charAt(j - 1) ? 0 : 1;
+                distance[i][j] = Math.min(Math.min(distance[i - 1][j] + 1, distance[i][j - 1] + 1), distance[i - 1][j - 1] + cost);
+                if (i > 1 && j > 1 && alpha.charAt(i - 1) == beta.charAt(j - 2) && alpha.charAt(i - 2) == beta.charAt(j - 1)) 
+                    distance[i][j] = Math.min(distance[i][j], distance[i - 2][j - 2] + cost);
+            }
+        }
+        return distance[alpha.length][beta.length];
+    }
+    let result = [];
+    for(let limit = 2; limit < 10; limit++){
+        let buffer = [];
+        streets.forEach(i => {
+            if (Math.min(_findSimilar(substr, i.name), _findSimilar(substr, i.aliasOne), _findSimilar(substr, i.aliasTwo)) <= limit)
+                buffer.push(i);
+        })
+        if (buffer.length > MAX_ITEMS)
+            return result;
+        else
+            result = buffer;
+    }
+    return [];
+}
+
+
+
+
+
+
+
+
+
+
 		function searchStreet(search){
 			 $('#load').removeClass("hide-loader");
 			<!--removeSelectStreetTr();-->
@@ -269,11 +406,14 @@
 				
 				if(obj1.length==0 && obj2.length==0)
 				{
-					do {
-					  search = search.slice(0, -1);
-					  obj2 = Object.values(obj).filter(a => (a.name + " " + a.aliasOne+" " + a.aliasTwo).toUpperCase().indexOf(search.toUpperCase())==0).concat(Object.values(obj).filter(a => (a.name + " " + a.aliasOne+" " + a.aliasTwo).toUpperCase().indexOf(search.toUpperCase())>0));
+					//do {
+					  //search = search.slice(0, -1);
+					  //obj2 = Object.values(obj).filter(a => (a.name + " " + a.aliasOne+" " + a.aliasTwo).toUpperCase().indexOf(search.toUpperCase())==0).concat(Object.values(obj).filter(a => (a.name + " " + a.aliasOne+" " + a.aliasTwo).toUpperCase().indexOf(search.toUpperCase())>0));
 
-					} while (search.length > 1 && obj2.length == 0);
+					//} while (search.length > 1 && obj2.length == 0);
+					
+					
+					obj2 = _findStreet(search, Street.data);
 					
 				}
 				paintStreet(obj1, false, obj2);
@@ -352,7 +492,9 @@
 					  </div>
     <div uk-drop='pos: right-center' class='uk-drop uk-drop-small'>
         <div class="uk-card uk-card-body uk-card-default uk-padding-small" style='left: -60px;'>
-		<a onclick='getInfoAddress(${adr.id})' uk-icon="icon: info"></a><a class='registryRole' onclick='getAddress(${adr.id})' uk-icon="icon: pencil"></a></div>
+		<a onclick='getInfoAddress(${adr.id})' uk-tooltip="Інформація"  uk-icon="icon: info"></a>
+		<a onclick='getSecondaryAddresses(${adr.id})' uk-tooltip="Вторинні адреси"  uk-icon="icon: thumbnails"></a>
+		<a class='registryRole' onclick='getAddress(${adr.id})' uk-tooltip="Редагувати"  uk-icon="icon: pencil"></a></div>
     </div>
 </div>`;
 				APP_MAP.selectAddress({... Address.data.find(a=> a.id == id), html: content});
@@ -651,6 +793,169 @@
 	deleteobject(MainURL + getCity()+Document.URLDELETE + "/" + id, null, token, function func(){ if(Document.isStreet) getDocumentStreet(Document.id); else getDocumentAddress(Document.id);});
 	}
 	
+	async function getSecondaryAddresses(idaddress)
+	{
+	try
+	{
+		 $('#load').removeClass("hide-loader");
+			let st = Address.data.find(a=> a.id == idaddress);
+			$('#TestAddressBySecondaryAddress').text("Вторинні адреси за " + getFullAdr(st));
+			
+			let a = await axios.get(MainURL + getCity()+ "/address/"  +idaddress + "/secondaryaddress").catch(error => {GETERROR(error); $('#load').addClass("hide-loader");});
+			SecondaryAddress.data = a.data;
+			SecondaryAddress.addressId = idaddress;
+			_tableSecondaryAddress.replaceData(a.data);
+			removeelement(['superRootRole'], 'superRootRole');
+			removeelement(['registryRole'], 'registryRole');
+			if(a.data.length == 0)
+			{
+				$('#tableSecondaryAddress').hide();
+				$('#emptySecondaryAddress').show();
+			}
+			else{
+				$('#tableSecondaryAddress').show();
+				$('#emptySecondaryAddress').hide();
+			}
+			if(! $('#modalCardSecondaryAddress').hasClass('uk-open'))
+				showModal('modalCardSecondaryAddress');
+			}
+			catch{
+			UIkit.notification({ message: 'Помилка! Дані не були завантажені', status: 'danger' });
+			}
+			 $('#load').addClass("hide-loader");
+			 
+			 
+	}
+	async function updateSecondaryAddress(){
+		var c = getCardData(SecondaryAddress.CARD, "SecondaryAddress");
+		
+        if (c) {
+			SecondaryAddress.CARD.addressId = SecondaryAddress.addressId;
+			SecondaryAddress.CARD.typeId = SecondaryAddress.CARD.SecondaryAddresstypeId;
+			SecondaryAddress.CARD.status = SecondaryAddress.CARD.SecondaryAddressstatus;
+			SecondaryAddress.CARD.addressNumber = SecondaryAddress.CARD.SecondaryAddressaddressNumber;
+			
+		let id = SecondaryAddress.CARD.id;
+		c.linksToDo = getlinksunlinks();
+		let token = gettoken();
+			if(id == 0)
+		{
+			await saveobject(MainURL + getCity()+SecondaryAddress.URLPOST, c, token, "POST", function before(){
+			}, function after() {getSecondaryAddresses(SecondaryAddress.addressId); hideModal('modalCardAddSecondaryAddress')});
+		}
+		else{
+		
+			await saveobject(MainURL + getCity()+SecondaryAddress.URLPUT + "/" + id, c, token, "PUT", function before(){},
+			 function after() {getSecondaryAddresses(SecondaryAddress.addressId); hideModal('modalCardAddSecondaryAddress')});
+		}
+		
+            
+        }
+	}
+	
+	function deleteSecondaryAddress(){
+	let token = gettoken();
+	deleteobject(MainURL + getCity()+SecondaryAddress.URLDELETE + "/" + SecondaryAddress.CARD.id, null, token, function func(){ getSecondaryAddresses(SecondaryAddress.addressId);hideModal('modalCardAddSecondaryAddress'); });
+	}
+	
+	
+	
+	
+		function getSecondaryAddress(id) {
+		transferal('gridSecondaryAddress');
+		GETDOCUMENTFROMDB('secondaryaddress', id);
+		
+        emptyformbyclass("SecondaryAddress");
+        SecondaryAddress.CARD = Object.assign({}, SecondaryAddress.CARDempty);
+        SecondaryAddress.CARD.id = id;
+        if (SecondaryAddress.CARD.id != 0) {
+			forEachClassName("deladdress", i => i.classList.remove("uk-hidden"));
+            $('#h2modalSecondaryAddress').text('Редагувати вторинну адресу');
+			SecondaryAddress.CARD = SecondaryAddress.data.find(a=> a.id == id);
+			SecondaryAddress.CARD.SecondaryAddresstypeId = SecondaryAddress.CARD.typeId;
+			SecondaryAddress.CARD.SecondaryAddressstatus = SecondaryAddress.CARD.status;
+			SecondaryAddress.CARD.SecondaryAddressaddressNumber = SecondaryAddress.CARD.addressNumber;
+            getobject_ByData(SecondaryAddress.CARD, function before(){}, function after(){showModal('modalCardAddSecondaryAddress')});
+			
+			
+        }
+        else {
+		forEachClassName("deladdress", i => i.className += ' uk-hidden');
+        $('#h2modalSecondaryAddress').text('Додати вторинну адресу');
+		showModal('modalCardAddSecondaryAddress');
+        }
+		
+    }
+	function deleteStreet(){
+	let token = gettoken();
+	deleteobject(MainURL + getCity()+Street.URLDELETE + "/" + Street.CARD.id, null, token, function func(){ hideModal('modalCardAddStreet'); getAdditionalyData();});
+	}
+	
+	
+	
+	async function getInfoSecondaryAddress(id)
+	{
+	try{
+		$('#info').empty();
+		 $('#load').removeClass("hide-loader");
+			let st = SecondaryAddress.data.find(a=> a.id == id);
+			let a = await axios.get(MainURL + getCity()+ "/secondaryaddress/"  +id + "/document").catch(error => {GETERROR(error); $('#load').addClass("hide-loader");});
+			$('#info').append(`<div class="uk-card uk-card-default uk-margin-top uk-width-1-1">
+    <div class="uk-card-header">
+       <div class="uk-card-badge ${(st.status==0 || st.status==3) ?  'uk-label-success' : ((st.status==1) ?  'uk-label-warning' : ((st.status==2) ?  'uk-label-danger' : (uk-label-success)))} uk-label">${STATUSES.find(a=> a.id == st.status).name}</div>
+	   
+        <div class="uk-grid-small uk-flex-middle uk-margin" uk-grid>
+            
+            <div class="uk-width-expand">
+                <h3 class="uk-card-title uk-margin-remove-bottom">${getFullAdr(st.address) + ", "  + SecondaryAddressType.find(a=> a.id == st.typeId).typeName + " " + st.addressNumber}</h3>
+				<p class="uk-text-meta uk-margin-remove-bottom uk-margin-remove-top">зареєстровано ${getdate2(st.registrationDate)}р.</p>
+                <p class="uk-text-meta uk-margin-remove-top">обліковий номер ${st.id}</p>
+            </div>
+        </div>
+    </div>
+    <div class="uk-card-body">
+      
+        <h4 class='uk-legend uk-heading-bullet'>Документи</h4>
+      <table class="uk-table uk-table-middle uk-table-divider uk-table-small" id='tbldoc'>
+											
+										</table>
+    </div>
+</div>`);
+
+if(a.data.length>0){
+$('#tbldoc').append(`<thead>
+												<tr>
+													<th class="uk-width-expand"></th>
+													<th></th>
+												</tr>
+											</thead>
+											<tbody id="tbodyDocument"></tbody>`);
+											
+											
+											
+											
+            a.data.forEach(function (Item) {
+			$('#tbodyDocument').append(`<tr>
+		<td>${DocumentType.find(a=> a.id ==Item.documentTypeId) ?  DocumentType.find(a=> a.id ==Item.documentTypeId).typeName : ""} ${Authority.find(a=> a.id ==Item.authorityId) ?  Authority.find(a=> a.id ==Item.authorityId).nameInGenitiveCase : ""} № ${Item.number} від ${getdate2(Item.issued)}р.</td>
+		
+										<td class="uk-text-nowrap uk-preserve-width">
+										<a class="uk-margin-small-right" onclick="window.open('${Item.documentUrl}' , '_blank');" uk-icon="download"></a>
+										
+										</td></tr>`);
+            });
+			}
+			else{
+			$('#tbldoc').append(`<p>Не знайдено</p>`);
+			}
+			showModal('modalInfo');
+			}
+			catch{
+			UIkit.notification({ message: 'Помилка! Дані не були завантажені', status: 'danger' });
+			}
+			 $('#load').addClass("hide-loader");
+			 
+			 
+	}
 	
 	async function getInfoAddress(id){
 		try{
@@ -808,7 +1113,27 @@ $('#tbldoc').append(`<thead>
 	}
 		</script>
 	</head>
-	<body class='uk-invisible'>
+	<body>
+	
+	
+	
+	<div id="modalCardSecondaryAddress" bg-close="false" class="uk-modal-container uk-flex-top" uk-modal="stack: true" uk-modal>
+    <div class="uk-modal-dialog l uk-modal-body uk-margin-auto-vertical">
+        <button class="uk-modal-close-full uk-close-large" type="button" uk-close></button>
+		<h3 class="uk-card-title uk-margin-remove-bottom" id='TestAddressBySecondaryAddress'></h3>
+		<p uk-margin class='registryRole'>
+			<a class="uk-button uk-button-default" uk-tooltip="Додати нову вторинну адресу" onclick='getSecondaryAddress(0)'>Додати</a>
+		</p>
+        <div class="uk-text-center">
+		<p id='emptySecondaryAddress'>Не знайдено</p>
+            <div class="uk-overflow-auto">
+							<div id="tableSecondaryAddress">
+							</div>
+						</div>
+        </div>
+    </div>
+</div>
+	
 	
 	
 	
@@ -1001,9 +1326,9 @@ $('#tbldoc').append(`<thead>
       </div>
      </div>
 	 <div class="uk-width-1-2@s">
-	 <label class="uk-form-label">Індекс</label>
+	 <label class="uk-form-label required_uk">Індекс</label>
       <div class="uk-form-controls">
-       <input class="uk-input Address" type="text" autocomplete="off" id="postCode">
+       <input class="uk-input necessarilytext Address" type="number" step='1' min='0' id="postCode">
       </div>
      </div>
 	 <!--<div class="uk-width-1-1">
@@ -1029,6 +1354,48 @@ $('#tbldoc').append(`<thead>
     </div>
 </div>
 
+<div id="modalCardAddSecondaryAddress" bg-close="false" class="uk-modal-container uk-flex-top" uk-modal="stack: true" uk-modal>
+    <div class="uk-modal-dialog l uk-modal-body uk-margin-auto-vertical">
+        <button class="uk-modal-close-full uk-close-large" type="button" uk-close></button>
+        <div class="uk-grid-collapse  uk-flex-middle" uk-grid>
+            <div class="uk-width-1-1">
+                <h1 class="uk-legend uk-heading-bullet" id="h2modalSecondaryAddress"></h1>
+    <div class="uk-grid-small uk-grid-match uk-flex-top uk-margin" uk-grid>
+
+	 
+     <div class="uk-width-1-1">
+      <label class="uk-form-label required_uk">Номер</label>
+      <div class="uk-form-controls">
+       <input class="uk-input necessarilytext SecondaryAddress" type="text" autocomplete="off" id="SecondaryAddressaddressNumber">
+      </div>
+     </div>
+	 <div class="uk-width-1-1@s">
+      <label class="uk-form-label required_uk">Статус</label>
+      <div class="uk-form-controls">
+      <select class="uk-select necessarilyselect uk-width-1-1 SecondaryAddress"  id="SecondaryAddressstatus"></select>                       
+      </div>
+     </div>
+	<div class="uk-width-1-1@s">
+      <label class="uk-form-label required_uk">Тип</label>
+      <div class="uk-form-controls">
+      <select class="uk-select necessarilyselect uk-width-1-1 SecondaryAddress"  id="SecondaryAddresstypeId"></select>                       
+      </div>
+     </div>
+     <div id='gridSecondaryAddress' class="uk-width-1-1">
+	  </div>
+     
+     <div class="uk-width-1-1">
+     <p class="uk-text-right">
+    <button class="uk-button uk-button-default deladdress superRootRole" onclick="deleteSecondaryAddress()" type="button">Видалити</button>
+    <button class="uk-button uk-button-primary registryRole" onclick="updateSecondaryAddress()" type="button">Зберегти</button>
+   </p>
+   </div>
+     
+    </div>
+            </div>
+        </div>
+    </div>
+</div>
 <div id="modalCardAddStreet" class="uk-modal-full"  uk-modal="stack: true">
     <div class="uk-modal-dialog">
         <button class="uk-modal-close-full uk-close-large" type="button" uk-close></button>
@@ -1155,11 +1522,15 @@ $('#tbldoc').append(`<thead>
 						<h5>Статистика</h5>
 						<div>
 							<span class="uk-text-small">Кількість вулиць <small id='countStreettext'></small></span>
-							<progress class="uk-progress" value="0" id='countStreet' max="5000"></progress>
+							<progress class="uk-progress warning" value="0" id='countStreet' max="5000"></progress>
 						</div>
 						<div>
 							<span class="uk-text-small">Кількість адрес <small id='countAddresstext'></small></span>
 							<progress class="uk-progress success" value="0" id='countAddress' max="150000"></progress>
+						</div>
+						<div>
+							<span class="uk-text-small">Кількість вторинних адрес <small id='countSecondaryAddresstext'></small></span>
+							<progress class="uk-progress" value="0" id='countSecondaryAddress' max="150000000"></progress>
 						</div>
 					
 				</div>

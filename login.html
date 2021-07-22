@@ -93,7 +93,14 @@
 	<div class="login uk-cover-container uk-background-secondary uk-flex uk-flex-center uk-flex-middle uk-height-viewport uk-overflow-hidden uk-light" data-uk-height-viewport>
 	<div class="uk-position-cover uk-overlay-secondary"></div>
 		<div class="uk-width-xlarge uk-position-z-index">
-		<h1 class="">Автоматизована система управління геоданими</h1>
+		<div class=" uk-grid-small uk-flex uk-flex-middle" uk-grid="">            
+			<div class="uk-width-auto@m">
+			<img class="uk-animation-stroke" width="75" height="75" alt="" data-src="../img/logo__.svg" uk-img="" src="../img/logo__.svg" uk-svg="stroke-animation: true">
+			</div>            
+			<div class="uk-width-expand@m">
+                <h1 class="uk-margin-top uk-margin-remove-top uk-h2">Автоматизована система управління геоданими</h1>        
+            </div>        
+			</div>	
 		</div>
 	</div>
 
@@ -133,9 +140,7 @@
 					<div class="uk-margin-bottom">
 						<button type="button" class="uk-button uk-button-primary uk-border-pill uk-width-1-1" onclick='Login()'>Увійти</button>
 						</div>
-						<div class="uk-margin-bottom uk-text-center">
-						<a class="uk-link-reset uk-text-small" onclick="Reg()">Зареєструватись</a>
-					</div>
+
 				</fieldset>
 			</form>
 			<!-- /login -->
@@ -157,7 +162,18 @@
 			<!-- action buttons -->
 			<div>
 				<div class="uk-text-center">
-					<a class="uk-link-reset uk-text-small toggle-class" data-uk-toggle="target: .toggle-class ;animation: uk-animation-fade">Забули пароль?</a>
+				
+					<div class="uk-clearfix">
+						<div class="uk-float-right">
+							<div class=""><a class="uk-link-reset uk-text-small toggle-class" data-uk-toggle="target: .toggle-class ;animation: uk-animation-fade">Забули пароль?</a></div>
+						</div>
+						<div class="uk-float-left">
+							<div class=""><a class="uk-link-reset uk-text-small toggle-class" data-uk-toggle="target: .toggle-class ;animation: uk-animation-fade" onclick="Reg()">Зареєструватись</a></div>
+						</div>
+					</div>			
+					
+			
+					
 					<a class="uk-link-reset uk-text-small toggle-class" data-uk-toggle="target: .toggle-class ;animation: uk-animation-fade" hidden><span data-uk-icon="arrow-left"></span> Повернутись, щоб увійти</a>
 				</div>
 			</div>

@@ -53,8 +53,8 @@
 
 		Register = {
 		data: null,
-		CARD : {id:0, cityName: "", email: "", lbLattitudenumber: 0, lbLongitude: 0, rtLattitude: 0, rtLongitude: 0, phone: '', regionName: '', title: '', responsiblePerson: '', login: '', password: ''},
-		CARDempty : {id:0, cityName: "", email: "", lbLattitudenumber: 0, lbLongitude: 0, rtLattitude: 0, rtLongitude: 0, phone: '', regionName: '', title: '', responsiblePerson: '', login: '', password: ''},
+		CARD : {id:0, cityName: "", email: "", lbLattitudenumber: 0, lbLongitude: 0, rtLattitude: 0, rtLongitude: 0, phone: '', regionName: '', title: '', responsiblePerson: '', login: '', password: '',geoWebServiceUrl:''},
+		CARDempty : {id:0, cityName: "", email: "", lbLattitudenumber: 0, lbLongitude: 0, rtLattitude: 0, rtLongitude: 0, phone: '', regionName: '', title: '', responsiblePerson: '', login: '', password: '',geoWebServiceUrl:''},
 		};
 		
 		
@@ -103,17 +103,6 @@
 		
         if (c) {
 		
-		if(c.login.length < 4 )
-		{
-	UIkit.notification({ message: 'Логін складається меньше ніж з 4-х символів', status: 'danger'});
-		return;
-	}
-	if(c.login.password < 8 )
-	{
-		UIkit.notification({ message: 'Пароль складається меньше ніж з 8-ми символів', status: 'danger'});
-		return;
-	}
-		
 		
 		let id = Register.CARD.id;
 		let token = gettoken();
@@ -125,6 +114,7 @@
 		FD.append("regionName", c.regionName);
 		FD.append("responsiblePerson", c.responsiblePerson);
 		FD.append("title", c.title);
+		FD.append("geoWebServiceUrl", c.geoWebServiceUrl);
 		
 		FD.append("login", c.login);
 		FD.append("password", c.password);
@@ -194,6 +184,7 @@
 			<h1 class="uk-legend uk-heading-bullet">Інформація про адресний реєстр</h1>			
 			<div class="uk-grid-small" uk-grid>
 			
+			
                 
 				<div class="uk-width-1-1@m">
 					<div class="uk-grid-small  uk-flex-middle" uk-grid>
@@ -246,6 +237,18 @@
 
 				</div>
 	
+	
+	<h1 class="uk-legend uk-heading-bullet">Мапа</h1>
+
+	 <div class="uk-width-1-1@m">
+	 
+      <label class="uk-form-label">Посилання на геосервіс</label>
+      <div class="uk-form-controls">
+       <input class="uk-input " type="text" autocomplete="off" id="geoWebServiceUrl">
+      </div>
+	 </div>
+	 
+	 
 	  <h1 class="uk-legend uk-heading-bullet">Відповідальна особа</h1>
 		
 
@@ -262,7 +265,7 @@
       <div class="uk-form-controls">
         <div class="uk-inline" style="display:block;">
             <a class="uk-form-icon uk-form-icon-flip" href="#" uk-icon="icon: user"></a>
-            <input class="uk-input necessarilytext uk-width-expand" type="text" autocomplete="off" id="login">
+            <input class="uk-input necessarilytext login uk-width-expand" type="text" autocomplete="off" id="login">
         </div>	
       </div>
      </div>
@@ -271,7 +274,7 @@
       <div class="uk-form-controls">
         <div class="uk-inline" style="display:block;">
             <a class="uk-form-icon uk-form-icon-flip" href="#" uk-icon="icon: lock"></a>
-            <input class="uk-input necessarilytext uk-width-expand" type="text" autocomplete="off" id="password">
+            <input class="uk-input necessarilytext password uk-width-expand" type="text" autocomplete="off" id="password">
         </div>	
       </div>
      </div>
@@ -282,7 +285,7 @@
       <div class="uk-form-controls">
         <div class="uk-inline" style="display:block;">
             <a class="uk-form-icon uk-form-icon-flip" href="#" uk-icon="icon: mail"></a>
-            <input class="uk-input necessarilytext uk-width-expand" type="text" autocomplete="off" id="email">
+            <input class="uk-input necessarilytext email uk-width-expand" type="text" autocomplete="off" id="email">
         </div>	
       </div>
      </div>
@@ -318,7 +321,7 @@
             <div class="uk-inline uk-width-expand">
             <div class="" id="map"    uk-height-viewport="offset-top: true"></div>
 			<div class="uk-overlay uk-overlay-primary uk-position-bottom uk-padding uk-overlay-primary-gradient">
-							<p class="uk-text-bold uk-text-center uk-text-emphasis"><span class="uk-margin-small-right" uk-icon="icon:move;ratio:1.5;"></span>Позиціонуйте населений пункт на мапі за його кордонами</p>		
+							<p class="uk-text-bold uk-text-center uk-text-emphasis"><span class="uk-margin-small-right" uk-icon="icon:move;ratio:1.5;"></span>Позиціонуйте населений пункт на мапі за його межами</p>		
 							</div>			
 			</div>
 			</div>
